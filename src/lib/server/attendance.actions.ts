@@ -56,14 +56,17 @@ export async function logAttendance(data: NewAttendance) {
   const { data: log, error } = await supabase
     .from('pointages')
     .upsert(
-      {
-        ...data,
-        entreprise_id,
-        saisi_par: user?.id,
-        salaire_jour,
-      },
+      [
+        {
+          ...data,
+          entreprise_id: entreprise_id,
+          saisi_par: user?.id,
+          salaire_jour,
+        },
+      ],
       {
         onConflict: 'ouvrier_id,date',
+        ignoreDuplicates: false,
       }
     )
     .select()
