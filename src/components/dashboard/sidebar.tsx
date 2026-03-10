@@ -96,7 +96,7 @@ export const Sidebar = memo(({
   return (
     <aside
       className={cn(
-        'fixed top-0 left-0 z-40 flex h-screen w-72 flex-col border-r border-zinc-100 bg-white shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)] transition-all duration-300',
+        'fixed top-0 left-0 z-40 flex h-screen w-72 flex-col border-r border-border bg-card shadow-sm transition-all duration-300',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       )}
       suppressHydrationWarning
@@ -104,43 +104,43 @@ export const Sidebar = memo(({
       {/* Mobile Close Button */}
       <button
         onClick={() => setIsOpen?.(false)}
-        className="absolute top-10 right-4 rounded-xl p-2 text-zinc-400 transition-all hover:bg-zinc-50 hover:text-zinc-950 lg:hidden"
+        className="absolute top-10 right-4 flex h-11 w-11 items-center justify-center rounded-md p-2 text-muted-foreground transition-all hover:bg-muted hover:text-foreground lg:hidden"
       >
         <X size={20} />
       </button>
 
       {/* Logo Section */}
-      <div className="p-10 pb-8">
+      <div className="p-fluid-lg pb-8">
         <Link href="/dashboard" className="group flex items-center gap-3">
-          <div className="rounded-2xl bg-indigo-600 p-2.5 text-white shadow-lg shadow-indigo-100 transition-all group-hover:scale-105 active:scale-95">
+          <div className="rounded-md bg-primary p-2.5 text-primary-foreground shadow-lg shadow-primary/20 transition-all group-hover:scale-105 active:scale-95">
             <HardHat size={26} strokeWidth={2.5} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xl leading-none font-black tracking-tight text-zinc-950">
+            <span className="text-xl leading-none font-semibold tracking-tight text-foreground">
               {mounted && enterprise?.nom ? enterprise.nom : 'GestiBulder'}
             </span>
-            <span className="mt-1.5 text-[10px] font-bold tracking-[0.2em] text-indigo-600/60 text-zinc-400 uppercase">
+            <span className="mt-1.5 text-[10px] font-semibold tracking-[0.2em] text-primary uppercase">
               BTP OS 2026
             </span>
           </div>
         </Link>
       </div>
 
-      {/* Quick Search Trigger (Visual only for now) */}
-      <div className="mb-6 px-10">
-        <button className="flex h-10 w-full items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 px-4 text-[11px] font-black tracking-widest text-zinc-400 uppercase transition-colors hover:bg-zinc-100">
+      {/* Quick Search Trigger */}
+      <div className="mb-6 px-fluid-lg">
+        <button className="flex h-11 w-full items-center gap-3 rounded-md border border-border bg-muted/50 px-4 text-[11px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:bg-muted">
           <Search size={14} />
           <span>Recherche rapide...</span>
-          <span className="ml-auto rounded-md border border-zinc-200 bg-white px-1.5 py-0.5 text-[10px] font-bold text-zinc-400">
+          <span className="ml-auto rounded-md border border-border bg-card px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
             ⌘K
           </span>
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1.5 overflow-y-auto px-8">
+      <nav className="flex-1 space-y-1.5 overflow-y-auto px-fluid-md">
         <div className="mb-4 px-2">
-          <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+          <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
             Menu Principal
           </span>
         </div>
@@ -159,10 +159,10 @@ export const Sidebar = memo(({
                 if (item.href === '/dashboard/budget') prefetchData('budget');
               }}
               className={cn(
-                'group flex items-center justify-between rounded-2xl px-4 py-3 transition-all duration-200',
+                'group flex items-center justify-between rounded-md px-4 py-2.5 transition-all duration-200',
                 isActive
-                  ? 'scale-[1.02] bg-indigo-600 font-black text-white shadow-xl shadow-indigo-100'
-                  : 'font-bold text-zinc-500 hover:bg-zinc-50 hover:text-indigo-600'
+                  ? 'bg-primary font-semibold text-primary-foreground shadow-lg shadow-primary/20'
+                  : 'font-medium text-muted-foreground hover:bg-muted hover:text-primary'
               )}
             >
               <div className="flex items-center gap-3.5">
@@ -176,16 +176,16 @@ export const Sidebar = memo(({
                 />
                 <span className="text-[13px] tracking-tight">{item.name}</span>
               </div>
-              {isActive && <ChevronRight size={14} className="text-white/50" />}
+              {isActive && <ChevronRight size={14} className="text-primary-foreground/50" />}
             </Link>
           );
         })}
       </nav>
 
       {/* Bottom Section */}
-      <div className="space-y-2 p-8 pt-4">
+      <div className="space-y-2 p-fluid-lg pt-4">
         <div className="mb-2 px-2">
-          <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+          <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
             Compte
           </span>
         </div>
@@ -193,17 +193,17 @@ export const Sidebar = memo(({
           href="/dashboard/settings"
           onClick={() => setIsOpen?.(false)}
           className={cn(
-            'flex items-center gap-3.5 rounded-2xl px-4 py-3 text-[13px] font-black transition-all duration-200',
+            'flex items-center gap-3.5 rounded-md px-4 py-2.5 text-[13px] font-semibold transition-all duration-200',
             pathname === '/dashboard/settings'
-              ? 'border border-zinc-200 bg-zinc-100 text-indigo-600'
-              : 'text-zinc-500 hover:bg-zinc-50 hover:text-indigo-600'
+              ? 'border border-border bg-muted text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-primary'
           )}
         >
           <Settings size={20} />
           <span>Paramètres</span>
         </Link>
         <button
-          className="flex w-full items-center gap-3.5 rounded-2xl border border-transparent px-4 py-3 text-[13px] font-black text-red-500 transition-all duration-200 hover:border-red-100 hover:bg-red-50 active:scale-95"
+          className="flex w-full items-center gap-3.5 rounded-md border border-transparent px-4 py-2.5 text-[13px] font-semibold text-destructive transition-all duration-200 hover:border-destructive/10 hover:bg-destructive/5 active:scale-95"
           onClick={handleLogout}
         >
           <LogOut size={20} />

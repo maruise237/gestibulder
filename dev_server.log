@@ -7,7 +7,7 @@
 - Network:       http://192.168.0.2:3000
 
 ✓ Starting...
-✓ Ready in 2.7s
+✓ Ready in 2.6s
 ⨯ Error: Your project's URL and Key are required to create a Supabase client!
 
 Check your Supabase project's API settings to find these values
@@ -22,7 +22,7 @@ https://supabase.com/dashboard/project/_/settings/api
   12 |     process.env.NEXT_PUBLIC_SUPABASE_URL!,
   13 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   14 |     {
- GET /auth/login 404 in 1803ms (compile: -153897µs, proxy.ts: 1793ms, render: 164ms)
+ GET /dashboard 404 in 1887ms (compile: -171693µs, proxy.ts: 1878ms, render: 182ms)
 ○ Compiling /_not-found/page ...
 ⨯ Error: Your project's URL and Key are required to create a Supabase client!
 
@@ -38,4 +38,4 @@ https://supabase.com/dashboard/project/_/settings/api
   12 |     process.env.NEXT_PUBLIC_SUPABASE_URL!,
   13 |     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
   14 |     {
- GET /auth/signup 404 in 103ms (compile: -13190µs, proxy.ts: 99ms, render: 17ms)
+ GET /auth/login 404 in 109ms (compile: -13074µs, proxy.ts: 105ms, render: 18ms)
