@@ -216,7 +216,7 @@ export default function ChantiersPage() {
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
                     <div
-                      className="h-full rounded-full bg-indigo-600 transition-all duration-1000 group-hover:shadow-[0_0_12px_rgba(79,70,229,0.4)]"
+                      className="h-full rounded-full bg-indigo-600 transition-all duration-1000 "
                       style={{ width: `${project.avancement_pct || 0}%` }}
                     />
                   </div>

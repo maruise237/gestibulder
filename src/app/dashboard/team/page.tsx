@@ -18,6 +18,14 @@ import {
 import { getTeamMembers, inviteMember } from '@/lib/server/team.actions';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 
 export default function TeamPage() {
@@ -224,115 +232,126 @@ export default function TeamPage() {
         </Card>
       )}
 
-      {/* Invite Modal */}
-      {isInviteModalOpen && (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 p-4 backdrop-blur-sm duration-300">
-          <Card className="shadow-elevated w-full max-w-md overflow-hidden p-0" padding="none">
-            <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-10">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-zinc-950 p-2 text-white">
-                  <UserPlus size={20} strokeWidth={2.5} />
-                </div>
-                <h2 className="text-xl font-black tracking-tight text-zinc-950">Invite Member</h2>
+            {/* Invite Modal */}
+      <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+        <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
+          <DialogHeader className="bg-muted/30 border-b p-6 sm:p-8 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="bg-zinc-950 text-white rounded-2xl p-3 shadow-lg">
+                <UserPlus size={24} strokeWidth={2.5} />
               </div>
-              <button
-                onClick={() => setIsInviteModalOpen(false)}
-                className="rounded-xl p-2 text-zinc-400 transition-all hover:bg-white hover:text-zinc-950"
-              >
-                <X size={24} />
-              </button>
+              <div className="space-y-1">
+                <DialogTitle className="text-2xl font-black tracking-tight text-zinc-950">
+                  Invite Member
+                </DialogTitle>
+                <DialogDescription className="text-zinc-500 text-xs font-black tracking-widest uppercase">
+                  Add new collaborator to your team
+                </DialogDescription>
+              </div>
             </div>
+          </DialogHeader>
 
-            {inviteSuccess ? (
-              <div className="animate-in zoom-in space-y-4 p-20 text-center duration-300">
-                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                  <CheckCircle2 size={40} strokeWidth={3} />
-                </div>
-                <h3 className="text-2xl font-black text-zinc-950">Invitation Sent!</h3>
-                <p className="font-medium text-zinc-500">
-                  The link has been sent to the recipient's email.
-                </p>
+          {inviteSuccess ? (
+            <div className="animate-in zoom-in space-y-4 p-10 text-center duration-300">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+                <CheckCircle2 size={40} strokeWidth={3} />
               </div>
-            ) : (
-              <form onSubmit={handleInvite} className="space-y-8 p-10">
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Full Name
-                    </label>
-                    <input
-                      name="name"
-                      required
-                      placeholder="e.g. John Doe"
-                      className="h-14 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-5 font-black text-zinc-950 transition-all outline-none focus:border-zinc-950 focus:ring-8 focus:ring-zinc-950/5"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Email Address
-                    </label>
-                    <input
-                      name="email"
-                      type="email"
-                      required
-                      placeholder="john@example.com"
-                      className="h-14 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-5 font-black text-zinc-950 transition-all outline-none focus:border-zinc-950 focus:ring-8 focus:ring-zinc-950/5"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Role Assignment
-                    </label>
-                    <div className="grid grid-cols-1 gap-3">
-                      {[
-                        {
-                          value: 'chef_projet',
-                          label: 'Project Lead',
-                          desc: 'Full site management access',
-                        },
-                        {
-                          value: 'superviseur',
-                          label: 'Supervisor',
-                          desc: 'Daily logs & production only',
-                        },
-                        {
-                          value: 'admin',
-                          label: 'Administrator',
-                          desc: 'Full business & financial access',
-                        },
-                      ].map((r) => (
-                        <label key={r.value} className="group relative cursor-pointer">
-                          <input
-                            type="radio"
-                            name="role"
-                            value={r.value}
-                            required
-                            className="peer sr-only"
-                          />
-                          <div className="rounded-2xl border border-zinc-200 bg-white p-5 transition-all group-hover:border-zinc-400 peer-checked:border-zinc-950 peer-checked:bg-zinc-950 peer-checked:text-white">
-                            <p className="text-xs font-black tracking-widest uppercase">
-                              {r.label}
-                            </p>
-                            <p className="mt-1 text-[10px] font-medium opacity-60">{r.desc}</p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
+              <h3 className="text-2xl font-black text-zinc-950">Invitation Sent!</h3>
+              <p className="font-medium text-zinc-500">
+                The link has been sent to the recipient's email.
+              </p>
+              <Button onClick={() => setIsInviteModalOpen(false)} className="mt-4 w-full h-12 rounded-xl font-bold">
+                Close
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleInvite} className="space-y-6 p-6 sm:p-8">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+                    Full Name
+                  </label>
+                  <input
+                    name="name"
+                    required
+                    placeholder="e.g. John Doe"
+                    className="h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-5 font-black text-zinc-950 transition-all outline-none focus:border-zinc-950 focus:ring-8 focus:ring-zinc-950/5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+                    Email Address
+                  </label>
+                  <input
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="john@example.com"
+                    className="h-12 w-full rounded-xl border border-zinc-200 bg-zinc-50 px-5 font-black text-zinc-950 transition-all outline-none focus:border-zinc-950 focus:ring-8 focus:ring-zinc-950/5"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+                    Role Assignment
+                  </label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {[
+                      {
+                        value: 'chef_projet',
+                        label: 'Project Lead',
+                        desc: 'Full site management access',
+                      },
+                      {
+                        value: 'superviseur',
+                        label: 'Supervisor',
+                        desc: 'Daily logs & production only',
+                      },
+                      {
+                        value: 'admin',
+                        label: 'Administrator',
+                        desc: 'Full business & financial access',
+                      },
+                    ].map((r) => (
+                      <label key={r.value} className="group relative cursor-pointer">
+                        <input
+                          type="radio"
+                          name="role"
+                          value={r.value}
+                          required
+                          className="peer sr-only"
+                        />
+                        <div className="rounded-2xl border border-zinc-200 bg-white p-4 transition-all group-hover:border-zinc-400 peer-checked:border-zinc-950 peer-checked:bg-zinc-950 peer-checked:text-white">
+                          <p className="text-xs font-black tracking-widest uppercase">
+                            {r.label}
+                          </p>
+                          <p className="mt-1 text-[10px] font-medium opacity-60">{r.desc}</p>
+                        </div>
+                      </label>
+                    ))}
                   </div>
                 </div>
+              </div>
 
+              <DialogFooter className="bg-muted/30 -mx-6 -mb-6 mt-4 gap-3 p-6 sm:gap-0">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsInviteModalOpen(false)}
+                  className="h-12 flex-1 rounded-xl font-bold"
+                >
+                  Cancel
+                </Button>
                 <Button
                   type="submit"
                   isLoading={isSubmitting}
-                  className="h-16 w-full text-base font-black shadow-xl"
+                  className="h-12 flex-1 rounded-xl font-bold shadow-lg"
                 >
                   Send Invitation
                 </Button>
-              </form>
-            )}
-          </Card>
-        </div>
-      )}
+              </DialogFooter>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
