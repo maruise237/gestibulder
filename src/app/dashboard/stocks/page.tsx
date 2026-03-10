@@ -27,6 +27,14 @@ import { CreateMaterialModal } from '@/components/dashboard/create-material-moda
 import { StockHistoryModal } from '@/components/dashboard/stock-history-modal';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 
@@ -290,42 +298,39 @@ export default function StocksPage() {
         />
       )}
 
-      {/* Modal de mouvement (Entrée/Sortie) */}
-      {movementModal.open && movementModal.material && (
-        <div className="animate-in fade-in fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 p-4 backdrop-blur-sm duration-300">
-          <Card
-            className="shadow-elevated animate-in zoom-in w-full max-w-md overflow-hidden border-none p-0 duration-300"
-            padding="none"
-          >
-            <div
-              className={cn(
-                'flex items-center justify-between border-b border-white/10 p-10',
-                movementModal.type === 'entree'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-100'
-                  : 'bg-red-600 text-white shadow-lg shadow-red-100'
-              )}
-            >
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl bg-white/20 p-2">
-                  {movementModal.type === 'entree' ? (
-                    <ArrowUpRight size={20} />
-                  ) : (
-                    <ArrowDownRight size={20} />
-                  )}
-                </div>
-                <h2 className="text-xl font-black tracking-tight uppercase">
-                  {movementModal.type === 'entree' ? 'Entrée Stock' : 'Consommation'}
-                </h2>
+                  {/* Modal de mouvement (Entrée/Sortie) */}
+      <Dialog
+        open={movementModal.open}
+        onOpenChange={(open) => !open && setMovementModal({ open: false })}
+      >
+        <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
+          <DialogHeader className={cn(
+            "border-b p-6 sm:p-8 pb-6",
+            movementModal.type === 'entree'
+              ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
+              : "bg-red-600 text-white shadow-lg shadow-red-100"
+          )}>
+            <div className="flex items-center gap-4">
+              <div className="rounded-2xl bg-white/20 p-3 shadow-lg">
+                {movementModal.type === 'entree' ? (
+                  <ArrowUpRight size={24} strokeWidth={2.5} />
+                ) : (
+                  <ArrowDownRight size={24} strokeWidth={2.5} />
+                )}
               </div>
-              <button
-                onClick={() => setMovementModal({ open: false })}
-                className="rounded-xl p-2 text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-              >
-                <X size={24} />
-              </button>
+              <div className="space-y-1">
+                <DialogTitle className="text-2xl font-black tracking-tight uppercase text-white">
+                  {movementModal.type === 'entree' ? 'Entrée Stock' : 'Consommation'}
+                </DialogTitle>
+                <DialogDescription className="text-white/70 text-xs font-black tracking-widest uppercase">
+                  Mise à jour du registre
+                </DialogDescription>
+              </div>
             </div>
+          </DialogHeader>
 
-            <form onSubmit={handleMovement} className="space-y-8 p-10">
+          {movementModal.material && (
+            <form onSubmit={handleMovement} className="space-y-8 p-6 sm:p-8">
               <div className="rounded-3xl border border-zinc-100 bg-zinc-50/50 p-6 text-center">
                 <p className="mb-2 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
                   Matériau identifié
@@ -340,7 +345,7 @@ export default function StocksPage() {
 
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+                  <label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
                     Quantité ({movementModal.material.unite})
                   </label>
                   <input
@@ -350,7 +355,7 @@ export default function StocksPage() {
                     step="0.01"
                     placeholder="0.00"
                     autoFocus
-                    className="h-24 w-full rounded-3xl border border-zinc-200 bg-zinc-50 text-center text-5xl font-black transition-all outline-none placeholder:text-zinc-200 focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/5"
+                    className="h-20 w-full rounded-2xl border border-zinc-200 bg-zinc-50 text-center text-4xl font-black transition-all outline-none placeholder:text-zinc-200 focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/5"
                   />
                 </div>
 
@@ -365,7 +370,7 @@ export default function StocksPage() {
                         type="number"
                         step="0.01"
                         placeholder="0.00"
-                        className="h-14 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-5 font-black transition-all outline-none placeholder:text-zinc-300 focus:border-indigo-600"
+                        className="bg-muted/20 border-muted h-12 w-full rounded-xl px-4 font-bold outline-none focus:border-indigo-600"
                       />
                     </div>
                     <div className="space-y-2">
@@ -375,7 +380,7 @@ export default function StocksPage() {
                       <input
                         name="fournisseur"
                         placeholder="Nom..."
-                        className="h-14 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-5 font-black transition-all outline-none placeholder:text-zinc-300 focus:border-indigo-600"
+                        className="bg-muted/20 border-muted h-12 w-full rounded-xl px-4 font-bold outline-none focus:border-indigo-600"
                       />
                     </div>
                   </div>
@@ -387,28 +392,38 @@ export default function StocksPage() {
                     <input
                       name="usage"
                       placeholder="Ex: Dalle 2ème étage..."
-                      className="h-14 w-full rounded-2xl border border-zinc-200 bg-zinc-50 px-5 font-black transition-all outline-none placeholder:text-zinc-300 focus:border-indigo-600"
+                      className="bg-muted/20 border-muted h-12 w-full rounded-xl px-4 font-bold outline-none focus:border-indigo-600"
                     />
                   </div>
                 )}
               </div>
 
-              <Button
-                type="submit"
-                isLoading={!!isSubmitting}
-                className={cn(
-                  'mt-4 h-16 w-full border-none text-xl font-black tracking-widest uppercase shadow-xl transition-all active:scale-95',
-                  movementModal.type === 'entree'
-                    ? 'bg-emerald-600 shadow-emerald-200 hover:bg-emerald-700'
-                    : 'bg-red-600 shadow-red-200 hover:bg-red-700'
-                )}
-              >
-                Valider la transaction
-              </Button>
+              <DialogFooter className="bg-muted/30 -mx-6 -mb-6 mt-4 gap-3 p-6 sm:gap-0">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMovementModal({ open: false })}
+                  className="h-12 flex-1 rounded-xl font-bold"
+                >
+                  Annuler
+                </Button>
+                <Button
+                  type="submit"
+                  isLoading={!!isSubmitting}
+                  className={cn(
+                    'h-12 flex-1 rounded-xl font-bold shadow-lg',
+                    movementModal.type === 'entree'
+                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                      : 'bg-red-600 hover:bg-red-700 text-white'
+                  )}
+                >
+                  Confirmer
+                </Button>
+              </DialogFooter>
             </form>
-          </Card>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
