@@ -6,7 +6,17 @@ import { getEnterprise } from './enterprise.actions';
 
 export async function getDashboardData() {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
-  if (authError) return { error: authError };
+  if (authError)
+    return {
+      projects: [],
+      workersCount: 0,
+      workers: [],
+      expenses: [],
+      alerts: [],
+      movements: [],
+      enterprise: null,
+      error: authError,
+    };
 
   const supabase = await createClient();
 
@@ -52,6 +62,7 @@ export async function getDashboardData() {
   return {
     projects: projectsRes.data || [],
     workersCount: workersRes.count || 0,
+    workers: workersRes.data || [],
     expenses: expensesRes.data || [],
     alerts: alerts,
     movements: movementsRes.data || [],
