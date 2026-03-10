@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { Button as ButtonPrimitive } from '@base-ui/react/button';
+import { useRender } from '@base-ui/react/use-render';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Loader2 } from 'lucide-react';
 
@@ -44,7 +45,9 @@ const buttonVariants = cva(
   }
 );
 
-interface ButtonProps extends ButtonPrimitive.Props, VariantProps<typeof buttonVariants> {
+interface ButtonProps extends React.ComponentProps<"button">, VariantProps<typeof buttonVariants> {
+  render?: React.ReactElement;
+  asChild?: boolean;
   isLoading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
@@ -58,21 +61,30 @@ function Button({
   leftIcon,
   rightIcon,
   children,
+  render,
+  asChild,
   ...props
 }: ButtonProps) {
-  return (
-    <ButtonPrimitive
-      data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
-      disabled={isLoading || props.disabled}
-      {...props}
-    >
-      {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
-      {children}
-      {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
-    </ButtonPrimitive>
-  );
+  const child = asChild ? (React.Children.only(children) as React.ReactElement<any>) : undefined;
+
+  return useRender({
+    defaultTagName: 'button',
+    render: child || render,
+    props: {
+      ...props,
+      'data-slot': 'button',
+      className: cn(buttonVariants({ variant, size, className })),
+      disabled: isLoading || props.disabled,
+      children: child ? child.props.children : (
+        <>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {!isLoading && leftIcon && <span className="mr-2">{leftIcon}</span>}
+          {children}
+          {!isLoading && rightIcon && <span className="ml-2">{rightIcon}</span>}
+        </>
+      ),
+    },
+  });
 }
 
 export { Button, buttonVariants };

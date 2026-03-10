@@ -80,7 +80,7 @@ export default function DashboardPage() {
 
   const stats = data?.stats || {
     projectsCount: 0,
-    workersCount: 0,
+    workersCount: 0, activeWorkers: 0,
     totalExpenses: 0,
     activeProjects: 0,
     stockAlerts: 0,

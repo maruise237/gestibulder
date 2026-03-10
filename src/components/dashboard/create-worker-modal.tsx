@@ -216,7 +216,7 @@ export function CreateWorkerModal({
                 <Label className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
                   Métier / Spécialité
                 </Label>
-                <Select value={selectedMetier} onValueChange={setSelectedMetier}>
+                <Select value={selectedMetier} onValueChange={(val) => val && setSelectedMetier(val)}>
                   <SelectTrigger className="bg-muted/20 border-muted focus:ring-primary/20 h-12 rounded-xl px-4 font-bold">
                     <SelectValue placeholder="Choisir un métier" />
                   </SelectTrigger>

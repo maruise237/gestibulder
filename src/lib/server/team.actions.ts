@@ -30,12 +30,13 @@ export async function inviteMember(
   if (authError) return { error: authError };
 
   const admin = createAdminClient();
+  if (!admin) return { error: "Configuration admin manquante" };
 
   // 1. Invite user via Supabase Auth
   const { data: inviteData, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
     data: {
       nom_complet: name,
-      enterprise_id,
+      entreprise_id,
       invited_role: role,
     },
   });
