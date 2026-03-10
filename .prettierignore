@@ -1,0 +1,9 @@
+node_modules
+.next
+build
+dist
+public
+.env*
+*.local
+package-lock.json
+*.md
