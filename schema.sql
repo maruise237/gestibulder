@@ -1,16 +1,13 @@
 /* 
-  GESTIBULDER - SCHEMA INITIAL
-  Exécutez ce script dans l'éditeur SQL de Supabase pour initialiser les tables.
-  REMARQUE : Ce script supprimera les tables existantes (DROP) pour repartir de zéro.
+  GESTIBULDER - SCHEMA INITIAL & MIGRATIONS
+  Ce script est conçu pour être exécuté plusieurs fois sans supprimer vos données.
+  Il crée les tables si elles n'existent pas et s'assure que les colonnes nécessaires sont présentes.
 */
 
--- 0. NETTOYAGE DES TABLES EXISTANTES (Pour éviter l'erreur relation already exists)
-DROP TABLE IF EXISTS depenses, affectations_equipements, equipements, mouvements_stock, materiaux, pointages, ouvriers, chantiers, profiles, entreprises CASCADE;
-
 -- 1. Table ENTREPRISES
-CREATE TABLE entreprises (
-    id UUID PRIMARY KEY, -- Lié au user admin (auth.users.id)
-    admin_id UUID NOT NULL REFERENCES auth.users(id), -- Add this to match current DB
+CREATE TABLE IF NOT EXISTS entreprises (
+    id UUID PRIMARY KEY,
+    admin_id UUID NOT NULL REFERENCES auth.users(id),
     nom TEXT NOT NULL,
     pays TEXT NOT NULL DEFAULT 'Algérie',
     devise TEXT DEFAULT 'DZD',
@@ -18,8 +15,8 @@ CREATE TABLE entreprises (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 2. Table PROFILES (Utilisateurs de l'entreprise)
-CREATE TABLE profiles (
+-- 2. Table PROFILES
+CREATE TABLE IF NOT EXISTS profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE,
     role TEXT CHECK (role IN ('admin', 'chef_projet', 'superviseur')) NOT NULL DEFAULT 'admin',
@@ -31,7 +28,7 @@ CREATE TABLE profiles (
 );
 
 -- 3. Table CHANTIERS
-CREATE TABLE chantiers (
+CREATE TABLE IF NOT EXISTS chantiers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     nom TEXT NOT NULL,
@@ -46,7 +43,7 @@ CREATE TABLE chantiers (
 );
 
 -- 4. Table OUVRIERS
-CREATE TABLE ouvriers (
+CREATE TABLE IF NOT EXISTS ouvriers (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     chantier_ids UUID[] DEFAULT '{}',
@@ -64,7 +61,7 @@ CREATE TABLE ouvriers (
 );
 
 -- 5. Table POINTAGES
-CREATE TABLE pointages (
+CREATE TABLE IF NOT EXISTS pointages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     chantier_id UUID REFERENCES chantiers(id) ON DELETE CASCADE NOT NULL,
@@ -78,11 +75,11 @@ CREATE TABLE pointages (
     saisi_par UUID REFERENCES profiles(id),
     salaire_jour NUMERIC(10,2),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    UNIQUE(ouvrier_id, date) -- Un ouvrier ne peut être pointé qu'une fois par jour
+    UNIQUE(ouvrier_id, date)
 );
 
 -- 6. Table MATERIAUX
-CREATE TABLE materiaux (
+CREATE TABLE IF NOT EXISTS materiaux (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     chantier_id UUID REFERENCES chantiers(id) ON DELETE CASCADE NOT NULL,
@@ -93,7 +90,7 @@ CREATE TABLE materiaux (
 );
 
 -- 7. Table MOUVEMENTS_STOCK
-CREATE TABLE mouvements_stock (
+CREATE TABLE IF NOT EXISTS mouvements_stock (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     chantier_id UUID REFERENCES chantiers(id) ON DELETE CASCADE NOT NULL,
@@ -109,7 +106,7 @@ CREATE TABLE mouvements_stock (
 );
 
 -- 8. Table EQUIPEMENTS
-CREATE TABLE equipements (
+CREATE TABLE IF NOT EXISTS equipements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     nom TEXT NOT NULL,
@@ -120,7 +117,7 @@ CREATE TABLE equipements (
 );
 
 -- 9. Table AFFECTATIONS_EQUIPEMENTS
-CREATE TABLE affectations_equipements (
+CREATE TABLE IF NOT EXISTS affectations_equipements (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     equipement_id UUID REFERENCES equipements(id) ON DELETE CASCADE NOT NULL,
@@ -132,11 +129,12 @@ CREATE TABLE affectations_equipements (
 );
 
 -- 10. Table DEPENSES
-CREATE TABLE depenses (
+CREATE TABLE IF NOT EXISTS depenses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entreprise_id UUID REFERENCES entreprises(id) ON DELETE CASCADE NOT NULL,
     chantier_id UUID REFERENCES chantiers(id) ON DELETE CASCADE NOT NULL,
-    poste TEXT NOT NULL,
+    libelle TEXT NOT NULL,
+    categorie TEXT NOT NULL,
     montant NUMERIC(15,2) NOT NULL,
     description TEXT,
     date DATE NOT NULL,
@@ -144,7 +142,32 @@ CREATE TABLE depenses (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- ==============================================================================
+-- MIGRATIONS (Ajout de colonnes manquantes pour les bases de données existantes)
+-- ==============================================================================
+
+-- Migration Table DEPENSES
+DO $$ 
+BEGIN 
+    -- Renommer 'poste' en 'libelle' si nécessaire
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='depenses' AND column_name='poste') THEN
+        ALTER TABLE depenses RENAME COLUMN poste TO libelle;
+    END IF;
+
+    -- Ajouter 'libelle' si ni 'poste' ni 'libelle' n'existent (sécurité)
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='depenses' AND column_name='libelle') THEN
+        ALTER TABLE depenses ADD COLUMN libelle TEXT NOT NULL DEFAULT 'Sans libellé';
+    END IF;
+
+    -- Ajouter 'categorie' si elle manque
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='depenses' AND column_name='categorie') THEN
+        ALTER TABLE depenses ADD COLUMN categorie TEXT NOT NULL DEFAULT 'divers';
+    END IF;
+END $$;
+
+-- ==============================================================================
 -- ACTIVATION RLS (Row Level Security)
+-- ==============================================================================
 ALTER TABLE entreprises ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chantiers ENABLE ROW LEVEL SECURITY;
@@ -156,18 +179,35 @@ ALTER TABLE equipements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE affectations_equipements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE depenses ENABLE ROW LEVEL SECURITY;
 
--- POLITIQUES RLS DE BASE (Isolent les données par entreprise)
--- L'accès est donné si l'utilisateur fait partie de l'entreprise via son entreprise_id dans JWT ou s'il requiert via API
--- Pour un MVP simple on permet tout accès aux authentifiés (à affiner plus tard)
+-- POLITIQUES RLS (On utilise OR REPLACE pour pouvoir ré-exécuter le script)
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON entreprises;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON entreprises FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON profiles;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON profiles FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON chantiers;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON chantiers FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON ouvriers;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON ouvriers FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON pointages;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON pointages FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON materiaux;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON materiaux FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON mouvements_stock;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON mouvements_stock FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON equipements;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON equipements FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON affectations_equipements;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON affectations_equipements FOR ALL USING (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Permettre tout accès aux authentifiés" ON depenses;
 CREATE POLICY "Permettre tout accès aux authentifiés" ON depenses FOR ALL USING (auth.role() = 'authenticated');
 
 -- Triggers pour création automatique entreprise/profil lors de l'inscription
@@ -176,32 +216,29 @@ RETURNS trigger AS $$
 DECLARE
   target_ent_id UUID;
 BEGIN
-  -- 1. Vérifier si c'est une invitation (enterprise_id présent dans meta_data)
   IF (new.raw_user_meta_data->>'enterprise_id') IS NOT NULL THEN
     target_ent_id := (new.raw_user_meta_data->>'enterprise_id')::UUID;
   ELSE
-    -- Créer une nouvelle entreprise pour les inscriptions standards
-    INSERT INTO public.entreprises (id, nom)
-    VALUES (new.id, COALESCE(new.raw_user_meta_data->>'enterprise_name', 'Ma Nouvelle Entreprise'))
-    RETURNING id INTO target_ent_id;
+    INSERT INTO public.entreprises (id, admin_id, nom)
+    VALUES (new.id, new.id, COALESCE(new.raw_user_meta_data->>'enterprise_name', 'Ma Nouvelle Entreprise'))
+    ON CONFLICT (id) DO NOTHING;
+    target_ent_id := new.id;
   END IF;
 
-  -- 2. Créer le profil
   INSERT INTO public.profiles (id, entreprise_id, nom_complet, role)
   VALUES (
     new.id, 
     target_ent_id, 
     COALESCE(new.raw_user_meta_data->>'nom_complet', 'Utilisateur'), 
     COALESCE(new.raw_user_meta_data->>'invited_role', 'admin')
-  );
+  )
+  ON CONFLICT (id) DO NOTHING;
 
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Supprimer le trigger s'il existe déjà pour éviter les erreurs
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
