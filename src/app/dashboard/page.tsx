@@ -37,22 +37,22 @@ export default function DashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-data'],
     queryFn: async () => {
-      const data = await getDashboardData();
-      if (data.error) throw new Error(data.error);
+      const result = await getDashboardData();
+      if (result.error) throw new Error(result.error);
 
       const stats = {
-        projectsCount: data.projects?.length || 0,
-        workersCount: data.workersCount || 0,
-        activeWorkers: data.workers?.filter((w: any) => w.actif).length || 0,
+        projectsCount: result.projects?.length || 0,
+        workersCount: result.workersCount || 0,
+        activeWorkers: result.workers?.filter((w: any) => w.actif).length || 0,
         totalExpenses:
-          data.expenses?.reduce((sum: number, item: any) => sum + item.montant, 0) || 0,
+          result.expenses?.reduce((sum: number, item: any) => sum + item.montant, 0) || 0,
         activeProjects:
-          data.projects?.filter((proj: any) => proj.statut === 'en_cours').length || 0,
-        stockAlerts: data.alerts?.length || 0,
+          result.projects?.filter((proj: any) => proj.statut === 'en_cours').length || 0,
+        stockAlerts: result.alerts?.length || 0,
       };
 
       const soon =
-        data.projects
+        result.projects
           ?.filter(
             (proj: any) =>
               proj.statut !== 'termine' &&
@@ -68,8 +68,8 @@ export default function DashboardPage() {
       return {
         stats,
         recentProjects: soon,
-        recentMovements: data.movements || [],
-        expensesByCategory: data.expenses?.reduce((acc: any, exp: any) => {
+        recentMovements: result.movements || [],
+        expensesByCategory: result.expenses?.reduce((acc: any, exp: any) => {
           acc[exp.categorie] = (acc[exp.categorie] || 0) + exp.montant;
           return acc;
         }, {}),
@@ -81,6 +81,7 @@ export default function DashboardPage() {
   const stats = data?.stats || {
     projectsCount: 0,
     workersCount: 0,
+    activeWorkers: 0,
     totalExpenses: 0,
     activeProjects: 0,
     stockAlerts: 0,
