@@ -33,7 +33,7 @@ export async function getDashboardData() {
         .from('ouvriers')
         .select('*', { count: 'exact', head: false })
         .eq('entreprise_id', entreprise_id),
-      supabase.from('depenses').select('montant').eq('entreprise_id', entreprise_id),
+      supabase.from('depenses').select('montant, categorie').eq('entreprise_id', entreprise_id),
       supabase.from('materiaux').select('id, nom, seuil_alerte').eq('entreprise_id', entreprise_id),
       supabase
         .from('mouvements_stock')
