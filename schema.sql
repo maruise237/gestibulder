@@ -1,5 +1,7 @@
--- Supprimer les tables si elles existent déjà pour un script propre (optionnel)
--- DROP TABLE IF EXISTS depenses, affectations_equipements, equipements, mouvements_stock, materiaux, pointages, ouvriers, chantiers, profiles, entreprises CASCADE;
+/* 
+  GESTIBULDER - SCHEMA INITIAL
+  Exécutez ce script dans l'éditeur SQL de Supabase pour initialiser les tables.
+*/
 
 -- 1. Table ENTREPRISES
 CREATE TABLE entreprises (
