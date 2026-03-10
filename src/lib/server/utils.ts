@@ -101,5 +101,6 @@ export const getAuthenticatedEnterpriseId = cache(async () => {
     profile = newProfile;
   }
 
+  if (!profile) return { error: "Profil introuvable après réparation" };
   return { entreprise_id: profile.entreprise_id };
 });
