@@ -77,8 +77,16 @@ export default function PointagePage() {
     if (result.error) {
       alert(result.error);
     } else {
-      const att = await getAttendance(selectedChantier, selectedDate);
-      if (att.logs) setLogs(att.logs);
+      // Direct update of local state for immediate feedback
+      setLogs((prev) => {
+        const existingIndex = prev.findIndex((l) => l.ouvrier_id === worker.id);
+        if (existingIndex > -1) {
+          const newLogs = [...prev];
+          newLogs[existingIndex] = result.log;
+          return newLogs;
+        }
+        return [...prev, result.log];
+      });
     }
     setIsSubmitting(null);
   };

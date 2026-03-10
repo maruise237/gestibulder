@@ -52,20 +52,18 @@ export async function logAttendance(data: NewAttendance) {
     }
   }
 
-  // 3. Upsert (to handle updates on the same day)
+  // 3. Upsert with explicit onConflict for Supabase
   const { data: log, error } = await supabase
     .from('pointages')
     .upsert(
-      [
-        {
-          ...data,
-          entreprise_id,
-          saisi_par: user?.id,
-          salaire_jour,
-        },
-      ],
       {
-        onConflict: 'ouvrier_id, date',
+        ...data,
+        entreprise_id,
+        saisi_par: user?.id,
+        salaire_jour,
+      },
+      {
+        onConflict: 'ouvrier_id,date',
       }
     )
     .select()
