@@ -37,22 +37,22 @@ export default function DashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['dashboard-data'],
     queryFn: async () => {
-      const result = await getDashboardData();
-      if (result.error) throw new Error(result.error);
+      const data = await getDashboardData();
+      if (data.error) throw new Error(data.error);
 
       const stats = {
-        projectsCount: result.projects?.length || 0,
-        workersCount: result.workersCount || 0,
-        activeWorkers: result.workers?.filter((w: any) => w.actif).length || 0,
+        projectsCount: data.projects?.length || 0,
+        workersCount: data.workersCount || 0,
+        activeWorkers: data.workers?.filter((w: any) => w.actif).length || 0,
         totalExpenses:
-          result.expenses?.reduce((sum: number, item: any) => sum + item.montant, 0) || 0,
+          data.expenses?.reduce((sum: number, item: any) => sum + item.montant, 0) || 0,
         activeProjects:
-          result.projects?.filter((proj: any) => proj.statut === 'en_cours').length || 0,
-        stockAlerts: result.alerts?.length || 0,
+          data.projects?.filter((proj: any) => proj.statut === 'en_cours').length || 0,
+        stockAlerts: data.alerts?.length || 0,
       };
 
       const soon =
-        result.projects
+        data.projects
           ?.filter(
             (proj: any) =>
               proj.statut !== 'termine' &&
@@ -68,8 +68,8 @@ export default function DashboardPage() {
       return {
         stats,
         recentProjects: soon,
-        recentMovements: result.movements || [],
-        expensesByCategory: result.expenses?.reduce((acc: any, exp: any) => {
+        recentMovements: data.movements || [],
+        expensesByCategory: data.expenses?.reduce((acc: any, exp: any) => {
           acc[exp.categorie] = (acc[exp.categorie] || 0) + exp.montant;
           return acc;
         }, {}),
