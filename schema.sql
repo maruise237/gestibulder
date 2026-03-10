@@ -1,7 +1,11 @@
 /* 
   GESTIBULDER - SCHEMA INITIAL
   Exécutez ce script dans l'éditeur SQL de Supabase pour initialiser les tables.
+  REMARQUE : Ce script supprimera les tables existantes (DROP) pour repartir de zéro.
 */
+
+-- 0. NETTOYAGE DES TABLES EXISTANTES (Pour éviter l'erreur relation already exists)
+DROP TABLE IF EXISTS depenses, affectations_equipements, equipements, mouvements_stock, materiaux, pointages, ouvriers, chantiers, profiles, entreprises CASCADE;
 
 -- 1. Table ENTREPRISES
 CREATE TABLE entreprises (
