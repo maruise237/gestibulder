@@ -5,6 +5,10 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AuthFormWrapper } from '@/components/auth/auth-form-wrapper';
 import { login } from '@/lib/server/auth.actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -34,65 +38,51 @@ export default function LoginPage() {
 
   return (
     <AuthFormWrapper title="Bon retour !" subtitle="Connectez-vous pour gérer vos chantiers.">
-      <form onSubmit={handleSubmit} className="text-foreground space-y-5">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium" htmlFor="email">
-            Email professionnel
-          </label>
-          <input
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="space-y-2">
+          <Label htmlFor="email">Email professionnel</Label>
+          <Input
             id="email"
             name="email"
             type="email"
             required
-            className="bg-background border-border focus:ring-primary/20 focus:border-primary w-full rounded-lg border px-4 py-2.5 transition-all outline-none focus:ring-2"
             placeholder="jean.dupont@entreprise.com"
           />
         </div>
 
-        <div>
-          <div className="mb-1.5 flex items-center justify-between">
-            <label className="text-sm font-medium" htmlFor="password">
-              Mot de passe
-            </label>
-            <Link href="#" className="text-primary text-xs font-medium hover:underline">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Mot de passe</Label>
+            <Link href="#" className="text-xs text-primary hover:underline">
               Oublié ?
             </Link>
           </div>
-          <input
+          <Input
             id="password"
             name="password"
             type="password"
             required
-            className="bg-background border-border focus:ring-primary/20 focus:border-primary w-full rounded-lg border px-4 py-2.5 transition-all outline-none focus:ring-2"
             placeholder="••••••••"
           />
         </div>
 
         {error && (
-          <div className="bg-destructive/10 border-destructive/20 text-destructive rounded-lg border p-3 text-sm">
-            {error}
-          </div>
+          <p className="text-sm text-destructive">{error}</p>
         )}
 
-        <button
+        <Button
           type="submit"
+          className="w-full"
           disabled={loading}
-          className="bg-primary hover:bg-primary/90 text-primary-foreground flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
         >
-          {loading ? (
-            <>
-              <div className="border-primary-foreground/30 border-t-primary-foreground h-4 w-4 animate-spin rounded-full border-2" />
-              Connexion en cours...
-            </>
-          ) : (
-            'Se connecter'
-          )}
-        </button>
+          {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Se connecter
+        </Button>
 
-        <div className="mt-4 text-center text-sm">
-          Vous n'avez pas de compte ?{' '}
-          <Link href="/auth/signup" className="text-primary font-bold hover:underline">
-            S'inscrire gratuitement
+        <div className="text-center text-sm">
+          <span className="text-muted-foreground">Vous n'avez pas de compte ? </span>
+          <Link href="/auth/signup" className="text-primary font-medium hover:underline">
+            S'inscrire
           </Link>
         </div>
       </form>
