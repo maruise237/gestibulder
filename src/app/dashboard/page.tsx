@@ -30,23 +30,12 @@ const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-p
 });
 
 export default function DashboardPage() {
-  const { selectedProjectId: selectedChantier } = useApp();
   const { enterprise } = useApp();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['dashboard-data', selectedChantier],
+    queryKey: ['dashboard-data'],
     queryFn: async () => {
       const data = await getDashboardData();
-
-      // Filter data if a project is selected
-      if (selectedChantier) {
-        data.projects = data.projects.filter((p: any) => p.id === selectedChantier);
-        data.expenses = data.expenses.filter((e: any) => e.chantier_id === selectedChantier);
-        data.movements = data.movements.filter((m: any) => m.chantier_id === selectedChantier);
-        // Workers might need more complex filtering if they are assigned to chantiers
-        data.workers = data.workers.filter((w: any) => w.chantier_ids?.includes(selectedChantier));
-        data.workersCount = data.workers.length;
-      }
       if (data.error) throw new Error(data.error);
 
       const stats = {

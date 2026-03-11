@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
+import { NewExpense } from "@/types/expense";
 import { getWorkers } from '@/lib/server/worker.actions';
 import { Loader2, Plus, Wallet, HardHat, ReceiptText, UserPlus, Check } from 'lucide-react';
 import { Project } from '@/types/project';
@@ -34,6 +35,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const CATEGORIES = [
   { label: 'Matériaux', value: 'materiaux' },
@@ -59,23 +62,47 @@ export function CreateExpenseModal({
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
 
   const queryClient = useQueryClient();
+  const [selectedChantier, setSelectedChantier] = useState<string>("");
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
+  const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
+
+  const mutation = useMutation({
+    mutationFn: (data: NewExpense) => addExpense(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      onExpenseCreated?.();
+      setIsOpen(false);
+      resetForm();
+    },
+    onError: (err: any) => {
+      setError(err.message);
+    },
+  });
+
+  const resetForm = () => {
+    setSelectedCategory('');
+    setSelectedChantier('');
+    setSelectedWorkerIds([]);
+    setError(null);
+  };
 
   const fetchWorkers = useCallback(async () => {
     if (!selectedChantier) return;
     setIsLoadingWorkers(true);
-    const result = await getWorkers(1, 1000);
-    if (result.workers) {
-      const filtered = (result.workers as Worker[]).filter(w => w.chantier_ids?.includes(selectedChantier));
+    const { workers: allWorkers } = await getWorkers(1, 1000);
+    if (allWorkers) {
+      const filtered = (allWorkers as Worker[]).filter(w => w.chantier_ids?.includes(selectedChantier));
       setWorkers(filtered);
     }
     setIsLoadingWorkers(false);
   }, [selectedChantier]);
 
   useEffect(() => {
-    if (selectedChantier && category === 'main_d_oeuvre') {
+    if (selectedChantier && selectedCategory === 'main_d_oeuvre') {
       fetchWorkers();
     }
-  }, [selectedChantier, category, fetchWorkers]);
+  }, [selectedChantier, selectedCategory, fetchWorkers]);
 
   const mutation = useMutation({
     mutationFn: (data: any) => addExpense(data),
@@ -95,23 +122,19 @@ export function CreateExpenseModal({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
 
-    const data = {
+    if (!selectedCategory) {
+      setError('Veuillez sélectionner une catégorie');
+      return;
+    }
+
+    const data: NewExpense = {
       libelle: formData.get('libelle') as string,
       montant: Number(formData.get('montant')),
       categorie: category as any,
       date: formData.get('date') as string,
-      chantier_id: selectedChantier,
-      worker_ids: category === 'main_d_oeuvre' ? selectedWorkerIds : [],
+      chantier_id: formData.get('chantier_id') as string,
+      entreprise_id: enterprise?.id || '',
     };
-
-    if (!data.categorie) {
-      setError('Veuillez sélectionner une catégorie');
-      return;
-    }
-    if (!data.chantier_id) {
-      setError('Veuillez sélectionner un chantier');
-      return;
-    }
 
     mutation.mutate(data);
   };
@@ -123,7 +146,10 @@ export function CreateExpenseModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      setIsOpen(open);
+      if (!open) resetForm();
+    }}>
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -143,22 +169,56 @@ export function CreateExpenseModal({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 p-6">
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="chantier_id">Chantier</Label>
-              <Select value={selectedChantier} onValueChange={(val) => val && setSelectedChantier(val)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un chantier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
+          <div className="grid gap-6">
+            <div className="space-y-2.5">
+              <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                <Wallet size={14} className="text-indigo-600" /> Catégorie
+              </Label>
+              <div className="bg-muted/30 grid grid-cols-2 gap-2 rounded-xl border p-1">
+                {CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.value}
+                    type="button"
+                    onClick={() => setSelectedCategory(cat.value)}
+                    className={cn(
+                      "h-10 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all active:scale-95",
+                      selectedCategory === cat.value
+                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"
+                        : "text-muted-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="chantier_id"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <HardHat size={14} className="text-indigo-600" /> Affectation Chantier
+              </Label>
+              <select
+                id="chantier_id"
+                name="chantier_id"
+                required
+                value={selectedChantier}
+                onChange={(e) => {
+                  setSelectedChantier(e.target.value);
+                  setSelectedWorkerIds([]);
+                }}
+                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
+              >
+                <option value="">Sélectionner un chantier</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nom}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
@@ -166,57 +226,78 @@ export function CreateExpenseModal({
               <Input id="libelle" name="libelle" required placeholder="Ex: Achat de ciment" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="montant">Montant ({enterprise?.devise || 'DA'})</Label>
-                <Input id="montant" name="montant" type="number" required placeholder="0" />
+                <Label htmlFor="montant" className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                  <Banknote size={14} className="text-indigo-600" /> Montant ({enterprise?.devise || "DA"})
+                </Label>
+                <Input
+                  id="montant"
+                  name="montant"
+                  type="number"
+                  required
+                  placeholder="0.00"
+                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="date">Date</Label>
-                <Input id="date" name="date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} />
+                <Label htmlFor="date" className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                  <Calendar size={14} className="text-indigo-600" /> Date
+                </Label>
+                <Input
+                  id="date"
+                  name="date"
+                  type="date"
+                  required
+                  defaultValue={new Date().toISOString().split("T")[0]}
+                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="categorie">Catégorie</Label>
-              <Select value={category} onValueChange={(val) => val && setCategory(val)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choisir une catégorie" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {category === 'main_d_oeuvre' && (
-              <div className="space-y-2">
-                <Label>Ouvriers concernés</Label>
+            {selectedCategory === "main_d_oeuvre" && (
+              <div className="space-y-2.5 animate-in fade-in slide-in-from-left-2 duration-300">
+                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                  <UserPlus size={14} className="text-indigo-600" /> Ouvrier(s)
+                </Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
-                      {selectedWorkerIds.length > 0 ? `${selectedWorkerIds.length} sélectionné(s)` : "Sélectionner"}
-                      <Check className={cn("h-4 w-4 opacity-50", selectedWorkerIds.length > 0 && "opacity-100")} />
+                    <Button
+                      variant="outline"
+                      type="button"
+                      disabled={!selectedChantier || isLoadingWorkers}
+                      className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 h-12 w-full justify-between rounded-xl px-4 font-bold text-left overflow-hidden"
+                    >
+                      <span className="truncate">
+                        {isLoadingWorkers ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : selectedWorkerIds.length > 0 ? (
+                          `${selectedWorkerIds.length} sélectionné(s)`
+                        ) : (
+                          "Sélectionner"
+                        )}
+                      </span>
+                      <Check className={cn("h-4 w-4 shrink-0 ml-2", selectedWorkerIds.length > 0 ? "text-indigo-600" : "text-zinc-300")} />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-[300px] p-0" align="start">
-                    <div className="max-h-[200px] overflow-y-auto p-2">
-                      {isLoadingWorkers ? (
-                        <div className="flex items-center justify-center p-4">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        </div>
-                      ) : workers.length === 0 ? (
-                        <p className="p-2 text-center text-xs text-muted-foreground">Aucun ouvrier trouvé pour ce chantier</p>
+                  <PopoverContent className="w-[200px] p-0 rounded-xl" align="start">
+                    <div className="max-h-[200px] overflow-y-auto p-2 space-y-1">
+                      {workers.length === 0 ? (
+                        <p className="p-2 text-[10px] font-bold text-muted-foreground uppercase text-center italic">
+                          Aucun ouvrier trouvé
+                        </p>
                       ) : (
                         workers.map((worker) => (
-                          <div key={worker.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded-md cursor-pointer" onClick={() => toggleWorker(worker.id)}>
-                            <Checkbox checked={selectedWorkerIds.includes(worker.id)} />
-                            <span className="text-sm">{worker.nom_complet}</span>
-                          </div>
+                          <label
+                            key={worker.id}
+                            className="flex items-center space-x-2 rounded-md p-2 hover:bg-zinc-100 transition-colors cursor-pointer"
+                          >
+                            <Checkbox
+                              checked={selectedWorkerIds.includes(worker.id)}
+                              onCheckedChange={() => toggleWorker(worker.id)}
+                            />
+                            <span className="text-xs font-bold uppercase truncate">{worker.nom_complet}</span>
+                          </label>
                         ))
                       )}
                     </div>
@@ -230,9 +311,29 @@ export function CreateExpenseModal({
             )}
           </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Annuler</Button>
-            <Button type="submit" isLoading={mutation.isPending}>Enregistrer</Button>
+          <DialogFooter className="p-6">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+              className="flex-1"
+            >
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              disabled={mutation.isPending}
+              className="flex-1"
+            >
+              {mutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enregistrement...
+                </>
+              ) : (
+                'Enregistrer'
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
