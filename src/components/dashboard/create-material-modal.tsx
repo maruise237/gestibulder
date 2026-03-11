@@ -27,11 +27,11 @@ const COMMON_MATERIALS = [
 ];
 
 export function CreateMaterialModal({
+  chantierId,
   onMaterialCreated,
-  chantierId
 }: {
+  chantierId: string;
   onMaterialCreated: () => void;
-  chantierId?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +44,7 @@ export function CreateMaterialModal({
 
     const formData = new FormData(e.currentTarget);
     const data: NewMaterial = {
+      chantier_id: chantierId,
       nom: formData.get('nom') as string,
       unite: formData.get('unite') as string,
       seuil_alerte: Number(formData.get('seuil_alerte')),
@@ -89,17 +90,12 @@ export function CreateMaterialModal({
               <div className="space-y-2">
                 <Label htmlFor="nom">Désignation du Matériau</Label>
                 <Input
-                  id="nom"
-                  name="nom"
+                  id="unite"
+                  name="unite"
                   required
                   list="common-materials"
                   placeholder="Ex: Ciment Portland"
                 />
-                <datalist id="common-materials">
-                  {COMMON_MATERIALS.map((m) => (
-                    <option key={m.name} value={m.name} />
-                  ))}
-                </datalist>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

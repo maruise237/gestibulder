@@ -89,12 +89,3 @@ export async function getBudgetData() {
     error: projectsRes.error?.message || expensesRes.error?.message || null,
   };
 }
-
-export async function exportDashboardData(categories: string[], format: 'xlsx' | 'csv') {
-  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
-  if (authError) throw new Error(authError);
-
-  // Simulation pour le moment, à implémenter avec une vraie logique d'export
-  console.log(`Exporting ${categories.join(', ')} in ${format} for enterprise ${entreprise_id}`);
-  return { success: true };
-}

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { Loader2, Plus, Wallet } from 'lucide-react';
-import { NewExpense } from '@/types/expense';
+import { getWorkersByProject } from '@/lib/server/worker.actions';
+import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, UserPlus, Check } from 'lucide-react';
 import { Project } from '@/types/project';
+import { Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -113,6 +114,12 @@ export function CreateExpenseModal({
     mutation.mutate(data);
   };
 
+  const toggleWorker = (id: string) => {
+    setSelectedWorkerIds(prev =>
+      prev.includes(id) ? prev.filter(wId => wId !== id) : [...prev, id]
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
@@ -140,8 +147,9 @@ export function CreateExpenseModal({
               <div className="space-y-2">
                 <Label htmlFor="libelle">Libellé de la dépense</Label>
                 <Input
-                  id="libelle"
-                  name="libelle"
+                  id="montant"
+                  name="montant"
+                  type="number"
                   required
                   placeholder="Ex: Achat de ciment en gros"
                 />
@@ -171,6 +179,7 @@ export function CreateExpenseModal({
                   />
                 </div>
               </div>
+            </div>
 
               <div className="space-y-2">
                 <Label htmlFor="chantier_id">Chantier concerné</Label>
@@ -231,7 +240,7 @@ export function CreateExpenseModal({
               disabled={mutation.isPending}
               className="flex-1"
             >
-              {mutation.isPending ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Enregistrement...

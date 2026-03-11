@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { createProject } from '@/lib/server/project.actions';
-import { Loader2, Plus, HardHat } from 'lucide-react';
+import { Loader2, Plus, HardHat, MapPin, Target, Calendar, Calculator } from 'lucide-react';
 import { ProjectStatus } from '@/types/project';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,8 +27,13 @@ export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: ()
   const mutation = useMutation({
     mutationFn: createProject,
     onMutate: async (newProject) => {
+      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ['projects'] });
+
+      // Snapshot the previous value
       const previousProjects = queryClient.getQueryData(['projects']);
+
+      // Optimistically update to the new value
       queryClient.setQueryData(['projects'], (old: any[] | undefined) => [
         ...(old || []),
         {
@@ -39,6 +44,7 @@ export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: ()
           statut: 'preparation',
         },
       ]);
+
       return { previousProjects };
     },
     onError: (err, newProject, context) => {
@@ -78,98 +84,131 @@ export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: ()
           Nouveau Projet
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader className="bg-muted/30 border-b p-6">
+      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
+        <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground rounded-md p-2">
-              <HardHat size={20} />
+            <div className="bg-primary text-primary-foreground shadow-primary/20 rounded-2xl p-3 shadow-lg">
+              <HardHat size={24} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <DialogTitle>Lancer un Projet</DialogTitle>
-              <DialogDescription>Nouveau chantier de construction</DialogDescription>
+              <DialogTitle className="text-2xl font-black tracking-tight">
+                Lancer un Projet
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground/70 text-xs font-bold tracking-widest uppercase">
+                Nouveau chantier de construction
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nom">Identité du Projet</Label>
+        <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
+          <div className="grid gap-6">
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="nom"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <Target size={14} className="text-primary" /> Identité du Projet
+              </Label>
+              <Input
+                id="nom"
+                name="nom"
+                required
+                placeholder="Ex: Résidence Skyline"
+                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+              />
+            </div>
+
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="adresse"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <MapPin size={14} className="text-primary" /> Localisation
+              </Label>
+              <Input
+                id="adresse"
+                name="adresse"
+                required
+                placeholder="Adresse complète du chantier"
+                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="budget_total"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                >
+                  <Calculator size={14} className="text-primary" /> Budget ({enterprise?.devise || 'DZD'})
+                </Label>
                 <Input
-                  id="nom"
-                  name="nom"
+                  id="budget_total"
+                  name="budget_total"
+                  type="number"
+                  min="0"
                   required
-                  placeholder="Ex: Résidence Skyline"
+                  placeholder="0.00"
+                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="adresse">Localisation</Label>
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="date_debut"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                >
+                  <Calendar size={14} className="text-primary" /> Date de début
+                </Label>
                 <Input
-                  id="adresse"
-                  name="adresse"
-                  required
-                  placeholder="Adresse complète du chantier"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="budget_total">
-                    Budget ({enterprise?.devise || 'DZD'})
-                  </Label>
-                  <Input
-                    id="budget_total"
-                    name="budget_total"
-                    type="number"
-                    min="0"
-                    required
-                    placeholder="0.00"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="date_debut">Date de début</Label>
-                  <Input
-                    id="date_debut"
-                    name="date_debut"
-                    type="date"
-                    required
-                    defaultValue={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="date_fin_prevue">Fin prévue</Label>
-                <Input
-                  id="date_fin_prevue"
-                  name="date_fin_prevue"
+                  id="date_debut"
+                  name="date_debut"
                   type="date"
+                  required
+                  defaultValue={new Date().toISOString().split('T')[0]}
+                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
                 />
               </div>
             </div>
 
-            {mutation.isError && (
-              <div className="bg-destructive/10 border-destructive/20 mt-4 flex items-center gap-3 rounded-md border p-4 text-destructive text-xs">
-                {mutation.error instanceof Error ? mutation.error.message : 'Une erreur est survenue'}
-              </div>
-            )}
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="date_fin_prevue"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <Calendar size={14} className="text-primary" /> Fin prévue
+              </Label>
+              <Input
+                id="date_fin_prevue"
+                name="date_fin_prevue"
+                type="date"
+                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+              />
+            </div>
           </div>
 
-          <DialogFooter className="p-6">
+          {mutation.isError && (
+            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
+              <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
+              <p className="text-destructive text-xs font-black tracking-widest uppercase">
+                {mutation.error instanceof Error ? mutation.error.message : 'Une erreur est survenue'}
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="gap-3 pt-4 sm:gap-0">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="flex-1"
+              className="border-muted hover:bg-muted/50 h-12 flex-1 rounded-xl font-bold"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={mutation.isPending}
-              className="flex-1"
+              className="shadow-primary/20 h-12 flex-1 rounded-xl font-bold shadow-lg"
             >
               {mutation.isPending ? (
                 <>

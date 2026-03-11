@@ -37,6 +37,7 @@ import {
 
 export default function TeamPage() {
   const [members, setMembers] = useState<any[]>([]);
+  const hasMembers = members.length > 0;
   const [isLoading, setIsLoading] = useState(true);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

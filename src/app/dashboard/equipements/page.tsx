@@ -22,6 +22,7 @@ export default function EquipementsPage() {
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const hasEquipments = equipments.length > 0;
 
   const fetchEquipments = async () => {
     setIsLoading(true);
@@ -85,7 +86,7 @@ export default function EquipementsPage() {
             Gestion du parc matériel et déploiements.
           </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className={cn("flex items-center gap-3", !hasEquipments && "hidden")}>
           <div className="group relative">
             <Search
               className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
@@ -113,11 +114,13 @@ export default function EquipementsPage() {
           <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground/50 shadow-sm">
             <Truck size={32} strokeWidth={1.5} />
           </div>
-          <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
-            Parc vide
+          <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
+            Aucun équipement trouvé
           </h2>
-          <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-            Enregistrez vos premiers engins ou outils.
+          <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
+            {searchQuery && hasEquipments
+              ? 'Aucun équipement ne correspond à votre recherche.'
+              : 'Votre parc est vide. Enregistrez vos premiers engins et outils pour suivre leur déploiement sur les chantiers.'}
           </p>
           <CreateEquipmentModal onEquipmentCreated={fetchEquipments} />
         </Card>
