@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useApp } from '@/lib/context/app-context';
 import { getProjects } from '@/lib/server/project.actions';
 import { getWorkers } from '@/lib/server/worker.actions';
 import { getAttendance, logAttendance, deleteAttendance } from '@/lib/server/attendance.actions';
@@ -27,8 +28,8 @@ import {
 } from '@/components/ui/select';
 
 export default function PointagePage() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [selectedChantier, setSelectedChantier] = useState('');
+
+  const { selectedProjectId: selectedChantier } = useApp();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [workers, setWorkers] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
@@ -37,13 +38,7 @@ export default function PointagePage() {
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const [pRes, wRes] = await Promise.all([
-      getProjects(),
-      getWorkers(1, 1000)
-    ]);
-
-    if (pRes.projects) setProjects(pRes.projects);
-    if (pRes.projects?.length && !selectedChantier) setSelectedChantier(pRes.projects[0].id);
+    const wRes = await getWorkers(1, 1000);
 
     if (selectedChantier) {
       const filteredWorkers = (wRes.workers || []).filter(w => w.actif);
@@ -82,6 +77,26 @@ export default function PointagePage() {
 
   const getLogForWorker = (workerId: string) => logs.find(l => l.ouvrier_id === workerId);
 
+  if (!selectedChantier) {
+    return (
+      <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Pointages</h1>
+            <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">Registre quotidien des effectifs.</p>
+          </div>
+        </div>
+        <Card className="flex flex-col items-center justify-center p-12 text-center border-dashed">
+          <HardHat size={48} className="text-muted-foreground/20 mb-4" />
+          <h3 className="text-size-lg font-semibold text-foreground mb-1">Aucun chantier sélectionné</h3>
+          <p className="text-xs font-medium text-muted-foreground">
+            Veuillez sélectionner un chantier en haut de la page pour gérer les pointages.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       {/* Header */}
@@ -97,27 +112,11 @@ export default function PointagePage() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="h-9 w-full sm:w-auto"
           />
-          <Select value={selectedChantier} onValueChange={(val) => val && setSelectedChantier(val)}>
-            <SelectTrigger className="h-9 w-full sm:w-64">
-              <SelectValue placeholder="Choisir un chantier" />
-            </SelectTrigger>
-            <SelectContent>
-              {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>{p.nom}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
         </div>
       </div>
 
-      {!selectedChantier ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-            <HardHat size={32} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
-        </Card>
-      ) : isLoading && workers.length === 0 ? (
+      {isLoading && workers.length === 0 ? (
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full rounded-md" />
@@ -128,6 +127,7 @@ export default function PointagePage() {
           {workers.map((worker) => {
             const log = getLogForWorker(worker.id);
             const isPending = isSubmitting === worker.id;
+
 
             return (
               <Card key={worker.id} className={cn(
