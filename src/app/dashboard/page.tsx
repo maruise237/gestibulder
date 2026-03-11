@@ -17,6 +17,7 @@ import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { TruncatedText } from '@/components/ui/truncated-text';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
@@ -297,7 +298,9 @@ export default function DashboardPage() {
                     </div>
                     <div>
                       <div className="text-size-base leading-none font-semibold text-foreground transition-colors group-hover:text-primary">
+                        <TruncatedText>
                         {mov.materiaux?.nom}
+                        </TruncatedText>
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                         <span
@@ -311,7 +314,7 @@ export default function DashboardPage() {
                           {mov.type_mouvement === 'entree' ? '+' : '-'}
                           {mov.quantite} {mov.materiaux?.unite}
                         </span>
-                        • {mov.chantiers?.nom}
+                        • <TruncatedText className="inline-block align-middle max-w-[150px]">{mov.chantiers?.nom}</TruncatedText>
                       </div>
                     </div>
                   </div>
@@ -420,7 +423,9 @@ export default function DashboardPage() {
                     </span>
                   </div>
                   <p className="text-size-lg leading-tight font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                    <TruncatedText>
                     {proj.nom}
+                    </TruncatedText>
                   </p>
                   <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div className="h-full w-2/3 rounded-full bg-primary transition-all group-hover:shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
