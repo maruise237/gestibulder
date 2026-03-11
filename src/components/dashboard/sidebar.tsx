@@ -14,7 +14,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Target
+  Target,
+  Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { logout } from '@/lib/server/auth.actions';
@@ -24,13 +25,14 @@ import { getWorkers } from '@/lib/server/worker.actions';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Chantiers', href: '/dashboard/chantiers', icon: HardHat },
   { name: 'Ouvriers', href: '/dashboard/ouvriers', icon: Users },
-  { name: 'Pointages', href: '/dashboard/pointage', icon: Calendar },
-  { name: 'Finances', href: '/dashboard/budget', icon: Wallet },
   { name: 'Stocks', href: '/dashboard/stocks', icon: Package },
   { name: 'Équipements', href: '/dashboard/equipements', icon: Truck },
+  { name: 'Équipe', href: '/dashboard/team', icon: Shield },
+  { name: 'Pointage', href: '/dashboard/pointage', icon: Calendar },
+  { name: 'Finances', href: '/dashboard/budget', icon: Wallet },
 ];
 
 export const Sidebar = memo(({
@@ -133,7 +135,7 @@ export const Sidebar = memo(({
           <span>Paramètres</span>
         </Link>
         <button
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium text-destructive transition-all duration-200 hover:bg-destructive/5 active:scale-95"
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium text-destructive transition-all duration-200 hover:border-destructive/10 hover:bg-destructive/5 active:scale-95"
           onClick={handleLogout}
         >
           <LogOut size={18} />
