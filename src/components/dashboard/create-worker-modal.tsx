@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/lib/context/app-context';
 
 const METIERS = [
   { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
@@ -58,7 +59,6 @@ export function CreateWorkerModal({
   onWorkerCreated,
   worker,
   mode = 'create',
-  trigger,
   children,
 }: CreateWorkerModalProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -99,7 +99,7 @@ export function CreateWorkerModal({
       salaire_mensuel: paymentType === 'mensuel' ? Number(formData.get('taux')) : undefined,
     };
 
-    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data);
+    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data as NewWorker);
 
     if (result.error) {
       setError(result.error);
@@ -140,7 +140,6 @@ export function CreateWorkerModal({
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Section Identité */}
             <div className="space-y-6">
               <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 <ShieldCheck size={14} className="text-primary" /> Détails Personnels
@@ -184,7 +183,6 @@ export function CreateWorkerModal({
               </div>
             </div>
 
-            {/* Section Métier */}
             <div className="space-y-6">
               <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 <Target size={14} className="text-primary" /> Profil Professionnel
@@ -244,7 +242,6 @@ export function CreateWorkerModal({
             </div>
           </div>
 
-          {/* Section Paiement */}
           <div className="space-y-6 border-t pt-8">
             <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
               <Banknote size={14} className="text-primary" /> Modèle de Rémunération

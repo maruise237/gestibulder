@@ -36,11 +36,11 @@ export default function ChantiersPage() {
       if (result.error) throw new Error(result.error);
       return result.projects || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const filteredProjects = projects.filter(
-    (p) =>
+    (p: any) =>
       p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.adresse?.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -73,7 +73,6 @@ export default function ChantiersPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      {/* Page Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Chantiers</h1>
@@ -135,14 +134,13 @@ export default function ChantiersPage() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredProjects.map((project) => (
+          {filteredProjects.map((project: any) => (
             <Card
               key={project.id}
               hoverable
               className="group flex h-full flex-col overflow-hidden border-border p-0"
               padding="none"
             >
-              {/* Card Header with Status */}
               <div className="border-b border-border bg-muted/30 p-4 sm:p-6">
                 <div className="mb-4 flex items-start justify-between">
                   <div
@@ -162,7 +160,6 @@ export default function ChantiersPage() {
                 </h3>
               </div>
 
-              {/* Card Body */}
               <div className="flex-1 space-y-4 p-4 sm:p-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2.5 text-muted-foreground">
@@ -183,7 +180,6 @@ export default function ChantiersPage() {
                   </div>
                 </div>
 
-                {/* Progress Section */}
                 <div className="space-y-2 pt-2">
                   <div className="flex items-end justify-between text-[9px] font-semibold tracking-widest uppercase text-muted-foreground">
                     <span>Avancement</span>
@@ -200,7 +196,6 @@ export default function ChantiersPage() {
                 </div>
               </div>
 
-              {/* Card Footer */}
               <div className="mt-auto p-4 pt-0 sm:p-6 sm:pt-0">
                 <Link href={`/dashboard/chantiers/${project.id}`} className="w-full">
                   <Button
