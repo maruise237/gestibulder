@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppProvider } from '@/lib/context/app-context';
-import { Tooltip } from '@/components/ui/tooltip';
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 
 export function Providers({

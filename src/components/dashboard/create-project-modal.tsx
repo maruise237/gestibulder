@@ -19,9 +19,11 @@ import { Label } from '@/components/ui/label';
 import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function CreateProjectModal({ onProjectCreated, trigger }: { onProjectCreated?: () => void; trigger?: React.ReactNode }) {
-  const { enterprise } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+export function CreateProjectModal({ onProjectCreated, trigger, open, onOpenChange }: { onProjectCreated?: () => void; trigger?: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) {
+  const { enterprise, setSelectedProjectId } = useApp();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -54,8 +56,9 @@ export function CreateProjectModal({ onProjectCreated, trigger }: { onProjectCre
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       setIsOpen(false);
+      if (res.project?.id) setSelectedProjectId(res.project.id);
       if (onProjectCreated) onProjectCreated();
     },
   });
@@ -78,12 +81,16 @@ export function CreateProjectModal({ onProjectCreated, trigger }: { onProjectCre
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="font-bold shadow-lg">
-          <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
-          <span className="hidden md:inline">Nouveau Projet</span>
-        </Button>
-      </DialogTrigger>
+      {trigger ? (
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      ) : trigger === null ? null : (
+        <DialogTrigger asChild>
+          <Button className="font-bold shadow-lg">
+            <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
+            <span className="hidden md:inline">Nouveau Projet</span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
         <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
           <div className="flex items-center gap-4">

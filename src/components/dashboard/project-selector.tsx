@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getProjects } from '@/lib/server/project.actions';
 import { useApp } from '@/lib/context/app-context';
@@ -20,6 +20,7 @@ import { CreateProjectModal } from './create-project-modal';
 
 export function ProjectSelector() {
   const { selectedProjectId, setSelectedProjectId } = useApp();
+  const [isAutoOpen, setIsAutoOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['projects'],
@@ -32,8 +33,24 @@ export function ProjectSelector() {
 
   const projects = data || [];
   const selectedProject = projects.find(p => p.id === selectedProjectId);
+  useEffect(() => {
+    if (!isLoading && projects.length === 0) {
+      setIsAutoOpen(true);
+    } else {
+      setIsAutoOpen(false);
+    }
+  }, [isLoading, projects.length]);
+
 
   return (
+    <>
+      <CreateProjectModal
+        open={isAutoOpen}
+        onOpenChange={setIsAutoOpen}
+        onProjectCreated={() => setIsAutoOpen(false)}
+        trigger={null}
+      />
+
     <div className="flex items-center gap-2">
       <Select
         value={selectedProjectId || 'all'}
@@ -117,5 +134,6 @@ export function ProjectSelector() {
         </SelectContent>
       </Select>
     </div>
+    </>
   );
 }
