@@ -51,6 +51,7 @@ export default function OuvriersPage() {
   const workers = data?.workers || [];
   const totalPages = data?.totalPages || 1;
 
+  const hasWorkers = workers.length > 0;
   const filteredWorkers = workers.filter(
     (w) =>
       w.nom_complet.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,7 +80,7 @@ export default function OuvriersPage() {
             Suivi et management de vos équipes sur le terrain.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className={cn("flex items-center gap-3", !hasWorkers && "hidden")}>
           <div className="group relative">
             <Search
               className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
@@ -109,12 +110,12 @@ export default function OuvriersPage() {
             <Users size={48} strokeWidth={1.5} />
           </div>
           <h2 className="mb-2 text-2xl font-semibold tracking-tight text-foreground">
-            Aucun membre d'équipe
+            Aucun ouvrier trouvé
           </h2>
           <p className="mx-auto mb-10 max-w-sm font-medium tracking-tight text-muted-foreground">
-            {searchQuery
-              ? "Nous n'avons trouvé aucun employé correspondant à votre recherche."
-              : 'Commencez par ajouter vos ouvriers qualifiés au système.'}
+            {searchQuery && hasWorkers
+              ? "Nous n'avons trouvé aucun ouvrier correspondant à votre recherche."
+              : 'Votre base de données est vide. Ajoutez vos premiers ouvriers pour commencer à gérer vos équipes.'}
           </p>
           <CreateWorkerModal onWorkerCreated={refetch} />
         </Card>

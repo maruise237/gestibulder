@@ -109,7 +109,7 @@ export default function StocksPage() {
             Suivi des consommations et gestion des approvisionnements.
           </p>
         </div>
-        {selectedChantier && (
+        {selectedChantier && materials.length > 0 && (
           <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={fetchData} />
         )}
       </div>
@@ -164,10 +164,10 @@ export default function StocksPage() {
             <Package size={48} strokeWidth={1.5} />
           </div>
           <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Aucun matériau répertorié
+            Aucun matériau trouvé
           </h2>
           <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
-            Commencez par ajouter les matériaux (Ciment, Sable, Acier) utilisés sur ce chantier.
+            Votre inventaire est vide pour ce chantier. Ajoutez vos premiers matériaux pour commencer le suivi des stocks.
           </p>
           <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={fetchData} />
         </Card>

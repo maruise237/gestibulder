@@ -54,6 +54,7 @@ export default function BudgetPage() {
 
   const projects = data?.projects || [];
   const expenses = data?.expenses || [];
+  const hasExpenses = expenses.length > 0;
 
   const filteredExpenses =
     selectedChantier === 'all'
@@ -83,7 +84,7 @@ export default function BudgetPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <ExportModal />
+          {hasExpenses && <ExportModal />}
           <CreateExpenseModal projects={projects} onExpenseCreated={refetch} />
         </div>
       </div>
@@ -251,7 +252,7 @@ export default function BudgetPage() {
               <Calculator size={40} className="text-zinc-950 opacity-10" />
             </div>
             <p className="text-lg font-black tracking-tight text-zinc-400 italic">
-              Aucune transaction enregistrée pour cette période.
+              Aucune dépense enregistrée. Ajoutez vos premières factures ou paiements pour suivre le budget.
             </p>
           </div>
         ) : (
