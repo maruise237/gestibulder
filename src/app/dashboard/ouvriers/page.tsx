@@ -28,7 +28,7 @@ import dynamic from 'next/dynamic';
 import { ExportModal } from '@/components/dashboard/export-modal';
 
 const CreateWorkerModal = dynamic(() => import('@/components/dashboard/create-worker-modal').then(mod => mod.CreateWorkerModal), {
-  loading: () => <Skeleton className="h-9 w-9 rounded-lg" />,
+  loading: () => <Skeleton className="h-9 w-9 rounded-md" />,
   ssr: false
 });
 
@@ -70,19 +70,19 @@ export default function OuvriersPage() {
   };
 
   return (
-    <div className="animate-in fade-in space-y-10 pb-20 duration-500">
+    <div className="animate-in fade-in space-y-fluid-lg pb-20 duration-500">
       {/* Header */}
-      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+      <div className="flex flex-col justify-between gap-fluid-md md:flex-row md:items-center">
         <div className="space-y-1.5">
-          <h1 className="text-4xl font-black tracking-tight text-zinc-950">Main d'œuvre</h1>
-          <p className="font-bold tracking-tight text-zinc-500 italic">
-            Gestion de vos équipes professionnelles et de leurs affectations.
+          <h1 className="text-size-3xl font-semibold tracking-tight text-foreground">Gestion des Ouvriers</h1>
+          <p className="font-medium tracking-tight text-muted-foreground italic">
+            Suivi et management de vos équipes sur le terrain.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="group relative">
             <Search
-              className="absolute top-1/2 left-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-600"
+              className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
               size={18}
             />
             <input
@@ -90,7 +90,7 @@ export default function OuvriersPage() {
               placeholder="Rechercher un ouvrier..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 w-full rounded-2xl border border-zinc-200 bg-white pr-6 pl-12 text-[11px] font-black tracking-widest uppercase transition-all outline-none placeholder:text-zinc-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 md:w-72"
+              className="h-9 w-full rounded-md border border-border bg-background pr-6 pl-12 text-[11px] font-semibold tracking-widest uppercase transition-all outline-none placeholder:text-muted-foreground/50 focus:border-primary focus:ring-4 focus:ring-indigo-600/10 md:w-72"
             />
           </div>
           <ExportModal />
@@ -99,19 +99,19 @@ export default function OuvriersPage() {
       </div>
 
       {isLoading && workers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 text-zinc-400">
+        <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
           <Loader2 className="mb-4 animate-spin" size={40} />
-          <p className="font-black tracking-tight">Accès aux dossiers du personnel...</p>
+          <p className="font-semibold tracking-tight">Accès aux dossiers du personnel...</p>
         </div>
       ) : !isLoading && filteredWorkers.length === 0 ? (
-        <Card className="border-2 border-dashed border-zinc-100 bg-zinc-50/30 py-24 text-center">
-          <div className="mb-6 inline-flex rounded-3xl bg-white p-6 text-zinc-300 shadow-sm">
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-24 text-center">
+          <div className="mb-6 inline-flex rounded-md bg-background p-6 text-muted-foreground/50 shadow-sm">
             <Users size={48} strokeWidth={1.5} />
           </div>
-          <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
+          <h2 className="mb-2 text-2xl font-semibold tracking-tight text-foreground">
             Aucun membre d'équipe
           </h2>
-          <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
+          <p className="mx-auto mb-10 max-w-sm font-medium tracking-tight text-muted-foreground">
             {searchQuery
               ? "Nous n'avons trouvé aucun employé correspondant à votre recherche."
               : 'Commencez par ajouter vos ouvriers qualifiés au système.'}
@@ -123,58 +123,58 @@ export default function OuvriersPage() {
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-zinc-100 bg-zinc-50/50">
-                  <th className="px-8 py-5 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                <tr className="border-b border-border bg-muted/50">
+                  <th className="px-fluid-md py-4 text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
                     Membre d'équipe
                   </th>
-                  <th className="px-8 py-5 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                  <th className="px-fluid-md py-4 text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
                     Spécialisation
                   </th>
-                  <th className="px-8 py-5 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                  <th className="px-fluid-md py-4 text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
                     Rémunération
                   </th>
-                  <th className="px-8 py-5 text-center text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                  <th className="px-fluid-md py-4 text-center text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
                     Statut
                   </th>
-                  <th className="px-8 py-5 text-right text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
+                  <th className="px-fluid-md py-4 text-right text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-100 bg-white">
+              <tbody className="divide-y divide-border bg-background">
                 {isLoading ? (
                   Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i}>
-                      <td className="px-8 py-6">
+                      <td className="px-fluid-md py-5">
                         <div className="flex items-center gap-4">
-                          <Skeleton className="h-11 w-11 rounded-xl" />
+                          <Skeleton className="h-10 w-10 rounded-md" />
                           <div className="space-y-2">
                             <Skeleton className="h-5 w-32 rounded-md" />
                             <Skeleton className="h-3 w-24 rounded-md" />
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-fluid-md py-5">
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-24 rounded-md" />
                           <Skeleton className="h-3 w-20 rounded-md" />
                         </div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-fluid-md py-5">
                         <div className="space-y-2">
                           <Skeleton className="h-4 w-20 rounded-md" />
                           <Skeleton className="h-5 w-24 rounded-md" />
                         </div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-fluid-md py-5">
                         <div className="flex justify-center">
                           <Skeleton className="h-6 w-16 rounded-full" />
                         </div>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-fluid-md py-5">
                         <div className="flex justify-end gap-2">
-                          <Skeleton className="h-9 w-9 rounded-lg" />
-                          <Skeleton className="h-9 w-9 rounded-lg" />
+                          <Skeleton className="h-9 w-9 rounded-md" />
+                          <Skeleton className="h-9 w-9 rounded-md" />
                         </div>
                       </td>
                     </tr>
@@ -183,60 +183,60 @@ export default function OuvriersPage() {
                   filteredWorkers.map((worker) => (
                   <tr
                     key={worker.id}
-                    className="group transition-all duration-200 hover:bg-zinc-50/30"
+                    className="group transition-all duration-200 hover:bg-muted/30"
                   >
-                    <td className="px-8 py-6">
+                    <td className="px-fluid-md py-5">
                       <div className="flex items-center gap-4">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100 text-xs font-black text-zinc-900 shadow-sm transition-all duration-300 group-hover:border-indigo-600 group-hover:bg-indigo-600 group-hover:text-white">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-foreground shadow-sm transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
                           {worker.nom_complet.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[15px] font-black tracking-tight text-zinc-950 transition-colors group-hover:text-indigo-600">
+                          <span className="text-[15px] font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
                             {worker.nom_complet}
                           </span>
-                          <span className="mt-1 flex items-center gap-1.5 text-[11px] font-bold text-zinc-400">
-                            <Phone size={10} className="text-indigo-500/50" />{' '}
+                          <span className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                            <Phone size={10} className="text-primary/50" />{' '}
                             {worker.telephone || 'Non renseigné'}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-fluid-md py-5">
                       <div className="flex flex-col">
-                        <span className="text-sm font-black tracking-tight text-zinc-950">
+                        <span className="text-sm font-semibold tracking-tight text-foreground">
                           {formatMetier(worker)}
                         </span>
-                        <span className="mt-1 flex items-center gap-1.5 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                          <Ruler size={10} className="text-indigo-500/50" />{' '}
+                        <span className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
+                          <Ruler size={10} className="text-primary/50" />{' '}
                           {worker.unite_production}
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-fluid-md py-5">
                       <div className="flex flex-col">
-                        <span className="text-sm font-black tracking-tight text-zinc-950">
+                        <span className="text-sm font-semibold tracking-tight text-foreground">
                           {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
                         </span>
-                        <span className="mt-1 w-fit rounded-md border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[10px] font-black tracking-widest text-indigo-600 uppercase shadow-sm shadow-indigo-50">
+                        <span className="mt-1 w-fit rounded-md border border-primary/10 bg-primary/5 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-primary uppercase shadow-sm ">
                           {worker.type_paiement}
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-fluid-md py-5">
                       <div className="flex justify-center">
                         <span
                           className={cn(
-                            'rounded-full border px-3 py-1 text-[10px] font-black tracking-widest uppercase shadow-sm',
+                            'rounded-full border px-3 py-1 text-[10px] font-semibold tracking-widest uppercase shadow-sm',
                             worker.actif
-                              ? 'border-emerald-100 bg-emerald-50 text-emerald-700 shadow-emerald-50'
-                              : 'border-red-100 bg-red-50 text-red-700 shadow-red-50'
+                              ? 'border-emerald-500/10 bg-emerald-500/5 text-emerald-600 '
+                              : 'border-red-500/10 bg-red-500/5 text-red-600 '
                           )}
                         >
                           {worker.actif ? 'Actif' : 'Inactif'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-fluid-md py-5 text-right">
                       <div className="flex translate-x-2 items-center justify-end gap-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
                         <CreateWorkerModal 
                           worker={worker} 
@@ -246,7 +246,7 @@ export default function OuvriersPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-9 w-9 border border-transparent text-red-500 hover:border-red-100 hover:bg-red-50 hover:text-red-600"
+                          className="h-9 w-9 border border-transparent text-red-500 hover:border-red-500/10 hover:bg-red-500/5 hover:text-red-600"
                         >
                           <Trash2 size={14} />
                         </Button>
@@ -260,8 +260,8 @@ export default function OuvriersPage() {
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/30 px-8 py-4">
-            <div className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
+          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-fluid-md py-4">
+            <div className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
               Page {page} sur {totalPages}
             </div>
             <div className="flex gap-2">
@@ -270,7 +270,7 @@ export default function OuvriersPage() {
                 size="sm"
                 disabled={page === 1 || isLoading}
                 onClick={() => setPage(page - 1)}
-                className="h-8 rounded-lg px-3 text-[10px] font-black uppercase"
+                className="h-8 rounded-md px-3 text-[10px] font-semibold uppercase"
               >
                 Précédent
               </Button>
@@ -279,7 +279,7 @@ export default function OuvriersPage() {
                 size="sm"
                 disabled={page === totalPages || isLoading}
                 onClick={() => setPage(page + 1)}
-                className="h-8 rounded-lg px-3 text-[10px] font-black uppercase"
+                className="h-8 rounded-md px-3 text-[10px] font-semibold uppercase"
               >
                 Suivant
               </Button>
