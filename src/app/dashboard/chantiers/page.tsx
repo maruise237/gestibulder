@@ -1,32 +1,27 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { getProjects } from '@/lib/server/project.actions';
 import {
   HardHat,
-  Loader2,
-  MapPin,
-  Calendar,
-  MoreVertical,
-  Plus,
   Search,
-  Filter,
-  ArrowUpRight,
+  MapPin,
   Target,
+  MoreVertical,
+  ArrowUpRight,
 } from 'lucide-react';
-import { getProjects } from '@/lib/server/project.actions';
-import { Project } from '@/types/project';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { TruncatedText } from '@/components/ui/truncated-text';
-import Link from 'next/link';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 
 const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-project-modal').then(mod => mod.CreateProjectModal), {
-  loading: () => <Skeleton className="h-10 w-32 rounded-lg" />,
+  loading: () => <Skeleton className="h-9 w-32 rounded-md" />,
   ssr: false
 });
 
@@ -78,27 +73,27 @@ export default function ChantiersPage() {
   };
 
   return (
-    <div className="animate-in fade-in space-y-10 pb-20 duration-500">
+    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       {/* Page Header */}
-      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div className="space-y-1.5">
-          <h1 className="text-4xl font-black tracking-tight text-zinc-950">Chantiers</h1>
-          <p className="font-bold tracking-tight text-zinc-500 italic">
-            Suivi et gestion de vos projets de construction actifs.
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="space-y-1">
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Chantiers</h1>
+          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+            Suivi et gestion de vos projets de construction.
           </p>
         </div>
-        <div className={cn("flex items-center gap-3", !hasProjects && "hidden")}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="group relative">
             <Search
-              className="absolute top-1/2 left-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-600"
-              size={18}
+              className="absolute top-1/2 left-3 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-600"
+              size={14}
             />
             <input
               type="text"
-              placeholder="Rechercher un projet..."
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 w-full rounded-2xl border border-zinc-200 bg-white pr-6 pl-12 text-[11px] font-black tracking-widest uppercase transition-all outline-none placeholder:text-zinc-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/10 md:w-72"
+              className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
           <CreateProjectModal onProjectCreated={refetch} />
@@ -106,123 +101,100 @@ export default function ChantiersPage() {
       </div>
 
       {isLoading && projects.length === 0 ? (
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="flex h-full flex-col overflow-hidden border-none p-0" padding="none">
-              <div className="border-b border-zinc-100 bg-zinc-50/30 p-8 pb-6">
-                <div className="mb-6 flex items-start justify-between">
-                  <Skeleton className="h-6 w-24 rounded-full" />
-                  <Skeleton className="h-9 w-9 rounded-xl" />
-                </div>
-                <Skeleton className="h-8 w-48 rounded-md" />
+            <Card key={i} className="flex h-full flex-col overflow-hidden border-border p-0" padding="none">
+              <div className="border-b border-border bg-muted/30 p-6">
+                <Skeleton className="h-5 w-24 rounded-full mb-4" />
+                <Skeleton className="h-6 w-48 rounded-md" />
               </div>
-              <div className="flex-1 space-y-6 p-8">
-                <div className="space-y-4">
-                  <div className={cn("flex items-center gap-3", !hasProjects && "hidden")}>
-                    <Skeleton className="h-8 w-8 rounded-lg" />
-                    <Skeleton className="h-4 w-48 rounded-md" />
-                  </div>
-                  <div className={cn("flex items-center gap-3", !hasProjects && "hidden")}>
-                    <Skeleton className="h-8 w-8 rounded-lg" />
-                    <Skeleton className="h-4 w-32 rounded-md" />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-3 w-20 rounded-md" />
-                    <Skeleton className="h-4 w-10 rounded-md" />
-                  </div>
-                  <Skeleton className="h-2 w-full rounded-full" />
-                </div>
+              <div className="flex-1 space-y-4 p-6">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-1.5 w-full rounded-full" />
               </div>
-              <div className="p-8 pt-0">
-                <Skeleton className="h-12 w-full rounded-xl" />
+              <div className="p-6 pt-0">
+                <Skeleton className="h-9 w-full rounded-md" />
               </div>
             </Card>
           ))}
         </div>
       ) : !isLoading && filteredProjects.length === 0 ? (
-        <Card className="border-2 border-dashed border-zinc-100 bg-zinc-50/30 py-24 text-center">
-          <div className="mb-6 inline-flex rounded-3xl bg-white p-6 text-zinc-300 shadow-sm">
-            <HardHat size={48} strokeWidth={1.5} />
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center sm:py-20">
+          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
+            <HardHat size={32} strokeWidth={1.5} />
           </div>
-          <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Aucun chantier trouvé
+          <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
+            Aucun projet
           </h2>
-          <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
-            {searchQuery && hasProjects
-              ? "Nous n'avons trouvé aucun chantier correspondant à votre recherche."
-              : 'Votre liste de chantiers est vide. Lancez votre premier projet pour commencer à suivre vos travaux.'}
+          <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
+            {searchQuery
+              ? "Aucun résultat pour cette recherche."
+              : 'Commencez par créer votre premier chantier.'}
           </p>
           <CreateProjectModal onProjectCreated={refetch} />
         </Card>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((project) => (
             <Card
               key={project.id}
               hoverable
-              className="group shadow-premium flex h-full flex-col overflow-hidden border-none p-0"
+              className="group flex h-full flex-col overflow-hidden border-border p-0"
               padding="none"
             >
               {/* Card Header with Status */}
-              <div className="border-b border-zinc-100 bg-zinc-50/30 p-8 pb-6">
-                <div className="mb-6 flex items-start justify-between">
+              <div className="border-b border-border bg-muted/30 p-4 sm:p-6">
+                <div className="mb-4 flex items-start justify-between">
                   <div
                     className={cn(
-                      'rounded-full border px-3 py-1 text-[10px] font-black tracking-widest uppercase shadow-sm',
+                      'rounded-full border px-2.5 py-0.5 text-[9px] font-semibold tracking-widest uppercase shadow-sm sm:text-[10px]',
                       getStatusStyle(project.statut)
                     )}
                   >
                     {getStatusLabel(project.statut)}
                   </div>
-                  <button className="rounded-xl border border-transparent p-2 text-zinc-400 shadow-sm transition-all hover:border-zinc-100 hover:bg-white hover:text-indigo-600">
-                    <MoreVertical size={18} />
+                  <button className="rounded-md border border-transparent p-1 text-muted-foreground transition-all hover:border-border hover:bg-background hover:text-primary">
+                    <MoreVertical size={16} />
                   </button>
                 </div>
-                <h3 className="text-2xl leading-tight font-black tracking-tight text-zinc-950 transition-colors group-hover:text-indigo-600">
-                  <TruncatedText>
+                <h3 className="text-size-lg leading-tight font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary sm:text-size-xl">
                   {project.nom}
-                  </TruncatedText>
                 </h3>
               </div>
 
               {/* Card Body */}
-              <div className="flex-1 space-y-6 p-8">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-zinc-500">
-                    <div className="rounded-lg bg-zinc-50 p-2 transition-colors group-hover:bg-indigo-50">
-                      <MapPin size={16} className="text-zinc-400 group-hover:text-indigo-500" />
+              <div className="flex-1 space-y-4 p-4 sm:p-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2.5 text-muted-foreground">
+                    <div className="rounded-md bg-background p-1.5 border border-border">
+                      <MapPin size={14} className="text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <span className="text-sm font-bold tracking-tight text-zinc-600">
-                      <TruncatedText>
+                    <span className="truncate text-xs font-medium text-foreground">
                       {project.adresse || 'Adresse non renseignée'}
-                      </TruncatedText>
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 text-zinc-500">
-                    <div className="rounded-lg bg-zinc-50 p-2 transition-colors group-hover:bg-indigo-50">
-                      <Target size={16} className="text-zinc-400 group-hover:text-indigo-500" />
+                  <div className="flex items-center gap-2.5 text-muted-foreground">
+                    <div className="rounded-md bg-background p-1.5 border border-border">
+                      <Target size={14} className="text-muted-foreground group-hover:text-primary" />
                     </div>
-                    <span className="text-sm font-bold tracking-tight text-zinc-600">
+                    <span className="text-xs font-medium text-foreground">
                       Budget: {formatCurrency(project.budget_total, enterprise?.devise)}
                     </span>
                   </div>
                 </div>
 
                 {/* Progress Section */}
-                <div className="space-y-3">
-                  <div className="flex items-end justify-between">
-                    <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Avancement
-                    </span>
-                    <span className="text-sm font-black text-zinc-950">
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-end justify-between text-[9px] font-semibold tracking-widest uppercase text-muted-foreground">
+                    <span>Avancement</span>
+                    <span className="text-foreground">
                       {project.avancement_pct || 0}%
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-100">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                     <div
-                      className="h-full rounded-full bg-indigo-600 transition-all duration-1000 "
+                      className="h-full rounded-full bg-primary transition-all duration-1000"
                       style={{ width: `${project.avancement_pct || 0}%` }}
                     />
                   </div>
@@ -230,19 +202,15 @@ export default function ChantiersPage() {
               </div>
 
               {/* Card Footer */}
-              <div className="mt-auto p-8 pt-0">
+              <div className="mt-auto p-4 pt-0 sm:p-6 sm:pt-0">
                 <Link href={`/dashboard/chantiers/${project.id}`} className="w-full">
                   <Button
                     variant="outline"
-                    className="group/btn h-12 w-full rounded-xl border-zinc-200 text-[11px] font-black tracking-widest uppercase hover:border-indigo-600 hover:bg-white"
-                    rightIcon={
-                      <ArrowUpRight
-                        size={16}
-                        className="text-zinc-400 transition-colors group-hover/btn:text-indigo-600"
-                      />
-                    }
+                    size="sm"
+                    className="w-full text-[10px] font-semibold uppercase tracking-widest"
                   >
-                    Détails du chantier
+                    Détails
+                    <ArrowUpRight size={14} className="ml-2" />
                   </Button>
                 </Link>
               </div>
