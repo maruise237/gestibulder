@@ -1,0 +1,58 @@
+--- src/app/dashboard/chantiers/[id]/page.tsx
++++ src/app/dashboard/chantiers/[id]/page.tsx
+@@ -10,7 +10,16 @@
+   Plus,
+   CheckCircle2,
+   Loader2,
+-  ChevronLeft
++  ChevronLeft,
++  Users,
++  Package,
++  Wallet,
++  TrendingUp,
++  TrendingDown,
++  Calculator,
++  ArrowDownRight,
++  MoreVertical,
++  Search
+ } from 'lucide-react';
+ import { cn, formatCurrency, formatDate } from '@/lib/utils';
++import { Worker } from '@/types/worker';
++import { Material } from '@/types/stock';
++import { Expense } from '@/types/expense';
+ import { Button } from '@/components/ui/button';
+ import { Card } from '@/components/ui/card';
+ import { useApp } from '@/lib/context/app-context';
+@@ -21,13 +30,28 @@
+ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+   const { id } = use(params);
+   const { enterprise } = useApp();
+   const [project, setProject] = useState<any>(null);
+-  const [workers, setWorkers] = useState<any[]>([]);
+-  const [materials, setMaterials] = useState<any[]>([]);
+-  const [expenses, setExpenses] = useState<any[]>([]);
++  const [workers, setWorkers] = useState<Worker[]>([]);
++  const [materials, setMaterials] = useState<Material[]>([]);
++  const [expenses, setExpenses] = useState<Expense[]>([]);
+   const [todayAttendance, setTodayAttendance] = useState<any[]>([]);
+   const [isLoading, setIsLoading] = useState(true);
+   const [activeTab, setActiveTab] = useState<'overview' | 'workforce' | 'inventory' | 'finances'>('overview');
+
++  const formatMetier = (worker: Worker) => {
++    return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
++  };
++
++  const getTaux = (worker: Worker) => {
++    switch (worker.type_paiement) {
++      case 'journalier':
++        return worker.taux_journalier;
++      case 'hebdomadaire':
++        return worker.salaire_hebdo;
++      case 'mensuel':
++        return worker.salaire_mensuel;
++      default:
++        return 0;
++    }
++  };
++
+   const fetchData = useCallback(async () => {
