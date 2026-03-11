@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { getWorkersByProject } from '@/lib/server/worker.actions';
+import { getWorkers } from '@/lib/server/worker.actions';
 import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, UserPlus, Check } from 'lucide-react';
 import { Project } from '@/types/project';
 import { Worker } from '@/types/worker';
@@ -50,49 +50,22 @@ export function CreateExpenseModal({
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
-    mutationFn: addExpense,
-    onMutate: async (newExpense) => {
-      setIsLoading(true);
-      setError(null);
-      await queryClient.cancelQueries({ queryKey: ['budget-data'] });
-      const previousData = queryClient.getQueryData(['budget-data']);
+  const fetchWorkers = useCallback(async () => {
+    setIsLoadingWorkers(true);
+    // Fetch all workers and filter them by project ID locally for robustness
+    const { workers: allWorkers } = await getWorkers(1, 1000);
+    if (allWorkers) {
+      const filtered = (allWorkers as Worker[]).filter(w => w.chantier_ids?.includes(selectedChantier));
+      setWorkers(filtered);
+    }
+    setIsLoadingWorkers(false);
+  }, [selectedChantier]);
 
-      queryClient.setQueryData(['budget-data'], (old: any) => ({
-        ...old,
-        expenses: [
-          {
-            id: 'temp-' + Date.now(),
-            ...newExpense,
-            date: new Date(newExpense.date).toISOString(),
-          },
-          ...(old?.expenses || []),
-        ],
-      }));
-
-      return { previousData };
-    },
-    onError: (err: any, newExpense, context) => {
-      queryClient.setQueryData(['budget-data'], context?.previousData);
-      setError(err.message || 'Une erreur est survenue');
-      setIsLoading(false);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['budget-data'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
-    },
-    onSuccess: (result: any) => {
-      if (result?.error) {
-        setError(result.error);
-        setIsLoading(false);
-      } else {
-        setIsOpen(false);
-        setIsLoading(false);
-        setSelectedCategory('');
-        if (onExpenseCreated) onExpenseCreated();
-      }
-    },
-  });
+  useEffect(() => {
+    if (selectedChantier && category === 'main_d_oeuvre') {
+      fetchWorkers();
+    }
+  }, [selectedChantier, category, fetchWorkers]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -141,11 +114,59 @@ export function CreateExpenseModal({
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="libelle">Libellé de la dépense</Label>
+        <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
+          <div className="grid gap-6">
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="chantier_id"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <HardHat size={14} className="text-indigo-600" /> Affectation Chantier
+              </Label>
+              <select
+                id="chantier_id"
+                name="chantier_id"
+                required
+                value={selectedChantier}
+                onChange={(e) => {
+                  setSelectedChantier(e.target.value);
+                  setSelectedWorkerIds([]); // Reset workers when project changes
+                }}
+                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
+              >
+                <option value="">Sélectionner un chantier</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="libelle"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <ReceiptText size={14} className="text-indigo-600" /> Libellé / Objet
+              </Label>
+              <Input
+                id="libelle"
+                name="libelle"
+                required
+                placeholder="Ex: Achat 100 sacs de ciment"
+                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="montant"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                >
+                  <Banknote size={14} className="text-indigo-600" /> Montant
+                </Label>
                 <Input
                   id="montant"
                   name="montant"
@@ -197,24 +218,54 @@ export function CreateExpenseModal({
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Catégorie</Label>
-                <div className="bg-muted/30 grid grid-cols-2 gap-2 rounded-md border p-1">
-                  {CATEGORIES.map((cat) => (
-                    <button
-                      key={cat.value}
-                      type="button"
-                      onClick={() => setSelectedCategory(cat.value)}
-                      className={cn(
-                        'h-9 rounded-sm text-xs font-medium transition-all active:scale-95',
-                        selectedCategory === cat.value
-                          ? 'bg-primary text-primary-foreground shadow-sm'
-                          : 'text-muted-foreground hover:bg-muted/50'
-                      )}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
+              {category === 'main_d_oeuvre' && (
+                <div className="space-y-2.5 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                    <UserPlus size={14} className="text-indigo-600" /> Ouvrier(s)
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        disabled={!selectedChantier || isLoadingWorkers}
+                        className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 h-12 w-full justify-between rounded-xl px-4 font-bold text-left overflow-hidden"
+                      >
+                        <span className="truncate">
+                          {isLoadingWorkers ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : selectedWorkerIds.length > 0 ? (
+                            `${selectedWorkerIds.length} sélectionné(s)`
+                          ) : (
+                            "Sélectionner"
+                          )}
+                        </span>
+                        <Check className={cn("h-4 w-4 shrink-0 ml-2", selectedWorkerIds.length > 0 ? "text-indigo-600" : "text-zinc-300")} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0 rounded-xl" align="start">
+                      <div className="max-h-[200px] overflow-y-auto p-2 space-y-1">
+                        {workers.length === 0 ? (
+                          <p className="p-2 text-[10px] font-bold text-muted-foreground uppercase text-center italic">
+                            Aucun ouvrier trouvé
+                          </p>
+                        ) : (
+                          workers.map((worker) => (
+                            <label
+                              key={worker.id}
+                              className="flex items-center space-x-2 rounded-md p-2 hover:bg-zinc-100 transition-colors cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={selectedWorkerIds.includes(worker.id)}
+                                onCheckedChange={() => toggleWorker(worker.id)}
+                              />
+                              <span className="text-xs font-bold uppercase truncate">{worker.nom_complet}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
               </div>
             </div>
