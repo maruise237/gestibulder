@@ -40,6 +40,7 @@ export default function BudgetPage() {
 
   const projects = data?.projects || [];
   const expenses = data?.expenses || [];
+  const hasExpenses = expenses.length > 0;
 
   const filteredExpenses =
     selectedChantier === 'all'
