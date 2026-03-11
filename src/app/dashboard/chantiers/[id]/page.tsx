@@ -1,165 +1,125 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useCallback, use } from 'react';
+import { getProjectById } from '@/lib/server/project.actions';
+import { getWorkers } from '@/lib/server/worker.actions';
+import { getMaterials } from '@/lib/server/stock.actions';
+import { getBudgetData } from '@/lib/server/dashboard.actions';
+import { getAttendance } from '@/lib/server/attendance.actions';
 import {
-  HardHat,
-  Users,
-  Package,
-  Wallet,
+  MapPin,
   Calendar,
   Clock,
-  ArrowLeft,
-  MapPin,
-  Target,
-  Loader2,
-  TrendingUp,
-  MoreVertical,
   Plus,
   CheckCircle2,
-  AlertCircle,
+  Loader2,
+  ChevronLeft
 } from 'lucide-react';
-import { getProjectById } from '@/lib/server/project.actions';
-import { getWorkersByProject } from '@/lib/server/worker.actions';
-import { getMaterials } from '@/lib/server/stock.actions';
-import { getExpenses } from '@/lib/server/expense.actions';
-import { getAttendance } from '@/lib/server/attendance.actions';
-import { Project } from '@/types/project';
-import { Worker } from '@/types/worker';
-import { Material } from '@/types/stock';
-import { Expense } from '@/types/expense';
-import { Attendance } from '@/types/attendance';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import Link from 'next/link';
 import { useApp } from '@/lib/context/app-context';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 
-export default function ProjectDetailPage() {
+export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { enterprise } = useApp();
-  const { id } = useParams();
-  const router = useRouter();
-  const [project, setProject] = useState<Project | null>(null);
-  const [workers, setWorkers] = useState<Worker[]>([]);
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [todayAttendance, setAttendance] = useState<Attendance[]>([]);
+  const [project, setProject] = useState<any>(null);
+  const [workers, setWorkers] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<any[]>([]);
+  const [todayAttendance, setTodayAttendance] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'overview' | 'workforce' | 'inventory' | 'finances'>(
-    'overview'
-  );
+  const [activeTab, setActiveTab] = useState<'overview' | 'workforce' | 'inventory' | 'finances'>('overview');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      const projectId = id as string;
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const [pRes, wRes, sRes, bRes, aRes] = await Promise.all([
+      getProjectById(id),
+      getWorkers(1, 1000),
+      getMaterials(id),
+      getBudgetData(),
+      getAttendance(id, new Date().toISOString().split('T')[0])
+    ]);
 
-      const [p, w, m, e, a] = await Promise.all([
-        getProjectById(projectId),
-        getWorkersByProject(projectId),
-        getMaterials(projectId),
-        getExpenses(projectId),
-        getAttendance(projectId, new Date().toISOString().split('T')[0]),
-      ]);
-
-      if (p.project) setProject(p.project);
-      if (w.workers) setWorkers(w.workers);
-      if (m.materials) setMaterials(m.materials);
-      if (e.expenses) setExpenses(e.expenses);
-      if (a.logs) setAttendance(a.logs);
-
-      setIsLoading(false);
-    };
-
-    fetchData();
+    if (pRes.project) setProject(pRes.project);
+    if (wRes.workers) setWorkers(wRes.workers.filter((w: any) => w.chantier_ids?.includes(id)));
+    if (sRes.materials) setMaterials(sRes.materials);
+    if (bRes.expenses) setExpenses(bRes.expenses.filter((e: any) => e.chantier_id === id));
+    if (aRes.logs) setTodayAttendance(aRes.logs);
+    setIsLoading(false);
   }, [id]);
 
-  if (isLoading) {
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  if (isLoading && !project) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center">
-        <Loader2 className="mb-4 animate-spin text-zinc-400" size={40} />
-        <p className="font-bold tracking-tight text-zinc-500">Loading site data...</p>
+      <div className="flex h-[60vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
-  if (!project) {
-    return (
-      <div className="py-20 text-center">
-        <h2 className="text-2xl font-black">Project not found</h2>
-        <Button onClick={() => router.push('/dashboard/chantiers')} className="mt-4">
-          Back to projects
-        </Button>
-      </div>
-    );
-  }
+  if (!project) return <div className="p-8 text-center">Projet non trouvé</div>;
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.montant, 0);
-  const margin = project.budget_total
+  const margin = project.budget_total > 0
     ? (((project.budget_total - totalExpenses) / project.budget_total) * 100).toFixed(1)
     : null;
 
   return (
-    <div className="animate-in fade-in space-y-10 duration-500">
-      {/* Project Header */}
-      <div className="flex flex-col space-y-6">
-        <button
-          onClick={() => router.push('/dashboard/chantiers')}
-          className="flex w-fit items-center gap-2 text-xs font-bold tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-950"
-        >
-          <ArrowLeft size={14} strokeWidth={3} />
-          Back to projects
-        </button>
+    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+      {/* Breadcrumb & Navigation */}
+      <div className="flex flex-col gap-4">
+        <Link href="/dashboard/chantiers" className="flex w-fit items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">
+          <ChevronLeft size={14} />
+          Retour
+        </Link>
 
-        <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-[10px] font-black tracking-widest text-indigo-700 uppercase">
-                Site ID: {project.id.slice(0, 8)}
-              </span>
-              <span
-                className={cn(
-                  'rounded-full border px-3 py-1 text-[10px] font-black tracking-widest uppercase',
-                  project.statut === 'en_cours'
-                    ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                    : 'border-zinc-200 bg-zinc-100 text-zinc-700'
-                )}
-              >
-                {project.statut === 'en_cours' ? 'Active' : project.statut}
-              </span>
+        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="text-[8px] uppercase tracking-widest font-semibold h-4 px-1.5 border-border">ID: {project.id.slice(0, 6)}</Badge>
+              <Badge variant="secondary" className="text-[8px] uppercase tracking-widest font-semibold h-4 px-1.5">{project.statut.replace('_', ' ')}</Badge>
             </div>
-            <h1 className="text-5xl font-black tracking-tighter text-zinc-950">{project.nom}</h1>
-            <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-zinc-500">
-              <div className="flex items-center gap-2">
-                <MapPin size={16} className="text-indigo-500" />
-                {project.adresse || 'No address set'}
+            <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">{project.nom}</h1>
+            <div className="flex flex-wrap items-center gap-3 text-size-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <MapPin size={12} className="text-primary" />
+                {project.adresse || 'Sans adresse'}
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar size={16} className="text-indigo-500" />
-                Started {new Date(project.created_at).toLocaleDateString()}
+              <div className="flex items-center gap-1">
+                <Calendar size={12} className="text-primary" />
+                Démarré le {new Date(project.created_at).toLocaleDateString()}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" leftIcon={<Clock size={16} />}>
-              History
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold">
+              <Clock size={14} className="mr-1.5" /> Historique
             </Button>
-            <Button leftIcon={<Plus size={16} />}>Record Activity</Button>
+            <Button size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold">
+              <Plus size={14} className="mr-1.5" /> Activité
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex w-fit items-center gap-2 rounded-2xl border border-zinc-200/60 bg-zinc-100/50 p-1.5">
+      {/* Tabs */}
+      <div className="flex items-center gap-1 overflow-x-auto rounded-md border border-border bg-muted/30 p-1 no-scrollbar">
         {(['overview', 'workforce', 'inventory', 'finances'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={cn(
-              'rounded-xl px-6 py-2.5 text-xs font-black tracking-widest uppercase transition-all',
+              'flex-1 rounded-sm px-3 py-1.5 text-[9px] font-semibold uppercase tracking-widest transition-all whitespace-nowrap',
               activeTab === tab
-                ? 'border border-zinc-200 bg-white text-zinc-950 shadow-sm'
-                : 'text-zinc-400 hover:text-zinc-600'
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-background/50'
             )}
           >
             {tab}
@@ -167,157 +127,117 @@ export default function ProjectDetailPage() {
         ))}
       </div>
 
-      {/* Tab Content */}
+      {/* Content */}
       {activeTab === 'overview' && (
-        <div className="animate-in fade-in slide-in-from-bottom-2 space-y-8 duration-500">
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Card className="group border-l-4 border-l-indigo-500 p-8">
-              <p className="mb-2 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Workforce
-              </p>
-              <p className="mb-4 text-3xl font-black text-zinc-950">{workers.length}</p>
-              <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-emerald-600 uppercase">
-                <CheckCircle2 size={12} /> {todayAttendance.length} Present today
+        <div className="space-y-4 animate-in fade-in duration-300">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <Card className="p-3 border-l-4 border-l-primary">
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Effectif</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-size-lg font-semibold">{workers.length}</span>
+                <span className="text-[8px] font-medium text-emerald-600 flex items-center gap-0.5">
+                   {todayAttendance.length} Présents
+                </span>
               </div>
             </Card>
-            <Card className="group border-l-4 border-l-amber-500 p-8">
-              <p className="mb-2 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Inventory Alerts
-              </p>
-              <p className="mb-4 text-3xl font-black text-zinc-950">
-                {materials.filter((m) => (m.stock_actuel || 0) <= m.seuil_alerte).length}
-              </p>
-              <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-amber-600 uppercase">
-                <AlertCircle size={12} /> Action required
+            <Card className="p-3 border-l-4 border-l-amber-500">
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Stock</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-size-lg font-semibold">
+                  {materials.filter((m) => (m.stock_actuel || 0) <= m.seuil_alerte).length}
+                </span>
+                <span className="text-[8px] font-medium text-amber-600">Alertes</span>
               </div>
             </Card>
-            <Card className="group border-l-4 border-l-emerald-500 p-8">
-              <p className="mb-2 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Budget Consumed
-              </p>
-              <p className="mb-4 text-3xl font-black text-zinc-950">
+            <Card className="p-3 border-l-4 border-l-emerald-500">
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Dépensé</p>
+              <span className="text-size-lg font-semibold truncate block">
                 {formatCurrency(totalExpenses, enterprise?.devise)}
-              </p>
-              <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Total: {formatCurrency(project.budget_total || 0, enterprise?.devise)}
-              </div>
+              </span>
             </Card>
-            <Card className="group border-l-4 border-l-zinc-950 p-8">
-              <p className="mb-2 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Project Margin
-              </p>
-              <p
-                className={cn(
-                  'mb-4 text-3xl font-black',
-                  Number(margin) > 0 ? 'text-emerald-600' : 'text-red-600'
-                )}
-              >
+            <Card className="p-3 border-l-4 border-l-secondary">
+              <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Marge</p>
+              <span className={cn(
+                "text-size-lg font-semibold",
+                Number(margin) > 0 ? "text-emerald-600" : "text-destructive"
+              )}>
                 {margin ? `${margin}%` : '--'}
-              </p>
-              <div className="flex items-center gap-2 text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                Current site profitability
-              </div>
+              </span>
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-fluid-md">
             {/* Progress */}
-            <Card className="p-10 lg:col-span-2">
-              <div className="mb-10 flex items-center justify-between">
-                <div className="space-y-1">
-                  <h3 className="text-xl font-black tracking-tight">Construction Progress</h3>
-                  <p className="text-xs font-bold tracking-widest text-zinc-400 uppercase">
-                    Overall completion rate
-                  </p>
+            <Card className="p-4 sm:p-6 lg:col-span-2 border-border">
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h3 className="text-size-base font-semibold tracking-tight">Avancement</h3>
+                  <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Global chantier</p>
                 </div>
-                <div className="text-4xl font-black tracking-tighter text-indigo-600">
-                  {project.avancement_pct || 0}%
-                </div>
+                <div className="text-size-xl font-semibold text-primary">{project.avancement_pct || 0}%</div>
               </div>
-              <div className="h-4 w-full overflow-hidden rounded-full border border-zinc-200/60 bg-zinc-100 p-1">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full rounded-full bg-indigo-500 transition-all duration-1000"
+                  className="h-full rounded-full bg-primary transition-all duration-1000"
                   style={{ width: `${project.avancement_pct || 0}%` }}
                 />
               </div>
-              <div className="mt-10 grid grid-cols-3 gap-8">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                    Target Date
-                  </p>
-                  <p className="text-sm font-black text-zinc-950">
-                    {project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'Not set'}
-                  </p>
+              <div className="mt-6 grid grid-cols-3 gap-2 border-t border-border pt-4">
+                <div>
+                  <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">Fin</p>
+                  <p className="text-[10px] font-semibold">{project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'N/A'}</p>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                    Days Elapsed
-                  </p>
-                  <p className="text-sm font-black text-zinc-950">42 Days</p>
+                <div>
+                  <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">Durée</p>
+                  <p className="text-[10px] font-semibold">-- j</p>
                 </div>
-                <div className="space-y-2 text-right">
-                  <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                    Efficiency
-                  </p>
-                  <p className="text-sm font-black text-emerald-600">+8.2%</p>
+                <div className="text-right">
+                  <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">État</p>
+                  <p className="text-[10px] font-semibold text-emerald-600">Ok</p>
                 </div>
               </div>
             </Card>
 
-            {/* Recent Activity Mini */}
-            <Card className="flex flex-col overflow-hidden p-0" padding="none">
-              <div className="border-b border-zinc-100 bg-zinc-50/30 p-8">
-                <h3 className="text-lg font-black tracking-tight">Daily Log</h3>
+            {/* Daily Log Mini */}
+            <Card className="overflow-hidden border-border" padding="none">
+              <div className="border-b border-border bg-muted/30 p-3">
+                <h3 className="text-size-xs font-semibold uppercase tracking-widest text-muted-foreground">Présences Jour</h3>
               </div>
-              <div className="flex-1 divide-y divide-zinc-100">
+              <div className="divide-y divide-border max-h-[240px] overflow-y-auto">
                 {todayAttendance.length === 0 ? (
-                  <div className="p-10 text-center text-sm font-bold text-zinc-400 italic">
-                    No logs for today.
-                  </div>
+                  <div className="p-6 text-center text-[10px] text-muted-foreground italic">Aucun log.</div>
                 ) : (
                   todayAttendance.slice(0, 5).map((log, i) => (
-                    <div key={i} className="flex items-center justify-between p-6">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-600">
-                          <CheckCircle2 size={14} />
+                    <div key={i} className="flex items-center justify-between p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 text-[10px] font-bold border border-emerald-500/20">
+                          {workers.find((w) => w.id === log.ouvrier_id)?.nom_complet.charAt(0)}
                         </div>
-                        <span className="max-w-[120px] truncate text-sm font-black text-zinc-950">
+                        <span className="truncate text-[11px] font-medium text-foreground max-w-[100px]">
                           {workers.find((w) => w.id === log.ouvrier_id)?.nom_complet}
                         </span>
                       </div>
-                      <span className="text-[10px] font-black text-zinc-400 uppercase">
-                        {log.heure_arrivee}
-                      </span>
+                      <span className="text-[9px] font-mono text-muted-foreground">{log.heure_arrivee}</span>
                     </div>
                   ))
                 )}
               </div>
-              <div className="mt-auto bg-zinc-50/50 p-6">
-                <Button
-                  variant="ghost"
-                  className="h-10 w-full text-[10px] font-black tracking-widest text-indigo-600 uppercase"
-                >
-                  View All Pointages
-                </Button>
-              </div>
+              <Button variant="ghost" size="sm" className="w-full h-8 text-[9px] font-semibold uppercase tracking-widest rounded-none border-t border-border">
+                Voir tout
+              </Button>
             </Card>
           </div>
         </div>
       )}
 
-      {/* Other tabs would go here, following the same UI standards */}
       {activeTab !== 'overview' && (
-        <Card className="border-dashed py-32 text-center">
-          <div className="mb-6 inline-flex rounded-3xl bg-zinc-50 p-6 text-zinc-300">
-            <Target size={48} strokeWidth={1.5} />
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
+          <div className="mb-4 inline-flex rounded-md bg-background p-4 text-muted-foreground/30">
+            <Plus size={24} />
           </div>
-          <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Module Detail {activeTab}
-          </h2>
-          <p className="mx-auto max-w-sm font-medium text-zinc-500">
-            This specific view is being integrated with the global {activeTab} module.
-          </p>
+          <h2 className="text-size-sm font-semibold tracking-tight text-foreground uppercase">Module {activeTab}</h2>
+          <p className="text-[10px] font-medium text-muted-foreground mt-1">Intégration en cours.</p>
         </Card>
       )}
     </div>

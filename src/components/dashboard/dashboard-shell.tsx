@@ -54,14 +54,14 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="mx-auto max-w-7xl px-fluid-md py-fluid-lg sm:px-fluid-lg lg:px-fluid-xl lg:py-fluid-xl"
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className="mx-auto max-w-7xl p-fluid-sm sm:p-fluid-md"
                 >
                   {children}
                 </motion.div>
               </AnimatePresence>
             ) : (
-              <div className="mx-auto max-w-7xl px-fluid-md py-fluid-lg sm:px-fluid-lg lg:px-fluid-xl lg:py-fluid-xl">
+              <div className="mx-auto max-w-7xl p-fluid-sm sm:p-fluid-md">
                 {children}
               </div>
             )}
@@ -69,23 +69,20 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
 
           <footer
             className={cn(
-              'border-t border-border bg-card/50 px-fluid-md py-fluid-lg transition-all duration-300 sm:px-fluid-lg lg:px-fluid-xl',
+              'border-t border-border bg-card/50 px-4 py-6 transition-all duration-300 sm:px-6 lg:px-8',
               'lg:ml-72'
             )}
           >
-            <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
-              <span className="text-center text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase sm:text-left">
-                © {new Date().getFullYear()} {mounted && enterprise?.nom ? enterprise.nom : 'GestiBulder'} — Built for Builders
+            <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
+              <span className="text-center text-[9px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-left">
+                © {new Date().getFullYear()} {mounted && enterprise?.nom ? enterprise.nom : 'GestiBulder'}
               </span>
-              <div className="flex items-center gap-6">
-                <span className="cursor-pointer text-[10px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground">
-                  Privacy
-                </span>
-                <span className="cursor-pointer text-[10px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground">
-                  Terms
-                </span>
-                <span className="cursor-pointer text-[10px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground">
+              <div className="flex items-center gap-4">
+                <span className="cursor-pointer text-[9px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-primary">
                   Support
+                </span>
+                <span className="cursor-pointer text-[9px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-primary">
+                  Terms
                 </span>
               </div>
             </div>

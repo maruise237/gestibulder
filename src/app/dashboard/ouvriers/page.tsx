@@ -1,269 +1,223 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { getWorkers } from '@/lib/server/worker.actions';
 import {
   Users,
-  Loader2,
-  Phone,
-  Briefcase,
-  Trash2,
-  Edit,
-  Banknote,
-  Ruler,
-  MoreHorizontal,
   Search,
-  Filter,
-  ArrowUpRight,
-  UserPlus,
+  Trash2,
+  Loader2,
+  Edit,
 } from 'lucide-react';
-import { getWorkers } from '@/lib/server/worker.actions';
-import { Worker } from '@/types/worker';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import dynamic from 'next/dynamic';
+import { CreateWorkerModal } from '@/components/dashboard/create-worker-modal';
+import { Worker } from '@/types/worker';
 import { ExportModal } from '@/components/dashboard/export-modal';
-
-const CreateWorkerModal = dynamic(() => import('@/components/dashboard/create-worker-modal').then(mod => mod.CreateWorkerModal), {
-  loading: () => <Skeleton className="h-9 w-9 rounded-md" />,
-  ssr: false
-});
 
 export default function OuvriersPage() {
   const { enterprise } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const itemsPerPage = 8;
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['workers', page],
     queryFn: async () => {
-      const result = await getWorkers(page, pageSize);
+      const result = await getWorkers(page, itemsPerPage);
       if (result.error) throw new Error(result.error);
       return result;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const workers = data?.workers || [];
+  const totalCount = data?.totalCount || 0;
   const totalPages = data?.totalPages || 1;
 
-  const hasWorkers = workers.length > 0;
-  const filteredWorkers = workers.filter(
-    (w) =>
-      w.nom_complet.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      w.metier.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredWorkers = workers.filter(w =>
+    w.nom_complet.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatMetier = (worker: Worker) => {
-    if (worker.metier === 'autre') return worker.metier_custom || 'Spécialiste';
-    return worker.metier.charAt(0).toUpperCase() + worker.metier.slice(1).replace('_', ' ');
+    return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
   };
 
   const getTaux = (worker: Worker) => {
-    if (worker.type_paiement === 'journalier') return worker.taux_journalier;
-    if (worker.type_paiement === 'hebdomadaire') return worker.salaire_hebdo;
-    if (worker.type_paiement === 'mensuel') return worker.salaire_mensuel;
-    return 0;
+    switch (worker.type_paiement) {
+      case 'journalier':
+        return worker.taux_journalier;
+      case 'hebdomadaire':
+        return worker.salaire_hebdo;
+      case 'mensuel':
+        return worker.salaire_mensuel;
+      default:
+        return 0;
+    }
   };
 
   return (
-    <div className="animate-in fade-in space-y-fluid-lg pb-20 duration-500">
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-fluid-md md:flex-row md:items-center">
-        <div className="space-y-1.5">
-          <h1 className="text-size-3xl font-semibold tracking-tight text-foreground">Gestion des Ouvriers</h1>
-          <p className="font-medium tracking-tight text-muted-foreground italic">
-            Suivi et management de vos équipes sur le terrain.
+    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+      {/* Page Header */}
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="space-y-1">
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Ouvriers</h1>
+          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+            Gestion de vos effectifs et de la rémunération.
           </p>
         </div>
-        <div className={cn("flex items-center gap-3", !hasWorkers && "hidden")}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="group relative">
             <Search
-              className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
-              size={18}
+              className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+              size={14}
             />
             <input
               type="text"
-              placeholder="Rechercher un ouvrier..."
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-md border border-border bg-background pr-6 pl-12 text-[11px] font-semibold tracking-widest uppercase transition-all outline-none placeholder:text-muted-foreground/50 focus:border-primary focus:ring-4 focus:ring-indigo-600/10 md:w-72"
+              className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
-          <ExportModal />
-          <CreateWorkerModal onWorkerCreated={refetch} />
+          <div className="flex items-center gap-2">
+            <ExportModal />
+            <CreateWorkerModal onWorkerCreated={refetch} />
+          </div>
         </div>
       </div>
 
       {isLoading && workers.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 text-muted-foreground">
-          <Loader2 className="mb-4 animate-spin" size={40} />
-          <p className="font-semibold tracking-tight">Accès aux dossiers du personnel...</p>
+        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+          <Loader2 className="mb-2 animate-spin text-primary" size={32} />
+          <p className="text-xs font-medium uppercase tracking-widest">Chargement...</p>
         </div>
-      ) : !isLoading && filteredWorkers.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-24 text-center">
-          <div className="mb-6 inline-flex rounded-md bg-background p-6 text-muted-foreground/50 shadow-sm">
-            <Users size={48} strokeWidth={1.5} />
+      ) : !isLoading && workers.length === 0 ? (
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
+          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground/50 shadow-sm">
+            <Users size={32} strokeWidth={1.5} />
           </div>
-          <h2 className="mb-2 text-2xl font-semibold tracking-tight text-foreground">
-            Aucun ouvrier trouvé
+          <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
+            Aucun ouvrier
           </h2>
-          <p className="mx-auto mb-10 max-w-sm font-medium tracking-tight text-muted-foreground">
-            {searchQuery && hasWorkers
-              ? "Nous n'avons trouvé aucun ouvrier correspondant à votre recherche."
-              : 'Votre base de données est vide. Ajoutez vos premiers ouvriers pour commencer à gérer vos équipes.'}
+          <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
+            Commencez par ajouter votre premier ouvrier.
           </p>
           <CreateWorkerModal onWorkerCreated={refetch} />
         </Card>
       ) : (
-        <Card className="shadow-premium overflow-hidden border-none" padding="none">
+        <Card className="shadow-premium overflow-hidden border-border" padding="none">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse text-left">
               <thead>
                 <tr className="border-b border-border bg-muted/50">
-                  <th className="px-fluid-md py-4 text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-                    Membre d'équipe
+                  <th className="px-4 py-3 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
+                    Ouvrier
                   </th>
-                  <th className="px-fluid-md py-4 text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
-                    Spécialisation
+                  <th className="hidden px-4 py-3 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase sm:table-cell">
+                    Métier
                   </th>
-                  <th className="px-fluid-md py-4 text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+                  <th className="px-4 py-3 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                     Rémunération
                   </th>
-                  <th className="px-fluid-md py-4 text-center text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+                  <th className="px-4 py-3 text-center text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                     Statut
                   </th>
-                  <th className="px-fluid-md py-4 text-right text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase">
+                  <th className="px-4 py-3 text-right text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-background">
-                {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <tr key={i}>
-                      <td className="px-fluid-md py-5">
-                        <div className="flex items-center gap-4">
-                          <Skeleton className="h-10 w-10 rounded-md" />
-                          <div className="space-y-2">
-                            <Skeleton className="h-5 w-32 rounded-md" />
-                            <Skeleton className="h-3 w-24 rounded-md" />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-fluid-md py-5">
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-24 rounded-md" />
-                          <Skeleton className="h-3 w-20 rounded-md" />
-                        </div>
-                      </td>
-                      <td className="px-fluid-md py-5">
-                        <div className="space-y-2">
-                          <Skeleton className="h-4 w-20 rounded-md" />
-                          <Skeleton className="h-5 w-24 rounded-md" />
-                        </div>
-                      </td>
-                      <td className="px-fluid-md py-5">
-                        <div className="flex justify-center">
-                          <Skeleton className="h-6 w-16 rounded-full" />
-                        </div>
-                      </td>
-                      <td className="px-fluid-md py-5">
-                        <div className="flex justify-end gap-2">
-                          <Skeleton className="h-9 w-9 rounded-md" />
-                          <Skeleton className="h-9 w-9 rounded-md" />
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  filteredWorkers.map((worker) => (
+                {filteredWorkers.map((worker) => (
                   <tr
                     key={worker.id}
                     className="group transition-all duration-200 hover:bg-muted/30"
                   >
-                    <td className="px-fluid-md py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted text-xs font-semibold text-foreground shadow-sm transition-all duration-300 group-hover:border-primary group-hover:bg-primary group-hover:text-primary-foreground">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-[10px] font-semibold text-foreground">
                           {worker.nom_complet.charAt(0).toUpperCase()}
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-[15px] font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                        <div className="flex flex-col min-w-0">
+                          <span className="truncate text-size-xs font-semibold text-foreground sm:text-size-sm">
                             {worker.nom_complet}
                           </span>
-                          <span className="mt-1 flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                            <Phone size={10} className="text-primary/50" />{' '}
-                            {worker.telephone || 'Non renseigné'}
+                          <span className="truncate text-[10px] text-muted-foreground sm:hidden">
+                            {formatMetier(worker)}
                           </span>
                         </div>
                       </div>
                     </td>
-                    <td className="px-fluid-md py-5">
+                    <td className="hidden px-4 py-3 sm:table-cell">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold tracking-tight text-foreground">
+                        <span className="text-size-xs font-medium text-foreground">
                           {formatMetier(worker)}
                         </span>
-                        <span className="mt-1 flex items-center gap-1.5 text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-                          <Ruler size={10} className="text-primary/50" />{' '}
+                        <span className="text-[9px] font-semibold text-muted-foreground uppercase">
                           {worker.unite_production}
                         </span>
                       </div>
                     </td>
-                    <td className="px-fluid-md py-5">
+                    <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold tracking-tight text-foreground">
+                        <span className="text-size-xs font-semibold text-foreground sm:text-size-sm">
                           {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
                         </span>
-                        <span className="mt-1 w-fit rounded-md border border-primary/10 bg-primary/5 px-2 py-0.5 text-[10px] font-semibold tracking-widest text-primary uppercase shadow-sm ">
+                        <span className="text-[9px] font-semibold text-primary uppercase">
                           {worker.type_paiement}
                         </span>
                       </div>
                     </td>
-                    <td className="px-fluid-md py-5">
+                    <td className="px-4 py-3">
                       <div className="flex justify-center">
                         <span
                           className={cn(
-                            'rounded-full border px-3 py-1 text-[10px] font-semibold tracking-widest uppercase shadow-sm',
+                            'rounded-full border px-2 py-0.5 text-[8px] font-semibold tracking-widest uppercase sm:text-[9px]',
                             worker.actif
-                              ? 'border-emerald-500/10 bg-emerald-500/5 text-emerald-600 '
-                              : 'border-red-500/10 bg-red-500/5 text-red-600 '
+                              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                              : 'border-destructive/20 bg-destructive/10 text-destructive'
                           )}
                         >
                           {worker.actif ? 'Actif' : 'Inactif'}
                         </span>
                       </div>
                     </td>
-                    <td className="px-fluid-md py-5 text-right">
-                      <div className="flex translate-x-2 items-center justify-end gap-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <CreateWorkerModal 
                           worker={worker} 
                           onWorkerCreated={refetch} 
                           mode="edit"
-                        />
+                        >
+                           <Button variant="ghost" size="icon-sm" className="h-7 w-7">
+                             <Edit size={14} />
+                           </Button>
+                        </CreateWorkerModal>
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-9 w-9 border border-transparent text-red-500 hover:border-red-500/10 hover:bg-red-500/5 hover:text-red-600"
+                          size="icon-sm"
+                          className="h-7 w-7 text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 size={14} />
                         </Button>
                       </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
+                ))}
+              </tbody>
             </table>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-fluid-md py-4">
-            <div className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
-              Page {page} sur {totalPages}
+          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-3">
+            <div className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
+              Page {page} / {totalPages || 1}
             </div>
             <div className="flex gap-2">
               <Button
@@ -271,7 +225,7 @@ export default function OuvriersPage() {
                 size="sm"
                 disabled={page === 1 || isLoading}
                 onClick={() => setPage(page - 1)}
-                className="h-8 rounded-md px-3 text-[10px] font-semibold uppercase"
+                className="h-7 rounded-md px-2 text-[9px] font-semibold uppercase sm:h-8 sm:px-3 sm:text-[10px]"
               >
                 Précédent
               </Button>
@@ -280,7 +234,7 @@ export default function OuvriersPage() {
                 size="sm"
                 disabled={page === totalPages || isLoading}
                 onClick={() => setPage(page + 1)}
-                className="h-8 rounded-md px-3 text-[10px] font-semibold uppercase"
+                className="h-7 rounded-md px-2 text-[9px] font-semibold uppercase sm:h-8 sm:px-3 sm:text-[10px]"
               >
                 Suivant
               </Button>
