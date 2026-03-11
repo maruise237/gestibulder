@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   HardHat,
   Users,
   TrendingUp,
   Package,
-  Calendar,
   AlertCircle,
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  Plus,
-  Filter,
 } from 'lucide-react';
 import { getDashboardData } from '@/lib/server/dashboard.actions';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
@@ -27,7 +24,7 @@ import dynamic from 'next/dynamic';
 import { ExportModal } from '@/components/dashboard/export-modal';
 
 const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-project-modal').then(mod => mod.CreateProjectModal), {
-  loading: () => <Skeleton className="h-10 w-32 rounded-lg" />,
+  loading: () => <Skeleton className="h-9 w-32 rounded-md" />,
   ssr: false
 });
 
@@ -75,7 +72,7 @@ export default function DashboardPage() {
         }, {}),
       };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const stats = data?.stats || {
@@ -96,7 +93,7 @@ export default function DashboardPage() {
       change: '+12%',
       isPositive: true,
       icon: HardHat,
-      color: 'bg-indigo-50 text-indigo-600',
+      color: 'bg-primary/10 text-primary',
       href: '/dashboard/chantiers',
     },
     {
@@ -105,7 +102,7 @@ export default function DashboardPage() {
       change: '+3',
       isPositive: true,
       icon: Users,
-      color: 'bg-emerald-50 text-emerald-600',
+      color: 'bg-emerald-500/10 text-emerald-600',
       href: '/dashboard/ouvriers',
     },
     {
@@ -114,7 +111,7 @@ export default function DashboardPage() {
       change: '-5%',
       isPositive: true,
       icon: TrendingUp,
-      color: 'bg-amber-50 text-amber-600',
+      color: 'bg-amber-500/10 text-amber-600',
       href: '/dashboard/budget',
     },
     {
@@ -123,18 +120,18 @@ export default function DashboardPage() {
       change: stats.stockAlerts > 0 ? 'Action requise' : 'Optimal',
       isPositive: stats.stockAlerts === 0,
       icon: Package,
-      color: stats.stockAlerts > 0 ? 'bg-red-50 text-red-600' : 'bg-zinc-50 text-zinc-600',
+      color: stats.stockAlerts > 0 ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground',
       href: '/dashboard/stocks',
     },
   ];
 
   return (
-    <div className="animate-in fade-in space-y-10 pb-20 duration-700">
+    <div className="animate-in fade-in space-y-fluid-lg pb-fluid-xl duration-700">
       {/* Header Section */}
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div className="space-y-1.5">
-          <h1 className="text-4xl font-black tracking-tight text-zinc-950">Vue d'ensemble</h1>
-          <p className="font-bold tracking-tight text-zinc-500">
+          <h1 className="text-size-4xl font-semibold tracking-tight text-foreground">Vue d'ensemble</h1>
+          <p className="text-size-base font-medium tracking-tight text-muted-foreground">
             Ravi de vous revoir. Voici l'état de vos chantiers aujourd'hui.
           </p>
         </div>
@@ -144,19 +141,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid - 4 columns on Mobile/Tablet/Desktop (using auto-cols for flexibility) */}
+      <div className="grid grid-cols-1 gap-fluid-md sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((card, i) => (
           <Card
             key={i}
             hoverable
-            className="group shadow-premium relative overflow-hidden border-none p-8"
-            padding="none"
+            className="group shadow-premium relative overflow-hidden border-border"
           >
             <div className="flex items-start justify-between">
               <div
                 className={cn(
-                  'rounded-2xl p-3 shadow-sm transition-transform duration-300 group-hover:scale-110',
+                  'rounded-md p-3 transition-transform duration-300 group-hover:scale-110',
                   card.color
                 )}
               >
@@ -164,10 +160,10 @@ export default function DashboardPage() {
               </div>
               <div
                 className={cn(
-                  'flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black tracking-widest uppercase shadow-sm',
+                  'flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-widest uppercase',
                   card.isPositive
-                    ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                    : 'border-red-100 bg-red-50 text-red-700'
+                    ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                    : 'border-destructive/20 bg-destructive/10 text-destructive'
                 )}
               >
                 {card.isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
@@ -175,14 +171,14 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="mt-6 space-y-1">
-              <p className="text-[10px] font-black tracking-[0.15em] text-zinc-400 uppercase">
+              <p className="text-[10px] font-semibold tracking-[0.15em] text-muted-foreground uppercase">
                 {card.title}
               </p>
               <div className="h-9">
                 {card.value === null ? (
-                  <Skeleton className="h-8 w-24 rounded-lg" />
+                  <Skeleton className="h-8 w-24 rounded-md" />
                 ) : (
-                  <p className="text-3xl leading-none font-black tracking-tight text-zinc-950">
+                  <p className="text-size-2xl leading-none font-semibold tracking-tight text-foreground">
                     {card.value}
                   </p>
                 )}
@@ -193,19 +189,19 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Expenses Preview */}
-        <Card className="shadow-premium overflow-hidden border-none" padding="none">
-          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-8">
+      {/* Main Content Grid - Adaptive 4/8/12 approach */}
+      <div className="grid grid-cols-1 gap-fluid-lg lg:grid-cols-12">
+        {/* Expenses Preview - 4 columns on Desktop */}
+        <Card className="shadow-premium overflow-hidden border-border lg:col-span-4" padding="none">
+          <div className="flex items-center justify-between border-b border-border bg-muted/30 p-fluid-md">
             <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
+              <div className="rounded-md border border-border bg-card p-2.5">
                 <TrendingUp size={20} className="text-amber-600" />
               </div>
-              <h2 className="text-xl font-black tracking-tight text-zinc-950">Répartition Budget</h2>
+              <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Répartition Budget</h2>
             </div>
           </div>
-          <div className="p-8 space-y-6">
+          <div className="p-fluid-md space-y-6">
             {isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="space-y-2">
@@ -217,15 +213,15 @@ export default function DashboardPage() {
                 </div>
               ))
             ) : Object.keys(expensesByCategory).length === 0 ? (
-              <p className="text-center py-10 text-sm font-bold text-zinc-400 italic">Aucune donnée financière.</p>
+              <p className="text-center py-10 text-sm font-semibold text-muted-foreground italic">Aucune donnée financière.</p>
             ) : (
               Object.entries(expensesByCategory).map(([cat, amount]: [string, any], i) => (
                 <div key={i} className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-black tracking-widest uppercase">
-                    <span className="text-zinc-500">{cat.replace('_', ' ')}</span>
-                    <span className="text-zinc-950">{formatCurrency(amount, enterprise?.devise)}</span>
+                  <div className="flex justify-between text-[10px] font-semibold tracking-widest uppercase">
+                    <span className="text-muted-foreground">{cat.replace('_', ' ')}</span>
+                    <span className="text-foreground">{formatCurrency(amount, enterprise?.devise)}</span>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-zinc-100 overflow-hidden">
+                  <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
                     <div 
                       className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
                       style={{ width: `${Math.min((amount / stats.totalExpenses) * 100, 100)}%` }}
@@ -237,79 +233,31 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Teams Status */}
-        <Card className="shadow-premium overflow-hidden border-none" padding="none">
-          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-8">
+        {/* Recent Activity - 8 columns on Desktop */}
+        <Card className="shadow-premium overflow-hidden border-border lg:col-span-8" padding="none">
+          <div className="flex items-center justify-between border-b border-border bg-muted/30 p-fluid-md">
             <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                <Users size={20} className="text-emerald-600" />
+              <div className="rounded-md border border-border bg-card p-2.5">
+                <Clock size={20} className="text-primary" />
               </div>
-              <h2 className="text-xl font-black tracking-tight text-zinc-950">Status Équipes</h2>
-            </div>
-          </div>
-          <div className="p-8 space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Actifs</p>
-                <p className="text-2xl font-black text-zinc-950">{isLoading ? <Skeleton className="h-6 w-10" /> : stats.activeWorkers}</p>
-              </div>
-              <div className="h-10 w-[1px] bg-zinc-100" />
-              <div className="space-y-1 text-right">
-                <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Total</p>
-                <p className="text-2xl font-black text-zinc-950">{isLoading ? <Skeleton className="h-6 w-10 ml-auto" /> : stats.workersCount}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black tracking-widest text-zinc-500 uppercase">Taux d'activité</span>
-                <span className="text-xs font-black text-emerald-600">
-                  {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
-                </span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-zinc-100 overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
-                  style={{ width: isLoading ? '0%' : `${(stats.activeWorkers / (stats.workersCount || 1)) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <Button 
-              asChild 
-              variant="outline" 
-              className="w-full h-12 rounded-xl border-zinc-100 text-[10px] font-black tracking-widest uppercase hover:bg-zinc-50"
-            >
-              <Link href="/dashboard/ouvriers">Gérer les effectifs</Link>
-            </Button>
-          </div>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="shadow-premium overflow-hidden border-none lg:col-span-2" padding="none">
-          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-8">
-            <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                <Clock size={20} className="text-indigo-600" />
-              </div>
-              <h2 className="text-xl font-black tracking-tight text-zinc-950">
+              <h2 className="text-size-xl font-semibold tracking-tight text-foreground">
                 Activités Récentes
               </h2>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="rounded-xl text-[10px] font-black tracking-widest text-indigo-600 uppercase hover:bg-indigo-50"
+              className="rounded-md text-[10px] font-semibold tracking-widest text-primary uppercase"
             >
               Voir l'historique
             </Button>
           </div>
-          <div className="divide-y divide-zinc-100 bg-white">
+          <div className="divide-y divide-border bg-card">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center justify-between p-6">
                   <div className="flex items-center gap-5">
-                    <Skeleton className="h-12 w-12 rounded-2xl" />
+                    <Skeleton className="h-11 w-11 rounded-md" />
                     <div className="space-y-2">
                       <Skeleton className="h-4 w-32" />
                       <Skeleton className="h-3 w-48" />
@@ -322,23 +270,23 @@ export default function DashboardPage() {
                 </div>
               ))
             ) : recentMovements.length === 0 ? (
-              <div className="p-20 text-center text-zinc-400">
+              <div className="p-20 text-center text-muted-foreground">
                 <Package size={40} className="mx-auto mb-4 opacity-10" />
-                <p className="font-bold italic">Aucune transaction récente à signaler.</p>
+                <p className="font-semibold italic">Aucune transaction récente à signaler.</p>
               </div>
             ) : (
               recentMovements.map((mov, i) => (
                 <div
                   key={i}
-                  className="group flex items-center justify-between p-6 transition-all duration-300 hover:bg-zinc-50/50"
+                  className="group flex flex-col gap-4 p-6 transition-all duration-300 hover:bg-muted/30 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-center gap-5">
                     <div
                       className={cn(
-                        'flex h-12 w-12 items-center justify-center rounded-2xl border shadow-sm transition-transform group-hover:scale-110',
+                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110',
                         mov.type_mouvement === 'entree'
-                          ? 'border-emerald-100 bg-emerald-50 text-emerald-600 shadow-emerald-50'
-                          : 'border-red-100 bg-red-50 text-red-600 shadow-red-50'
+                          ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
+                          : 'border-destructive/20 bg-destructive/10 text-destructive'
                       )}
                     >
                       {mov.type_mouvement === 'entree' ? (
@@ -348,16 +296,16 @@ export default function DashboardPage() {
                       )}
                     </div>
                     <div>
-                      <div className="text-base leading-none font-black text-zinc-950 transition-colors group-hover:text-indigo-600">
+                      <div className="text-size-base leading-none font-semibold text-foreground transition-colors group-hover:text-primary">
                         {mov.materiaux?.nom}
                       </div>
-                      <div className="mt-2 flex items-center gap-2 text-[10px] font-black tracking-wider text-zinc-400 uppercase">
+                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                         <span
                           className={cn(
                             'rounded-md border px-2 py-0.5',
                             mov.type_mouvement === 'entree'
-                              ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                              : 'border-red-100 bg-red-50 text-red-700'
+                              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                              : 'border-destructive/20 bg-destructive/10 text-destructive'
                           )}
                         >
                           {mov.type_mouvement === 'entree' ? '+' : '-'}
@@ -367,11 +315,11 @@ export default function DashboardPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-xs font-black tracking-tight text-zinc-950">
+                  <div className="text-left sm:text-right">
+                    <div className="text-xs font-semibold tracking-tight text-foreground">
                       {formatDate(mov.created_at)}
                     </div>
-                    <div className="mt-1 text-[9px] font-black tracking-widest text-zinc-400 uppercase">
+                    <div className="mt-1 text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">
                       Enregistré
                     </div>
                   </div>
@@ -381,88 +329,134 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Deadlines / Alerts */}
-        <div className="space-y-8">
-          <Card className="shadow-premium overflow-hidden border-none" padding="none">
-            <div className="border-b border-zinc-100 bg-zinc-50/30 p-8">
-              <div className="flex items-center gap-4">
-                <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                  <AlertCircle size={20} className="text-indigo-600" />
-                </div>
-                <h2 className="text-xl font-black tracking-tight text-zinc-950">
-                  Échéances Chantiers
-                </h2>
+        {/* Teams Status - 4 columns */}
+        <Card className="shadow-premium overflow-hidden border-border lg:col-span-4" padding="none">
+          <div className="flex items-center justify-between border-b border-border bg-muted/30 p-fluid-md">
+            <div className="flex items-center gap-4">
+              <div className="rounded-md border border-border bg-card p-2.5">
+                <Users size={20} className="text-emerald-600" />
+              </div>
+              <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Status Équipes</h2>
+            </div>
+          </div>
+          <div className="p-fluid-md space-y-8">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Actifs</p>
+                <p className="text-size-xl font-semibold text-foreground">{isLoading ? <Skeleton className="h-6 w-10" /> : stats.activeWorkers}</p>
+              </div>
+              <div className="h-10 w-[1px] bg-border" />
+              <div className="space-y-1 text-right">
+                <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Total</p>
+                <p className="text-size-xl font-semibold text-foreground">{isLoading ? <Skeleton className="h-6 w-10 ml-auto" /> : stats.workersCount}</p>
               </div>
             </div>
-            <div className="space-y-4 bg-white p-6">
-              {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-zinc-100 bg-zinc-50/50 p-5">
-                    <div className="mb-3 flex items-center justify-between">
-                      <Skeleton className="h-4 w-12 rounded-md" />
-                      <Skeleton className="h-4 w-20 rounded-md" />
-                    </div>
-                    <Skeleton className="mb-4 h-6 w-full rounded-md" />
-                    <Skeleton className="h-1.5 w-full rounded-full" />
-                  </div>
-                ))
-              ) : recentProjects.length === 0 ? (
-                <p className="py-8 text-center text-sm font-black text-zinc-400 italic">
-                  Aucune échéance proche.
-                </p>
-              ) : (
-                recentProjects.map((proj, i) => (
-                  <div
-                    key={i}
-                    className="group rounded-2xl border border-zinc-100 bg-zinc-50/50 p-5 transition-all hover:border-indigo-200 hover:bg-white"
-                  >
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="rounded-md border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[9px] font-black tracking-widest text-indigo-600 uppercase shadow-sm shadow-indigo-50">
-                        PROJET
-                      </span>
-                      <span className="text-[10px] font-black tracking-tighter text-zinc-400 uppercase">
-                        {formatDate(proj.date_fin_prevue)}
-                      </span>
-                    </div>
-                    <p className="text-lg leading-tight font-black tracking-tight text-zinc-950 transition-colors group-hover:text-indigo-600">
-                      {proj.nom}
-                    </p>
-                    <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
-                      <div className="h-full w-2/3 rounded-full bg-indigo-600 transition-all group-hover:shadow-[0_0_8px_rgba(79,70,229,0.4)]" />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
 
-          <Card
-            className="group shadow-elevated relative overflow-hidden border-none bg-indigo-600 p-10 text-white shadow-indigo-100"
-            padding="none"
-          >
-            <div className="relative z-10 space-y-6">
-              <div className="w-fit rounded-2xl border border-white/20 bg-white/10 p-3 shadow-sm backdrop-blur-sm transition-transform group-hover:scale-110">
-                <TrendingUp size={24} className="text-white" />
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Taux d'activité</span>
+                <span className="text-xs font-semibold text-emerald-600">
+                  {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
+                </span>
               </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl leading-tight font-black tracking-tight">Rapports Complets</h3>
-                <p className="text-xs leading-relaxed font-bold text-indigo-100 opacity-80">
-                  Générez des rapports détaillés (Excel/CSV) pour vos finances et effectifs en quelques secondes.
-                </p>
+              <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
+                  style={{ width: isLoading ? '0%' : `${(stats.activeWorkers / (stats.workersCount || 1)) * 100}%` }}
+                />
               </div>
-              <ExportModal 
-                trigger={
-                  <Button className="mt-4 h-14 w-full rounded-2xl border-none bg-white text-[11px] font-black tracking-widest text-indigo-600 uppercase shadow-xl hover:bg-indigo-50">
-                    Générer un rapport
-                  </Button>
-                }
-              />
             </div>
-            {/* Abstract decoration */}
-            <div className="absolute -right-10 -bottom-10 h-48 w-48 rounded-full bg-white/10 blur-3xl transition-transform duration-700 group-hover:scale-150" />
-            <div className="absolute top-0 right-0 -mt-12 -mr-12 h-24 w-24 rounded-full bg-white/5" />
-          </Card>
-        </div>
+
+            <Button
+              asChild
+              variant="outline"
+              className="w-full"
+            >
+              <Link href="/dashboard/ouvriers">Gérer les effectifs</Link>
+            </Button>
+          </div>
+        </Card>
+
+        {/* Deadlines - 4 columns */}
+        <Card className="shadow-premium overflow-hidden border-border lg:col-span-4" padding="none">
+          <div className="border-b border-border bg-muted/30 p-fluid-md">
+            <div className="flex items-center gap-4">
+              <div className="rounded-md border border-border bg-card p-2.5">
+                <AlertCircle size={20} className="text-primary" />
+              </div>
+              <h2 className="text-size-xl font-semibold tracking-tight text-foreground">
+                Échéances Chantiers
+              </h2>
+            </div>
+          </div>
+          <div className="space-y-4 bg-card p-fluid-md">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="rounded-md border border-border bg-muted/30 p-5">
+                  <div className="mb-3 flex items-center justify-between">
+                    <Skeleton className="h-4 w-12 rounded-md" />
+                    <Skeleton className="h-4 w-20 rounded-md" />
+                  </div>
+                  <Skeleton className="mb-4 h-6 w-full rounded-md" />
+                  <Skeleton className="h-1.5 w-full rounded-full" />
+                </div>
+              ))
+            ) : recentProjects.length === 0 ? (
+              <p className="py-8 text-center text-sm font-semibold text-muted-foreground italic">
+                Aucune échéance proche.
+              </p>
+            ) : (
+              recentProjects.map((proj, i) => (
+                <div
+                  key={i}
+                  className="group rounded-md border border-border bg-muted/30 p-5 transition-all hover:border-primary/20 hover:bg-card"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <span className="rounded-md border border-primary/20 bg-primary/10 px-2 py-0.5 text-[9px] font-semibold tracking-widest text-primary uppercase">
+                      PROJET
+                    </span>
+                    <span className="text-[10px] font-semibold tracking-tighter text-muted-foreground uppercase">
+                      {formatDate(proj.date_fin_prevue)}
+                    </span>
+                  </div>
+                  <p className="text-size-lg leading-tight font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary">
+                    {proj.nom}
+                  </p>
+                  <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full w-2/3 rounded-full bg-primary transition-all group-hover:shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        {/* Reports CTA - 4 columns */}
+        <Card
+          className="group shadow-elevated relative overflow-hidden border-none bg-primary p-fluid-md text-primary-foreground lg:col-span-4"
+          padding="none"
+        >
+          <div className="relative z-10 space-y-6">
+            <div className="w-fit rounded-md border border-white/20 bg-white/10 p-3 backdrop-blur-sm transition-transform group-hover:scale-110">
+              <TrendingUp size={24} className="text-white" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-size-xl leading-tight font-semibold tracking-tight">Rapports Complets</h3>
+              <p className="text-xs leading-relaxed font-medium text-white/80">
+                Générez des rapports détaillés (Excel/CSV) pour vos finances et effectifs en quelques secondes.
+              </p>
+            </div>
+            <ExportModal
+              trigger={
+                <Button className="mt-4 w-full bg-white text-primary hover:bg-white/90">
+                  Générer un rapport
+                </Button>
+              }
+            />
+          </div>
+          <div className="absolute -right-10 -bottom-10 h-48 w-48 rounded-full bg-white/10 blur-3xl transition-transform duration-700 group-hover:scale-150" />
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 h-24 w-24 rounded-full bg-white/5" />
+        </Card>
       </div>
     </div>
   );

@@ -4,16 +4,15 @@ import React, { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/dashboard/sidebar';
 import { Topbar } from '@/components/dashboard/topbar';
 import { cn } from '@/lib/utils';
+import { Providers } from '@/components/providers';
+import { motion, AnimatePresence } from 'framer-motion';
+import { usePathname } from 'next/navigation';
 
 interface DashboardShellProps {
   children: React.ReactNode;
   userProfile: any;
   enterprise: any;
 }
-
-import { Providers } from '@/components/providers';
-import { motion, AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
 
 export function DashboardShell({ children, userProfile, enterprise }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,7 +26,7 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
   return (
     <Providers enterprise={enterprise} userProfile={userProfile}>
       <div
-        className="font-inter flex min-h-screen overflow-x-hidden bg-zinc-50/50"
+        className="flex min-h-screen overflow-x-hidden bg-background"
         suppressHydrationWarning
       >
         {/* Sidebar */}
@@ -56,13 +55,13 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 lg:py-12"
+                  className="mx-auto max-w-7xl px-fluid-md py-fluid-lg sm:px-fluid-lg lg:px-fluid-xl lg:py-fluid-xl"
                 >
                   {children}
                 </motion.div>
               </AnimatePresence>
             ) : (
-              <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+              <div className="mx-auto max-w-7xl px-fluid-md py-fluid-lg sm:px-fluid-lg lg:px-fluid-xl lg:py-fluid-xl">
                 {children}
               </div>
             )}
@@ -70,22 +69,22 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
 
           <footer
             className={cn(
-              'border-t border-zinc-100/60 bg-white/50 px-4 py-10 transition-all duration-300 sm:px-6 lg:px-10',
+              'border-t border-border bg-card/50 px-fluid-md py-fluid-lg transition-all duration-300 sm:px-fluid-lg lg:px-fluid-xl',
               'lg:ml-72'
             )}
           >
-            <div className="mx-auto flex max-w-[1440px] flex-col items-center justify-between gap-6 sm:flex-row">
-              <span className="text-center text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase sm:text-left">
+            <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-6 sm:flex-row">
+              <span className="text-center text-[10px] font-semibold tracking-[0.2em] text-muted-foreground uppercase sm:text-left">
                 © {new Date().getFullYear()} {mounted && enterprise?.nom ? enterprise.nom : 'GestiBulder'} — Built for Builders
               </span>
               <div className="flex items-center gap-6">
-                <span className="cursor-pointer text-[10px] font-bold tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-950">
+                <span className="cursor-pointer text-[10px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground">
                   Privacy
                 </span>
-                <span className="cursor-pointer text-[10px] font-bold tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-950">
+                <span className="cursor-pointer text-[10px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground">
                   Terms
                 </span>
-                <span className="cursor-pointer text-[10px] font-bold tracking-widest text-zinc-400 uppercase transition-colors hover:text-zinc-950">
+                <span className="cursor-pointer text-[10px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground">
                   Support
                 </span>
               </div>
