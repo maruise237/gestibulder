@@ -18,6 +18,7 @@ import { Project } from '@/types/project';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { TruncatedText } from '@/components/ui/truncated-text';
 import Link from 'next/link';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -179,7 +180,9 @@ export default function ChantiersPage() {
                   </button>
                 </div>
                 <h3 className="text-2xl leading-tight font-black tracking-tight text-zinc-950 transition-colors group-hover:text-indigo-600">
+                  <TruncatedText>
                   {project.nom}
+                  </TruncatedText>
                 </h3>
               </div>
 
@@ -190,8 +193,10 @@ export default function ChantiersPage() {
                     <div className="rounded-lg bg-zinc-50 p-2 transition-colors group-hover:bg-indigo-50">
                       <MapPin size={16} className="text-zinc-400 group-hover:text-indigo-500" />
                     </div>
-                    <span className="truncate text-sm font-bold tracking-tight text-zinc-600">
+                    <span className="text-sm font-bold tracking-tight text-zinc-600">
+                      <TruncatedText>
                       {project.adresse || 'Adresse non renseignée'}
+                      </TruncatedText>
                     </span>
                   </div>
                   <div className="flex items-center gap-3 text-zinc-500">
