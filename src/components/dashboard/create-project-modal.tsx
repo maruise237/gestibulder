@@ -19,9 +19,11 @@ import { Label } from '@/components/ui/label';
 import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: () => void }) {
-  const { enterprise } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+export function CreateProjectModal({ onProjectCreated, trigger, open, onOpenChange }: { onProjectCreated?: () => void; trigger?: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) {
+  const { enterprise, setSelectedProjectId } = useApp();
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setIsOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -54,8 +56,9 @@ export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: ()
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
     },
-    onSuccess: () => {
+    onSuccess: (res) => {
       setIsOpen(false);
+      if (res.project?.id) setSelectedProjectId(res.project.id);
       if (onProjectCreated) onProjectCreated();
     },
   });

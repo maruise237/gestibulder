@@ -37,7 +37,6 @@ const CATEGORIES = [
 ];
 
 export function CreateExpenseModal({
-  projects,
   onExpenseCreated,
 }: {
   projects: Project[];
@@ -158,19 +157,28 @@ export function CreateExpenseModal({
                 className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
               />
             </div>
+          ) : (
+            <div className="grid gap-6">
+              <div className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+                <div className="bg-indigo-600 text-white flex h-8 w-8 items-center justify-center rounded-lg shadow-sm">
+                  <HardHat size={16} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Chantier d'affectation</span>
+                  <span className="text-sm font-black text-zinc-900">Utilisation du chantier actif</span>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2.5">
                 <Label
-                  htmlFor="montant"
+                  htmlFor="libelle"
                   className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
                 >
-                  <Banknote size={14} className="text-indigo-600" /> Montant
+                  <ReceiptText size={14} className="text-indigo-600" /> Libellé / Objet
                 </Label>
                 <Input
-                  id="montant"
-                  name="montant"
-                  type="number"
+                  id="libelle"
+                  name="libelle"
                   required
                   placeholder="Ex: Achat de ciment en gros"
                 />
