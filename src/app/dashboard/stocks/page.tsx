@@ -1,287 +1,259 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
-import {
-  Package,
-  Loader2,
-  Plus,
-  AlertTriangle,
-  Archive,
-  HardHat,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  PlusCircle,
-  MinusCircle,
-  X,
-  Search,
-  ArrowUpRight,
-  ArrowDownRight,
-  MoreVertical,
-} from 'lucide-react';
+import React, { useState } from 'react';
 import { getMaterials, addStockMovement } from '@/lib/server/stock.actions';
 import { getProjects } from '@/lib/server/project.actions';
-import { Material, NewStockMovement } from '@/types/stock';
-import { Project } from '@/types/project';
+import {
+  Package,
+  Search,
+  PlusCircle,
+  MinusCircle,
+  MoreVertical,
+  Loader2,
+  HardHat,
+  ArrowUpRight,
+  ArrowDownRight,
+  ChevronDown,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Material } from '@/types/stock';
 import { CreateMaterialModal } from '@/components/dashboard/create-material-modal';
 import { StockHistoryModal } from '@/components/dashboard/stock-history-modal';
-import { cn, formatCurrency } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Card } from '@/components/ui/card';
-import { useApp } from '@/lib/context/app-context';
 
 export default function StocksPage() {
-  const { enterprise } = useApp();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [materials, setMaterials] = useState<Material[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [selectedChantier, setSelectedChantier] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [selectedChantier, setSelectedChantier] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [movementModal, setMovementModal] = useState<{
     open: boolean;
-    material?: Material;
-    type?: 'entree' | 'sortie';
-  }>({ open: false });
-  const [historyModal, setHistoryModal] = useState<{ open: boolean; material?: Material }>({
+    material: Material | null;
+    type: 'entree' | 'sortie';
+  }>({ open: false, material: null, type: 'entree' });
+  const [historyModal, setHistoryModal] = useState<{ open: boolean; material: Material | null }>({
     open: false,
+    material: null,
   });
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    const p = await getProjects();
-    if (p.projects) setProjects(p.projects);
+  const queryClient = useQueryClient();
 
-    if (selectedChantier) {
-      const m = await getMaterials(selectedChantier);
-      if (m.materials) setMaterials(m.materials);
-    }
-    setIsLoading(false);
-  }, [selectedChantier]);
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      if (res.projects?.length && !selectedChantier) setSelectedChantier(res.projects[0].id);
+      return res.projects || [];
+    },
+  });
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const { data: materials = [], isLoading } = useQuery({
+    queryKey: ['stocks', selectedChantier],
+    queryFn: async () => {
+      if (!selectedChantier) return [];
+      const res = await getMaterials(selectedChantier);
+      return res.materials || [];
+    },
+    enabled: !!selectedChantier,
+  });
 
-  const handleMovement = async (e: React.FormEvent<HTMLFormElement>) => {
+  const movementMutation = useMutation({
+    mutationFn: (data: any) => addStockMovement(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stocks', selectedChantier] });
+      setMovementModal({ open: false, material: null, type: 'entree' });
+    },
+  });
+
+  const filteredMaterials = materials.filter((s) =>
+    s.nom.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleMovement = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!movementModal.material || !movementModal.type) return;
+    if (!movementModal.material) return;
 
-    setIsSubmitting(movementModal.material.id);
     const formData = new FormData(e.currentTarget);
-
-    const data: NewStockMovement = {
-      chantier_id: selectedChantier,
+    movementMutation.mutate({
       materiau_id: movementModal.material.id,
+      chantier_id: selectedChantier,
       type_mouvement: movementModal.type,
       quantite: Number(formData.get('quantite')),
-      cout_unitaire: Number(formData.get('cout_unitaire')) || undefined,
-      date: new Date().toISOString().split('T')[0],
-      fournisseur: (formData.get('fournisseur') as string) || undefined,
-      usage: (formData.get('usage') as string) || undefined,
-    };
+      cout_unitaire: formData.get('cout_unitaire') ? Number(formData.get('cout_unitaire')) : undefined,
+      fournisseur: formData.get('fournisseur') as string,
+      usage: formData.get('usage') as string,
+      date: new Date().toISOString(),
+    });
+  };
 
-    const result = await addStockMovement(data);
-
-    if (result.error) {
-      alert(result.error);
-    } else {
-      setMovementModal({ open: false });
-      fetchData();
-    }
-    setIsSubmitting(null);
+  const handleMaterialCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ['stocks', selectedChantier] });
   };
 
   return (
-    <div className="animate-in fade-in space-y-10 pb-20 duration-500">
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div className="space-y-1.5">
-          <h1 className="text-4xl font-black tracking-tight text-zinc-950">Stocks & Matériaux</h1>
-          <p className="font-bold tracking-tight text-zinc-500">
-            Suivi des consommations et gestion des approvisionnements.
-          </p>
-        </div>
-        {selectedChantier && (
-          <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={fetchData} />
-        )}
-      </div>
-
-      {/* Project Selector */}
-      <Card
-        className="shadow-elevated border-none bg-indigo-600 p-8 text-white shadow-indigo-100"
-        padding="none"
-      >
-        <div className="px-8">
-          <label className="mb-3 block text-[10px] font-black tracking-[0.2em] text-indigo-200 uppercase">
-            Localisation du chantier
-          </label>
-          <div className="group relative">
-            <HardHat
-              className="absolute top-1/2 left-0 -translate-y-1/2 text-indigo-300 transition-colors group-hover:text-white"
-              size={24}
-            />
+    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div className="space-y-1">
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Stocks</h1>
+          <div className="relative mt-2">
+            <HardHat className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
             <select
-              className="w-full cursor-pointer appearance-none bg-transparent pl-10 text-3xl font-black tracking-tight text-white outline-none"
-              value={selectedChantier}
+              className="h-9 w-full appearance-none rounded-md border border-border bg-background pr-8 pl-9 text-xs font-medium focus:border-primary outline-none sm:w-64"
+              value={selectedChantier || ""}
               onChange={(e) => setSelectedChantier(e.target.value)}
             >
-              <option value="" className="font-bold text-zinc-900">
-                -- Sélectionner un projet --
-              </option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id} className="font-bold text-zinc-900">
-                  {p.nom}
-                </option>
+              <option value="" disabled>Choisir un chantier</option>
+              {projectsData?.map((p: any) => (
+                <option key={p.id} value={p.id}>{p.nom}</option>
               ))}
             </select>
+            <ChevronDown className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" size={14} />
           </div>
         </div>
-      </Card>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <div className="group relative">
+            <Search
+              className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
+              size={14}
+            />
+            <input
+              type="text"
+              placeholder="Rechercher..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
+            />
+          </div>
+          {selectedChantier && (
+            <CreateMaterialModal onMaterialCreated={handleMaterialCreated} />
+          )}
+        </div>
+      </div>
 
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-32 text-zinc-400">
-          <Loader2 className="mb-4 animate-spin" size={40} />
-          <p className="font-black tracking-tight">Mise à jour de l'inventaire...</p>
-        </div>
-      ) : !selectedChantier ? (
-        <Card className="border-2 border-dashed border-zinc-100 bg-zinc-50/30 py-24 text-center">
-          <Archive size={48} className="mx-auto mb-6 opacity-10" />
-          <p className="text-lg font-black text-zinc-400 italic">
-            Veuillez sélectionner un chantier pour voir l'état des stocks.
-          </p>
-        </Card>
-      ) : materials.length === 0 ? (
-        <Card className="border-2 border-dashed border-zinc-100 bg-zinc-50/30 py-24 text-center">
-          <div className="mb-6 inline-flex rounded-3xl bg-white p-6 text-zinc-300 shadow-sm">
-            <Package size={48} strokeWidth={1.5} />
+      {!selectedChantier ? (
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
+          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
+            <HardHat size={32} strokeWidth={1.5} />
           </div>
-          <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Aucun matériau répertorié
+          <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
+          <p className="text-size-sm text-muted-foreground mt-1">Veuillez choisir un chantier dans la liste pour voir ses stocks.</p>
+        </Card>
+      ) : isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i} className="p-6">
+              <Skeleton className="h-6 w-32 mb-4" />
+              <Skeleton className="h-12 w-full rounded-md mb-4" />
+              <Skeleton className="h-9 w-full rounded-md" />
+            </Card>
+          ))}
+        </div>
+      ) : filteredMaterials.length === 0 ? (
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
+          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
+            <Package size={32} strokeWidth={1.5} />
+          </div>
+          <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
+            Aucun matériau
           </h2>
-          <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
-            Commencez par ajouter les matériaux (Ciment, Sable, Acier) utilisés sur ce chantier.
+          <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
+            {searchQuery ? "Aucun résultat pour cette recherche." : "Ajoutez les matériaux nécessaires à ce chantier."}
           </p>
-          <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={fetchData} />
+          {!searchQuery && <CreateMaterialModal onMaterialCreated={handleMaterialCreated} />}
         </Card>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {materials.map((mat) => {
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredMaterials.map((mat) => {
             const stock = mat.stock_actuel || 0;
-            const isLow = stock <= mat.seuil_alerte;
+            const isLow = stock <= mat.seuil_alerte && stock > 0;
             const isOut = stock <= 0;
 
             return (
               <Card
                 key={mat.id}
-                hoverable
-                className={cn(
-                  'group flex flex-col border-l-8 transition-all duration-300',
-                  isOut
-                    ? 'border-l-red-500 shadow-red-50/50'
-                    : isLow
-                      ? 'border-l-amber-500 shadow-amber-50/50'
-                      : 'hover:border-l-indigo-600'
-                )}
+                className="group flex flex-col overflow-hidden border-border p-0"
                 padding="none"
               >
-                <div className="p-8">
-                  <div className="mb-8 flex items-start justify-between">
-                    <div
-                      className={cn(
-                        'rounded-2xl p-3 shadow-sm transition-all duration-300 group-hover:scale-110',
-                        isOut
-                          ? 'border border-red-100 bg-red-50 text-red-600'
-                          : isLow
-                            ? 'border border-amber-100 bg-amber-50 text-amber-600'
-                            : 'border border-zinc-100 bg-zinc-50 text-zinc-900 group-hover:border-indigo-600 group-hover:bg-indigo-600 group-hover:text-white'
-                      )}
-                    >
-                      <Archive size={24} strokeWidth={2.5} />
+                <div className="p-4 sm:p-6">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div className={cn(
+                      "rounded-md p-2",
+                      isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-amber-500/10 text-amber-600" : "bg-primary/10 text-primary"
+                    )}>
+                      <Package size={18} />
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      {isOut ? (
-                        <span className="rounded-full bg-red-600 px-2.5 py-1 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-red-200">
-                          Rupture de Stock
-                        </span>
-                      ) : (
-                        isLow && (
-                          <span className="rounded-full bg-amber-500 px-2.5 py-1 text-[10px] font-black tracking-widest text-white uppercase shadow-lg shadow-amber-200">
-                            Stock Critique
-                          </span>
-                        )
-                      )}
-                      <button className="rounded-xl p-2 text-zinc-300 transition-all hover:bg-zinc-50 hover:text-zinc-950">
-                        <MoreVertical size={18} />
-                      </button>
+                    <div className="flex items-center gap-2">
+                       {isOut ? (
+                         <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-destructive uppercase">Rupture</span>
+                       ) : isLow ? (
+                         <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-amber-600 uppercase">Critique</span>
+                       ) : null}
+                       <button className="text-muted-foreground hover:text-foreground transition-colors">
+                         <MoreVertical size={16} />
+                       </button>
                     </div>
                   </div>
 
-                  <h3 className="mb-1 truncate text-2xl leading-tight font-black tracking-tight text-zinc-950 transition-colors group-hover:text-indigo-600">
+                  <h3 className="truncate text-size-lg font-semibold tracking-tight text-foreground group-hover:text-primary">
                     {mat.nom}
                   </h3>
-                  <p className="mb-8 flex items-center gap-2 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-                    <TrendingUp size={12} className="text-indigo-500/50" /> Seuil d'alerte :{' '}
-                    {mat.seuil_alerte} {mat.unite}
+                  <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground uppercase">
+                    Seuil: {mat.seuil_alerte} {mat.unite}
                   </p>
 
-                  <div className="mb-8 flex items-center justify-between rounded-3xl border border-zinc-100 bg-zinc-50/80 p-6 transition-all group-hover:bg-white group-hover:shadow-sm">
+                  <div className="my-6 flex items-center justify-between rounded-lg border border-border bg-muted/20 p-4 transition-colors group-hover:bg-muted/30">
                     <div className="flex flex-col">
-                      <span
-                        className={cn(
-                          'text-5xl leading-none font-black tracking-tighter',
-                          isOut ? 'text-red-600' : isLow ? 'text-amber-600' : 'text-zinc-950'
-                        )}
-                      >
+                      <span className={cn(
+                        "text-size-3xl font-semibold tracking-tight",
+                        isOut ? "text-destructive" : isLow ? "text-amber-600" : "text-foreground"
+                      )}>
                         {stock}
                       </span>
-                      <span className="mt-2 text-[11px] font-black tracking-widest text-zinc-400 uppercase">
-                        {mat.unite}
-                      </span>
+                      <span className="text-[9px] font-semibold text-muted-foreground uppercase">{mat.unite}</span>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                       <Button
                         variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          setMovementModal({ open: true, material: mat, type: 'sortie' })
-                        }
-                        className="h-12 w-12 rounded-xl border-zinc-200 bg-white shadow-sm hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                        size="icon-sm"
+                        onClick={() => setMovementModal({ open: true, material: mat, type: 'sortie' })}
+                        className="h-9 w-9 rounded-md border-border bg-background hover:bg-destructive/5 hover:text-destructive"
+                        title="Consommer"
                       >
-                        <MinusCircle size={22} />
+                        <MinusCircle size={18} />
                       </Button>
                       <Button
                         variant="outline"
-                        size="icon"
-                        onClick={() =>
-                          setMovementModal({ open: true, material: mat, type: 'entree' })
-                        }
-                        className="h-12 w-12 rounded-xl border-zinc-200 bg-white shadow-sm hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600"
+                        size="icon-sm"
+                        onClick={() => setMovementModal({ open: true, material: mat, type: 'entree' })}
+                        className="h-9 w-9 rounded-md border-border bg-background hover:bg-emerald-500/5 hover:text-emerald-600"
+                        title="Réapprovisionner"
                       >
-                        <PlusCircle size={22} />
+                        <PlusCircle size={18} />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="mt-auto flex items-center justify-between border-t border-zinc-100 pt-6">
-                    <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Mis à jour le {new Date(mat.created_at).toLocaleDateString()}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 rounded-xl text-[10px] font-black tracking-widest text-indigo-600 uppercase hover:bg-indigo-50"
-                      onClick={() => setHistoryModal({ open: true, material: mat })}
-                    >
-                      Historique
-                    </Button>
+                  <div className="mt-auto flex items-center justify-between">
+                     <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">
+                       Maj {new Date(mat.created_at).toLocaleDateString()}
+                     </span>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       className="h-7 px-2 text-[9px] font-semibold uppercase tracking-widest"
+                       onClick={() => setHistoryModal({ open: true, material: mat })}
+                     >
+                       Historique
+                     </Button>
                   </div>
                 </div>
               </Card>
@@ -294,130 +266,109 @@ export default function StocksPage() {
       {historyModal.open && historyModal.material && (
         <StockHistoryModal
           material={historyModal.material}
-          onClose={() => setHistoryModal({ open: false })}
+          onClose={() => setHistoryModal({ open: false, material: null })}
         />
       )}
 
-                  {/* Modal de mouvement (Entrée/Sortie) */}
+      {/* Modal de mouvement */}
       <Dialog
         open={movementModal.open}
-        onOpenChange={(open) => !open && setMovementModal({ open: false })}
+        onOpenChange={(open) => !open && setMovementModal({ ...movementModal, open: false })}
       >
-        <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className={cn(
-            "border-b p-6 sm:p-8 pb-6",
-            movementModal.type === 'entree'
-              ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
-              : "bg-red-600 text-white shadow-lg shadow-red-100"
+            "bg-muted/30 border-b p-6",
+            movementModal.type === 'entree' ? "text-emerald-600" : "text-destructive"
           )}>
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-white/20 p-3 shadow-lg">
-                {movementModal.type === 'entree' ? (
-                  <ArrowUpRight size={24} strokeWidth={2.5} />
-                ) : (
-                  <ArrowDownRight size={24} strokeWidth={2.5} />
-                )}
+              <div className={cn(
+                "rounded-md p-2",
+                movementModal.type === 'entree' ? "bg-emerald-500/10" : "bg-destructive/10"
+              )}>
+                {movementModal.type === 'entree' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
               </div>
               <div className="space-y-1">
-                <DialogTitle className="text-2xl font-black tracking-tight uppercase text-white">
-                  {movementModal.type === 'entree' ? 'Entrée Stock' : 'Consommation'}
-                </DialogTitle>
-                <DialogDescription className="text-white/70 text-xs font-black tracking-widest uppercase">
-                  Mise à jour du registre
-                </DialogDescription>
+                <DialogTitle>{movementModal.type === 'entree' ? 'Réapprovisionner' : 'Consommer'}</DialogTitle>
+                <DialogDescription>Mise à jour du registre de stock</DialogDescription>
               </div>
             </div>
           </DialogHeader>
 
           {movementModal.material && (
-            <form onSubmit={handleMovement} className="space-y-8 p-6 sm:p-8">
-              <div className="rounded-3xl border border-zinc-100 bg-zinc-50/50 p-6 text-center">
-                <p className="mb-2 text-[10px] font-black tracking-[0.2em] text-zinc-400 uppercase">
-                  Matériau identifié
-                </p>
-                <p className="text-3xl font-black tracking-tight text-zinc-950">
-                  {movementModal.material.nom}
-                </p>
-                <p className="mt-1 text-[11px] font-black tracking-widest text-zinc-400 uppercase">
-                  Unité: {movementModal.material.unite}
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
-                    Quantité ({movementModal.material.unite})
-                  </label>
-                  <input
-                    name="quantite"
-                    type="number"
-                    required
-                    step="0.01"
-                    placeholder="0.00"
-                    autoFocus
-                    className="h-20 w-full rounded-2xl border border-zinc-200 bg-zinc-50 text-center text-4xl font-black transition-all outline-none placeholder:text-zinc-200 focus:border-indigo-600 focus:ring-8 focus:ring-indigo-600/5"
-                  />
+            <form onSubmit={handleMovement} className="flex flex-1 flex-col overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="rounded-md border border-border bg-muted/30 p-4 text-center mb-6">
+                  <p className="text-[9px] font-semibold text-muted-foreground uppercase mb-1">Matériau</p>
+                  <p className="text-size-lg font-semibold text-foreground">{movementModal.material.nom}</p>
+                  <p className="text-[9px] font-medium text-muted-foreground uppercase">{movementModal.material.unite}</p>
                 </div>
 
-                {movementModal.type === 'entree' ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                        Coût Unitaire
-                      </label>
-                      <input
-                        name="cout_unitaire"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        className="bg-muted/20 border-muted h-12 w-full rounded-xl px-4 font-bold outline-none focus:border-indigo-600"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                        Fournisseur
-                      </label>
-                      <input
-                        name="fournisseur"
-                        placeholder="Nom..."
-                        className="bg-muted/20 border-muted h-12 w-full rounded-xl px-4 font-bold outline-none focus:border-indigo-600"
-                      />
-                    </div>
-                  </div>
-                ) : (
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">
-                      Usage / Destination
-                    </label>
+                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Quantité ({movementModal.material.unite})</label>
                     <input
-                      name="usage"
-                      placeholder="Ex: Dalle 2ème étage..."
-                      className="bg-muted/20 border-muted h-12 w-full rounded-xl px-4 font-bold outline-none focus:border-indigo-600"
+                      name="quantite"
+                      type="number"
+                      required
+                      step="0.01"
+                      placeholder="0.00"
+                      autoFocus
+                      className="h-12 w-full rounded-md border border-border bg-background text-center text-size-2xl font-semibold outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
                     />
                   </div>
-                )}
+
+                  {movementModal.type === 'entree' ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Prix Unit.</label>
+                        <input
+                          name="cout_unitaire"
+                          type="number"
+                          step="0.01"
+                          placeholder="0.00"
+                          className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none focus:border-primary"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Fournisseur</label>
+                        <input
+                          name="fournisseur"
+                          placeholder="Nom..."
+                          className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none focus:border-primary"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Destination</label>
+                      <input
+                        name="usage"
+                        placeholder="Ex: Dalle 2ème étage..."
+                        className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none focus:border-primary"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <DialogFooter className="bg-muted/30 -mx-6 -mb-6 mt-4 gap-3 p-6 sm:gap-0">
+              <DialogFooter className="p-6">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setMovementModal({ open: false })}
-                  className="h-12 flex-1 rounded-xl font-bold"
+                  onClick={() => setMovementModal({ ...movementModal, open: false })}
+                  className="flex-1 text-[10px] font-semibold uppercase tracking-widest"
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
-                  isLoading={!!isSubmitting}
+                  disabled={movementMutation.isPending}
                   className={cn(
-                    'h-12 flex-1 rounded-xl font-bold shadow-lg',
-                    movementModal.type === 'entree'
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-red-600 hover:bg-red-700 text-white'
+                    "flex-1 text-[10px] font-semibold uppercase tracking-widest",
+                    movementModal.type === 'entree' ? "bg-emerald-600 hover:bg-emerald-700" : "bg-destructive hover:bg-destructive/90"
                   )}
                 >
-                  Confirmer
+                  {movementMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmer'}
                 </Button>
               </DialogFooter>
             </form>

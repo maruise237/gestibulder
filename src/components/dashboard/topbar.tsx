@@ -20,7 +20,7 @@ export const Topbar = memo(({
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 10);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -78,3 +78,4 @@ export const Topbar = memo(({
     </header>
   );
 });
+Topbar.displayName = 'Topbar';

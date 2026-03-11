@@ -79,10 +79,10 @@ export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: ()
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="font-bold shadow-lg">
-        <Plus className="mr-2 h-4 w-4" strokeWidth={3} />
-        Nouveau Projet
-      </Button>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Nouveau Projet
+        </Button>
       </DialogTrigger>
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
         <DialogHeader className="bg-muted/30 border-b p-8 pb-6">

@@ -176,6 +176,7 @@ export default function ProjectDetailsPage() {
               </CardContent>
             </Card>
           </div>
+        )}
 
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Avancement Detail Card */}

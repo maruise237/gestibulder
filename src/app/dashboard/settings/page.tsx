@@ -4,18 +4,13 @@ import React, { useState } from 'react';
 import { useApp } from '@/lib/context/app-context';
 import {
   Building2,
-  User,
   Shield,
   Palette,
-  MapPin,
-  Coins,
-  Phone,
   ChevronRight,
   Loader2
 } from 'lucide-react';
 import { updateEnterprise, updateUserProfile } from '@/lib/server/enterprise.actions';
 import { CURRENCIES } from '@/lib/currencies';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -43,7 +38,6 @@ export default function SettingsPage() {
       devise: formData.get('devise') as string,
     };
     await updateEnterprise(data);
-    // Note: In a real app we'd trigger a router refresh or use a mutation
     window.location.reload();
   };
 
@@ -59,63 +53,59 @@ export default function SettingsPage() {
     window.location.reload();
   };
 
-  const handleChantierChange = (val: string | null) => {
-    // This is just to satisfy types if needed elsewhere,
-    // but settings use local forms.
-  };
-
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Paramètres</h1>
-          <p className="text-sm text-muted-foreground">
+    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Paramètres</h1>
+          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
             {activeSection === 'index'
-              ? "Gérez les préférences de votre compte et de votre entreprise."
+              ? "Gérez les préférences de votre compte."
               : activeSection === 'enterprise'
                 ? "Configuration de l'entreprise"
                 : "Mon profil utilisateur"}
           </p>
         </div>
         {activeSection !== 'index' && (
-          <Button variant="ghost" onClick={() => setActiveSection('index')}>
+          <Button variant="ghost" size="sm" onClick={() => setActiveSection('index')}>
             Retour
           </Button>
         )}
       </div>
 
       {activeSection === 'index' ? (
-        <div className="grid gap-6">
-          <div className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">Organisation</h2>
-            <div className="grid gap-4">
+        <div className="grid gap-4 sm:gap-6">
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Organisation</h2>
+            <div className="grid gap-3">
               <Card
-                className="hover:bg-muted/50 cursor-pointer transition-colors"
+                className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
                 onClick={() => setActiveSection('enterprise')}
+                padding="none"
               >
-                <div className="flex items-center justify-between p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-primary">
-                      <Building2 size={20} />
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                      <Building2 size={18} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{enterprise?.nom || 'Entreprise'}</p>
-                      <p className="text-xs text-muted-foreground">Paramètres de l'organisation et devise.</p>
+                      <p className="text-size-sm font-semibold">{enterprise?.nom || 'Entreprise'}</p>
+                      <p className="text-[10px] text-muted-foreground">Organisation et devise.</p>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="text-muted-foreground" />
+                  <ChevronRight size={14} className="text-muted-foreground" />
                 </div>
               </Card>
 
-              <Card className="opacity-50 grayscale cursor-not-allowed">
-                <div className="flex items-center justify-between p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-primary">
-                      <Palette size={20} />
+              <Card className="opacity-50 grayscale cursor-not-allowed border-border" padding="none">
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                      <Palette size={18} />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Apparence</p>
-                      <p className="text-xs text-muted-foreground">Personnalisation du thème (Bientôt).</p>
+                      <p className="text-size-sm font-semibold">Apparence</p>
+                      <p className="text-[10px] text-muted-foreground">Personnalisation (Bientôt).</p>
                     </div>
                   </div>
                 </div>
@@ -123,34 +113,35 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">Sécurité</h2>
+          <div className="space-y-3">
+            <h2 className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Sécurité</h2>
             <Card
-              className="hover:bg-muted/50 cursor-pointer transition-colors"
+              className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
               onClick={() => setActiveSection('profile')}
+              padding="none"
             >
-              <div className="flex items-center justify-between p-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted text-primary">
-                    <Shield size={20} />
+              <div className="flex items-center justify-between p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+                    <Shield size={18} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">{userProfile?.nom_complet || 'Mon Compte'}</p>
-                    <p className="text-xs text-muted-foreground">Informations personnelles et sécurité.</p>
+                    <p className="text-size-sm font-semibold">{userProfile?.nom_complet || 'Mon Compte'}</p>
+                    <p className="text-[10px] text-muted-foreground">Informations personnelles.</p>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
+                <ChevronRight size={14} className="text-muted-foreground" />
               </div>
             </Card>
           </div>
         </div>
       ) : activeSection === 'enterprise' ? (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Informations de l'entreprise</CardTitle>
-            <CardDescription>Mettez à jour les détails légaux de votre organisation.</CardDescription>
+        <Card className="max-w-2xl border-border">
+          <CardHeader className="p-4 sm:p-6 border-b border-border bg-muted/30">
+            <CardTitle className="text-size-lg">Informations Entreprise</CardTitle>
+            <CardDescription className="text-[10px]">Détails légaux de votre organisation.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             <form onSubmit={handleUpdateEnterprise} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="nom">Nom de l'entreprise</Label>
@@ -163,7 +154,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="devise">Devise</Label>
-                  <Select name="devise" defaultValue={enterprise?.devise} onValueChange={(val) => {}}>
+                  <Select name="devise" defaultValue={enterprise?.devise}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -177,22 +168,22 @@ export default function SettingsPage() {
                   </Select>
                 </div>
               </div>
-              <div className="pt-4">
-                <Button type="submit" disabled={isSaving}>
+              <div className="pt-2">
+                <Button type="submit" size="sm" disabled={isSaving} className="w-full sm:w-auto">
                   {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Enregistrer les modifications
+                  Enregistrer
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
       ) : (
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardTitle>Mon Profil</CardTitle>
-            <CardDescription>Gérez vos informations personnelles.</CardDescription>
+        <Card className="max-w-2xl border-border">
+          <CardHeader className="p-4 sm:p-6 border-b border-border bg-muted/30">
+            <CardTitle className="text-size-lg">Mon Profil</CardTitle>
+            <CardDescription className="text-[10px]">Informations de contact.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-4 sm:p-6">
             <form onSubmit={handleUpdateProfile} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="nom_complet">Nom complet</Label>
@@ -202,10 +193,10 @@ export default function SettingsPage() {
                 <Label htmlFor="telephone">Téléphone</Label>
                 <Input id="telephone" name="telephone" defaultValue={userProfile?.telephone || ''} placeholder="+213..." />
               </div>
-              <div className="pt-4">
-                <Button type="submit" disabled={isSaving}>
+              <div className="pt-2">
+                <Button type="submit" size="sm" disabled={isSaving} className="w-full sm:w-auto">
                   {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Mettre à jour mon profil
+                  Mettre à jour
                 </Button>
               </div>
             </form>

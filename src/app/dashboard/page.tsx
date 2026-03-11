@@ -1,19 +1,16 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import {
   HardHat,
   Users,
   TrendingUp,
   Package,
-  Calendar,
   AlertCircle,
   TrendingDown,
   ArrowUpRight,
   ArrowDownRight,
   Clock,
-  Plus,
-  Filter,
 } from 'lucide-react';
 import { getDashboardData } from '@/lib/server/dashboard.actions';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
@@ -25,9 +22,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { ExportModal } from '@/components/dashboard/export-modal';
+import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard';
 
 const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-project-modal').then(mod => mod.CreateProjectModal), {
-  loading: () => <Skeleton className="h-10 w-32 rounded-lg" />,
+  loading: () => <Skeleton className="h-9 w-32 rounded-md" />,
   ssr: false
 });
 
@@ -60,8 +58,8 @@ export default function DashboardPage() {
               new Date(proj.date_fin_prevue) > new Date()
           )
           .sort(
-            (a: any, b: any) =>
-              new Date(a.date_fin_prevue).getTime() - new Date(b.date_fin_prevue).getTime()
+            (a: any) =>
+              new Date(a.date_fin_prevue).getTime() - new Date().getTime()
           )
           .slice(0, 3) || [];
 
@@ -75,7 +73,7 @@ export default function DashboardPage() {
         }, {}),
       };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const stats = data?.stats || {
@@ -87,292 +85,192 @@ export default function DashboardPage() {
   };
   const recentProjects = data?.recentProjects || [];
   const recentMovements = data?.recentMovements || [];
-  const expensesByCategory = data?.expensesByCategory || {};
+
+  // Show onboarding if no projects and not loading
+  if (!isLoading && stats.projectsCount === 0 && !selectedChantier) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <OnboardingWizard />
+      </div>
+    );
+  }
 
   const cards = [
     {
-      title: 'Chantiers Actifs',
+      title: 'Chantiers',
       value: isLoading ? null : stats.activeProjects.toString(),
       change: '+12%',
       isPositive: true,
       icon: HardHat,
-      color: 'bg-indigo-50 text-indigo-600',
+      color: 'bg-primary/10 text-primary',
       href: '/dashboard/chantiers',
     },
     {
-      title: 'Effectif Total',
+      title: 'Effectif',
       value: isLoading ? null : stats.workersCount.toString(),
       change: '+3',
       isPositive: true,
       icon: Users,
-      color: 'bg-emerald-50 text-emerald-600',
+      color: 'bg-emerald-500/10 text-emerald-600',
       href: '/dashboard/ouvriers',
     },
     {
-      title: 'Total Dépenses',
-      value: isLoading ? null : formatCurrency(stats.totalExpenses, enterprise?.devise),
+      title: 'Budget',
+      value: isLoading ? null : formatCurrency(stats.totalExpenses, enterprise?.devise || 'DA'),
       change: '-5%',
-      isPositive: true,
+      isPositive: false,
       icon: TrendingUp,
-      color: 'bg-amber-50 text-amber-600',
+      color: 'bg-indigo-500/10 text-indigo-600',
       href: '/dashboard/budget',
     },
     {
-      title: 'Alertes Stock',
+      title: 'Stocks',
       value: isLoading ? null : stats.stockAlerts.toString(),
-      change: stats.stockAlerts > 0 ? 'Action requise' : 'Optimal',
+      change: stats.stockAlerts > 0 ? 'Alerte' : 'Ok',
       isPositive: stats.stockAlerts === 0,
       icon: Package,
-      color: stats.stockAlerts > 0 ? 'bg-red-50 text-red-600' : 'bg-zinc-50 text-zinc-600',
+      color: stats.stockAlerts > 0 ? 'bg-destructive/10 text-destructive' : 'bg-amber-500/10 text-amber-600',
       href: '/dashboard/stocks',
     },
   ];
 
   return (
-    <div className="animate-in fade-in space-y-10 pb-20 duration-700">
+    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       {/* Header Section */}
-      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <div className="space-y-1.5">
-          <h1 className="text-4xl font-black tracking-tight text-zinc-950">Vue d'ensemble</h1>
-          <p className="font-bold tracking-tight text-zinc-500">
-            Ravi de vous revoir. Voici l'état de vos chantiers aujourd'hui.
+      <div className="flex items-center justify-between gap-4">
+        <div className="space-y-0.5">
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Tableau de bord</h1>
+          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+            L''état de vos chantiers aujourd''hui.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <ExportModal />
           <CreateProjectModal onProjectCreated={() => window.location.reload()} />
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {/* Stats Grid - 2 columns on Mobile, 4 on Desktop */}
+      <div className="grid grid-cols-2 gap-3 sm:gap-fluid-md lg:grid-cols-4">
         {cards.map((card, i) => (
           <Card
             key={i}
             hoverable
-            className="group shadow-premium relative overflow-hidden border-none p-8"
-            padding="none"
+            size="sm"
+            className="group shadow-premium relative overflow-hidden border-border p-3 sm:p-fluid-md"
           >
             <div className="flex items-start justify-between">
               <div
                 className={cn(
-                  'rounded-2xl p-3 shadow-sm transition-transform duration-300 group-hover:scale-110',
+                  'rounded-md p-1.5 transition-transform duration-300 group-hover:scale-110 sm:p-3',
                   card.color
                 )}
               >
-                <card.icon size={24} strokeWidth={2.5} />
+                <card.icon size={16} strokeWidth={2.5} className="sm:size-6" />
               </div>
               <div
                 className={cn(
-                  'flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-black tracking-widest uppercase shadow-sm',
+                  'flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[7px] font-semibold tracking-widest uppercase sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[10px]',
                   card.isPositive
-                    ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                    : 'border-red-100 bg-red-50 text-red-700'
+                    ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                    : 'border-destructive/20 bg-destructive/10 text-destructive'
                 )}
               >
-                {card.isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
-                {card.change}
+                {card.isPositive ? <ArrowUpRight size={8} className="sm:size-3" /> : <ArrowDownRight size={8} className="sm:size-3" />}
+                <span>{card.change}</span>
               </div>
             </div>
-            <div className="mt-6 space-y-1">
-              <p className="text-[10px] font-black tracking-[0.15em] text-zinc-400 uppercase">
+            <div className="mt-2 space-y-0 sm:mt-4 sm:space-y-1">
+              <p className="text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
                 {card.title}
               </p>
-              <div className="h-9">
-                {card.value === null ? (
-                  <Skeleton className="h-8 w-24 rounded-lg" />
-                ) : (
-                  <p className="text-3xl leading-none font-black tracking-tight text-zinc-950">
-                    {card.value}
-                  </p>
-                )}
-              </div>
+              <h3 className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-xl">
+                {card.value === null ? <Skeleton className="h-5 w-10" /> : card.value}
+              </h3>
             </div>
-            <Link href={card.href} className="absolute inset-0 z-10" />
+            {/* Minimal Decorative pattern */}
+            <div className="absolute -right-1 -bottom-1 opacity-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+              <card.icon size={48} strokeWidth={1} />
+            </div>
           </Card>
         ))}
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Expenses Preview */}
-        <Card className="shadow-premium overflow-hidden border-none" padding="none">
-          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-8">
-            <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                <TrendingUp size={20} className="text-amber-600" />
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-fluid-md">
+        {/* Recent Activity - 8 columns */}
+        <Card className="shadow-premium overflow-hidden border-border lg:col-span-8" padding="none">
+          <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
+            <div className="flex items-center gap-2">
+              <div className="rounded-md border border-border bg-card p-1.5 sm:p-2">
+                <Clock size={14} className="text-primary sm:size-5" />
               </div>
-              <h2 className="text-xl font-black tracking-tight text-zinc-950">Répartition Budget</h2>
+              <h2 className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-xl">Mouvements</h2>
             </div>
-          </div>
-          <div className="p-8 space-y-6">
-            {isLoading ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between">
-                    <Skeleton className="h-3 w-20" />
-                    <Skeleton className="h-3 w-12" />
-                  </div>
-                  <Skeleton className="h-2 w-full rounded-full" />
-                </div>
-              ))
-            ) : Object.keys(expensesByCategory).length === 0 ? (
-              <p className="text-center py-10 text-sm font-bold text-zinc-400 italic">Aucune donnée financière.</p>
-            ) : (
-              Object.entries(expensesByCategory).map(([cat, amount]: [string, any], i) => (
-                <div key={i} className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-black tracking-widest uppercase">
-                    <span className="text-zinc-500">{cat.replace('_', ' ')}</span>
-                    <span className="text-zinc-950">{formatCurrency(amount, enterprise?.devise)}</span>
-                  </div>
-                  <div className="h-2 w-full rounded-full bg-zinc-100 overflow-hidden">
-                    <div 
-                      className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
-                      style={{ width: `${Math.min((amount / stats.totalExpenses) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
-
-        {/* Teams Status */}
-        <Card className="shadow-premium overflow-hidden border-none" padding="none">
-          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-8">
-            <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                <Users size={20} className="text-emerald-600" />
-              </div>
-              <h2 className="text-xl font-black tracking-tight text-zinc-950">Status Équipes</h2>
-            </div>
-          </div>
-          <div className="p-8 space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Actifs</p>
-                <p className="text-2xl font-black text-zinc-950">{isLoading ? <Skeleton className="h-6 w-10" /> : stats.activeWorkers}</p>
-              </div>
-              <div className="h-10 w-[1px] bg-zinc-100" />
-              <div className="space-y-1 text-right">
-                <p className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Total</p>
-                <p className="text-2xl font-black text-zinc-950">{isLoading ? <Skeleton className="h-6 w-10 ml-auto" /> : stats.workersCount}</p>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black tracking-widest text-zinc-500 uppercase">Taux d'activité</span>
-                <span className="text-xs font-black text-emerald-600">
-                  {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
-                </span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-zinc-100 overflow-hidden">
-                <div 
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-1000" 
-                  style={{ width: isLoading ? '0%' : `${(stats.activeWorkers / (stats.workersCount || 1)) * 100}%` }}
-                />
-              </div>
-            </div>
-
-            <Button 
-              asChild 
-              variant="outline" 
-              className="w-full h-12 rounded-xl border-zinc-100 text-[10px] font-black tracking-widest uppercase hover:bg-zinc-50"
-            >
-              <Link href="/dashboard/ouvriers">Gérer les effectifs</Link>
+            <Button variant="ghost" size="sm" asChild className="h-7 px-2 text-[9px] font-semibold tracking-widest uppercase sm:h-9 sm:px-3 sm:text-[10px]">
+              <Link href="/dashboard/stocks">Tout voir</Link>
             </Button>
           </div>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="shadow-premium overflow-hidden border-none lg:col-span-2" padding="none">
-          <div className="flex items-center justify-between border-b border-zinc-100 bg-zinc-50/30 p-8">
-            <div className="flex items-center gap-4">
-              <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                <Clock size={20} className="text-indigo-600" />
-              </div>
-              <h2 className="text-xl font-black tracking-tight text-zinc-950">
-                Activités Récentes
-              </h2>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="rounded-xl text-[10px] font-black tracking-widest text-indigo-600 uppercase hover:bg-indigo-50"
-            >
-              Voir l'historique
-            </Button>
-          </div>
-          <div className="divide-y divide-zinc-100 bg-white">
+          <div className="divide-y divide-border">
             {isLoading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-6">
-                  <div className="flex items-center gap-5">
-                    <Skeleton className="h-12 w-12 rounded-2xl" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-48" />
-                    </div>
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3 p-3 sm:p-6">
+                  <Skeleton className="h-8 w-8 rounded-md sm:h-10 sm:w-10" />
+                  <div className="space-y-1">
+                    <Skeleton className="h-3 w-24 sm:h-4 sm:w-32" />
+                    <Skeleton className="h-2 w-16 sm:h-3 sm:w-24" />
                   </div>
-                  <div className="space-y-2">
-                    <Skeleton className="ml-auto h-4 w-20" />
-                    <Skeleton className="ml-auto h-3 w-12" />
-                  </div>
+                  <Skeleton className="ml-auto h-3 w-12 sm:h-4 sm:w-16" />
                 </div>
               ))
             ) : recentMovements.length === 0 ? (
-              <div className="p-20 text-center text-zinc-400">
-                <Package size={40} className="mx-auto mb-4 opacity-10" />
-                <p className="font-bold italic">Aucune transaction récente à signaler.</p>
+              <div className="flex flex-col items-center justify-center p-6 text-muted-foreground sm:p-12">
+                <Package size={24} className="mb-1 opacity-10 sm:size-32 sm:mb-2" />
+                <p className="text-[10px] font-medium italic sm:text-sm">Aucun mouvement récent.</p>
               </div>
             ) : (
-              recentMovements.map((mov, i) => (
+              recentMovements.slice(0, 4).map((mov, i) => (
                 <div
                   key={i}
-                  className="group flex items-center justify-between p-6 transition-all duration-300 hover:bg-zinc-50/50"
+                  className="group flex items-center justify-between p-3 transition-all duration-300 hover:bg-muted/30 sm:p-6"
                 >
-                  <div className="flex items-center gap-5">
+                  <div className="flex items-center gap-3 sm:gap-5">
                     <div
                       className={cn(
-                        'flex h-12 w-12 items-center justify-center rounded-2xl border shadow-sm transition-transform group-hover:scale-110',
+                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110 sm:h-11 sm:w-11',
                         mov.type_mouvement === 'entree'
-                          ? 'border-emerald-100 bg-emerald-50 text-emerald-600 shadow-emerald-50'
-                          : 'border-red-100 bg-red-50 text-red-600 shadow-red-50'
+                          ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
+                          : 'border-destructive/20 bg-destructive/10 text-destructive'
                       )}
                     >
                       {mov.type_mouvement === 'entree' ? (
-                        <TrendingUp size={20} strokeWidth={2.5} />
+                        <TrendingUp size={14} strokeWidth={2.5} className="sm:size-5" />
                       ) : (
-                        <TrendingDown size={20} strokeWidth={2.5} />
+                        <TrendingDown size={14} strokeWidth={2.5} className="sm:size-5" />
                       )}
                     </div>
                     <div>
-                      <div className="text-base leading-none font-black text-zinc-950 transition-colors group-hover:text-indigo-600">
+                      <div className="text-size-xs leading-none font-semibold text-foreground transition-colors group-hover:text-primary sm:text-size-base">
                         {mov.materiaux?.nom}
                       </div>
-                      <div className="mt-2 flex items-center gap-2 text-[10px] font-black tracking-wider text-zinc-400 uppercase">
+                      <div className="mt-1 flex items-center gap-1.5 text-[7px] font-semibold tracking-wider text-muted-foreground uppercase sm:mt-2 sm:text-[10px]">
                         <span
                           className={cn(
-                            'rounded-md border px-2 py-0.5',
+                            'rounded-md border px-1 py-0.5 sm:px-2',
                             mov.type_mouvement === 'entree'
-                              ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
-                              : 'border-red-100 bg-red-50 text-red-700'
+                              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                              : 'border-destructive/20 bg-destructive/10 text-destructive'
                           )}
                         >
                           {mov.type_mouvement === 'entree' ? '+' : '-'}
                           {mov.quantite} {mov.materiaux?.unite}
                         </span>
-                        • {mov.chantiers?.nom}
+                        <span className="hidden xs:inline">• {mov.chantiers?.nom}</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs font-black tracking-tight text-zinc-950">
+                    <div className="text-[9px] font-semibold tracking-tight text-foreground sm:text-xs">
                       {formatDate(mov.created_at)}
-                    </div>
-                    <div className="mt-1 text-[9px] font-black tracking-widest text-zinc-400 uppercase">
-                      Enregistré
                     </div>
                   </div>
                 </div>
@@ -381,86 +279,100 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Deadlines / Alerts */}
-        <div className="space-y-8">
-          <Card className="shadow-premium overflow-hidden border-none" padding="none">
-            <div className="border-b border-zinc-100 bg-zinc-50/30 p-8">
-              <div className="flex items-center gap-4">
-                <div className="rounded-xl border border-zinc-200 bg-white p-2.5 shadow-sm">
-                  <AlertCircle size={20} className="text-indigo-600" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-4 lg:grid-cols-1 lg:gap-fluid-md">
+          {/* Teams Status */}
+          <Card className="shadow-premium overflow-hidden border-border" padding="none">
+            <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md border border-border bg-card p-1.5">
+                  <Users size={14} className="text-emerald-600 sm:size-5" />
                 </div>
-                <h2 className="text-xl font-black tracking-tight text-zinc-950">
-                  Échéances Chantiers
+                <h2 className="text-size-base font-semibold tracking-tight text-foreground">Équipes</h2>
+              </div>
+            </div>
+            <div className="p-3 space-y-4 sm:p-fluid-md sm:space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <p className="text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">Actifs</p>
+                  <p className="text-size-base font-semibold text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8" /> : stats.activeWorkers}</p>
+                </div>
+                <div className="h-6 w-[1px] bg-border sm:h-8" />
+                <div className="space-y-0.5 text-right">
+                  <p className="text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">Total</p>
+                  <p className="text-size-base font-semibold text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8 ml-auto" /> : stats.workersCount}</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
+                  <span>Activité</span>
+                  <span className="text-emerald-600">
+                    {isLoading ? '...' : (Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100) + "%")}
+                  </span>
+                </div>
+                <div className="h-1 w-full rounded-full bg-muted overflow-hidden sm:h-1.5">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
+                    style={{ width: isLoading ? '0%' : (Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100) + "%") }}
+                  />
+                </div>
+              </div>
+
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="h-8 w-full text-[9px] font-semibold uppercase sm:h-10 sm:text-size-xs"
+              >
+                <Link href="/dashboard/ouvriers">Effectifs</Link>
+              </Button>
+            </div>
+          </Card>
+
+          {/* Deadlines */}
+          <Card className="shadow-premium overflow-hidden border-border" padding="none">
+            <div className="border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
+              <div className="flex items-center gap-2">
+                <div className="rounded-md border border-border bg-card p-1.5">
+                  <AlertCircle size={14} className="text-primary sm:size-5" />
+                </div>
+                <h2 className="text-size-base font-semibold tracking-tight text-foreground">
+                  Échéances
                 </h2>
               </div>
             </div>
-            <div className="space-y-4 bg-white p-6">
+            <div className="space-y-2 bg-card p-3 sm:p-fluid-md sm:space-y-3">
               {isLoading ? (
-                Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl border border-zinc-100 bg-zinc-50/50 p-5">
-                    <div className="mb-3 flex items-center justify-between">
-                      <Skeleton className="h-4 w-12 rounded-md" />
-                      <Skeleton className="h-4 w-20 rounded-md" />
-                    </div>
-                    <Skeleton className="mb-4 h-6 w-full rounded-md" />
-                    <Skeleton className="h-1.5 w-full rounded-full" />
+                Array.from({ length: 2 }).map((_, i) => (
+                  <div key={i} className="rounded-md border border-border bg-muted/30 p-2">
+                    <Skeleton className="h-3 w-full rounded-md" />
                   </div>
                 ))
               ) : recentProjects.length === 0 ? (
-                <p className="py-8 text-center text-sm font-black text-zinc-400 italic">
-                  Aucune échéance proche.
+                <p className="py-4 text-center text-[10px] font-semibold text-muted-foreground italic sm:py-6 sm:text-xs">
+                  Aucune échéance.
                 </p>
               ) : (
-                recentProjects.map((proj, i) => (
+                recentProjects.slice(0, 2).map((proj, i) => (
                   <div
                     key={i}
-                    className="group rounded-2xl border border-zinc-100 bg-zinc-50/50 p-5 transition-all hover:border-indigo-200 hover:bg-white"
+                    className="group rounded-md border border-border bg-muted/30 p-2 transition-all hover:border-primary/20 hover:bg-card sm:p-3"
                   >
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="rounded-md border border-indigo-100 bg-indigo-50 px-2 py-0.5 text-[9px] font-black tracking-widest text-indigo-600 uppercase shadow-sm shadow-indigo-50">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="rounded-md bg-primary/10 px-1 py-0.5 text-[7px] font-semibold tracking-widest text-primary uppercase sm:text-[8px]">
                         PROJET
                       </span>
-                      <span className="text-[10px] font-black tracking-tighter text-zinc-400 uppercase">
+                      <span className="text-[8px] font-semibold text-muted-foreground uppercase sm:text-[9px]">
                         {formatDate(proj.date_fin_prevue)}
                       </span>
                     </div>
-                    <p className="text-lg leading-tight font-black tracking-tight text-zinc-950 transition-colors group-hover:text-indigo-600">
+                    <p className="truncate text-[10px] font-semibold text-foreground sm:text-size-sm">
                       {proj.nom}
                     </p>
-                    <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
-                      <div className="h-full w-2/3 rounded-full bg-indigo-600 transition-all group-hover:shadow-[0_0_8px_rgba(79,70,229,0.4)]" />
-                    </div>
                   </div>
                 ))
               )}
             </div>
-          </Card>
-
-          <Card
-            className="group shadow-elevated relative overflow-hidden border-none bg-indigo-600 p-10 text-white shadow-indigo-100"
-            padding="none"
-          >
-            <div className="relative z-10 space-y-6">
-              <div className="w-fit rounded-2xl border border-white/20 bg-white/10 p-3 shadow-sm backdrop-blur-sm transition-transform group-hover:scale-110">
-                <TrendingUp size={24} className="text-white" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl leading-tight font-black tracking-tight">Rapports Complets</h3>
-                <p className="text-xs leading-relaxed font-bold text-indigo-100 opacity-80">
-                  Générez des rapports détaillés (Excel/CSV) pour vos finances et effectifs en quelques secondes.
-                </p>
-              </div>
-              <ExportModal 
-                trigger={
-                  <Button className="mt-4 h-14 w-full rounded-2xl border-none bg-white text-[11px] font-black tracking-widest text-indigo-600 uppercase shadow-xl hover:bg-indigo-50">
-                    Générer un rapport
-                  </Button>
-                }
-              />
-            </div>
-            {/* Abstract decoration */}
-            <div className="absolute -right-10 -bottom-10 h-48 w-48 rounded-full bg-white/10 blur-3xl transition-transform duration-700 group-hover:scale-150" />
-            <div className="absolute top-0 right-0 -mt-12 -mr-12 h-24 w-24 rounded-full bg-white/5" />
           </Card>
         </div>
       </div>

@@ -1,19 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createWorker, updateWorker } from '@/lib/server/worker.actions';
+import { NewWorker, Worker } from '@/types/worker';
 import {
   Loader2,
-  Plus,
   Briefcase,
+  UserPlus,
   Phone,
-  Banknote,
-  Ruler,
   ShieldCheck,
   Target,
+  Ruler,
+  Banknote,
   Edit,
+  Plus,
 } from 'lucide-react';
-import { NewWorker, Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -34,31 +35,31 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/lib/context/app-context';
 
 const METIERS = [
-  { label: 'Ferrailleur (kg)', value: 'ferrailleur', unit: 'kg' },
-  { label: 'Maçon (m³)', value: 'macon', unit: 'm³' },
-  { label: 'Coffreur (m²)', value: 'coffreur', unit: 'm²' },
-  { label: 'Électricien (points)', value: 'electricien', unit: 'points' },
-  { label: 'Carreleur (m²)', value: 'carreleur', unit: 'm²' },
-  { label: 'Conducteur engins (h)', value: 'conducteur_engins', unit: 'h/machine' },
-  { label: 'Conducteur PL (voyages)', value: 'conducteur_pl', unit: 'voyages' },
-  { label: 'Peintre (m²)', value: 'peintre', unit: 'm²' },
-  { label: 'Plombier (points)', value: 'plombier', unit: 'points' },
-  { label: 'Manoeuvre (jour)', value: 'manoeuvre', unit: 'Journée' },
-  { label: 'Autre (personnalisé)', value: 'autre', unit: 'unité' },
+  { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
+  { label: 'Ferrailleur', value: 'ferrailleur', unit: 'kg / tonne' },
+  { label: 'Électricien', value: 'electricien', unit: 'point / ml' },
+  { label: 'Plombier', value: 'plombier', unit: 'point / ml' },
+  { label: 'Peintre', value: 'peintre', unit: 'm²' },
+  { label: 'Manoeuvre', value: 'manoeuvre', unit: 'jour' },
+  { label: 'Autre', value: 'autre', unit: 'unité' },
 ];
 
 interface CreateWorkerModalProps {
   onWorkerCreated: () => void;
   worker?: Worker;
   mode?: 'create' | 'edit';
+  trigger?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function CreateWorkerModal({
   onWorkerCreated,
   worker,
   mode = 'create',
+  children,
 }: CreateWorkerModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -68,14 +69,14 @@ export function CreateWorkerModal({
     worker?.type_paiement || 'journalier'
   );
 
-  const isEdit = mode === 'edit' && worker;
+  const isEdit = mode === 'edit';
 
-  useEffect(() => {
-    if (isOpen && isEdit) {
-      setSelectedMetier(worker.metier);
-      setPaymentType(worker.type_paiement);
-    }
-  }, [isOpen, isEdit, worker]);
+  const currentTaux =
+    paymentType === 'journalier'
+      ? worker?.taux_journalier
+      : paymentType === 'hebdomadaire'
+        ? worker?.salaire_hebdo
+        : worker?.salaire_mensuel;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -98,12 +99,7 @@ export function CreateWorkerModal({
       salaire_mensuel: paymentType === 'mensuel' ? Number(formData.get('taux')) : undefined,
     };
 
-    let result;
-    if (isEdit) {
-      result = await updateWorker(worker.id, data);
-    } else {
-      result = await createWorker({ ...data, chantier_ids: [], actif: true });
-    }
+    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data as NewWorker);
 
     if (result.error) {
       setError(result.error);
@@ -115,63 +111,43 @@ export function CreateWorkerModal({
     }
   };
 
-  const currentTaux = isEdit
-    ? worker.type_paiement === 'journalier'
-      ? worker.taux_journalier
-      : worker.type_paiement === 'hebdomadaire'
-        ? worker.salaire_hebdo
-        : worker.salaire_mensuel
-    : undefined;
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {isEdit ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 border border-transparent hover:border-zinc-200 hover:bg-white"
-          >
-            <Edit
-              size={14}
-              className="text-zinc-400 transition-colors group-hover:text-indigo-600"
-            />
-          </Button>
-        ) : (
-          <Button className="font-bold shadow-lg">
-            <Plus className="mr-2 h-4 w-4" strokeWidth={3} />
-            Ajouter un Professionnel
+        {children || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Ajouter un Ouvrier
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[700px]">
-        <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
+      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-hidden border-none p-0  sm:max-w-[700px]">
+        <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground shadow-primary/20 rounded-2xl p-3 shadow-lg">
+            <div className="bg-primary text-primary-foreground  rounded-md p-3 ">
               {isEdit ? <Edit size={24} strokeWidth={2.5} /> : <Briefcase size={24} strokeWidth={2.5} />}
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">
-                {isEdit ? 'Modifier le Profil' : 'Recrutement Ouvrier'}
+              <DialogTitle className="text-2xl font-semibold tracking-tight">
+                {isEdit ? 'Modifier le Profil' : 'Ajouter un Ouvrier'}
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-bold tracking-widest uppercase">
-                {isEdit ? `Édition de ${worker.nom_complet}` : 'Nouvelle fiche personnel'}
+              <DialogDescription className="text-muted-foreground/70 text-xs font-medium tracking-widest uppercase">
+                {isEdit ? `Édition de ${worker?.nom_complet}` : 'Nouvelle fiche personnel'}
               </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-8 p-8 pt-6">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {/* Section Identité */}
+        <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
+              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 <ShieldCheck size={14} className="text-primary" /> Détails Personnels
               </h3>
               <div className="space-y-2.5">
                 <Label
                   htmlFor="nom_complet"
-                  className="text-muted-foreground text-[10px] font-black tracking-widest uppercase"
+                  className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
                 >
                   Nom Complet
                 </Label>
@@ -181,13 +157,13 @@ export function CreateWorkerModal({
                   required
                   defaultValue={worker?.nom_complet}
                   placeholder="Ex: Amine Benali"
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                  className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md px-4 font-medium"
                 />
               </div>
               <div className="space-y-2.5">
                 <Label
                   htmlFor="telephone"
-                  className="text-muted-foreground text-[10px] font-black tracking-widest uppercase"
+                  className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
                 >
                   Numéro de Téléphone
                 </Label>
@@ -201,31 +177,30 @@ export function CreateWorkerModal({
                     name="telephone"
                     defaultValue={worker?.telephone}
                     placeholder="05XX XX XX XX"
-                    className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl pr-4 pl-12 font-bold"
+                    className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md pr-4 pl-12 font-medium"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Section Métier */}
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
+              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 <Target size={14} className="text-primary" /> Profil Professionnel
               </h3>
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
+                <Label className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
                   Métier / Spécialité
                 </Label>
                 <Select value={selectedMetier} onValueChange={(val) => val && setSelectedMetier(val)}>
-                  <SelectTrigger className="bg-muted/20 border-muted focus:ring-primary/20 h-12 rounded-xl px-4 font-bold">
+                  <SelectTrigger className="bg-background border-border focus:ring-primary/20 h-9 rounded-md px-4 font-medium">
                     <SelectValue placeholder="Choisir un métier" />
                   </SelectTrigger>
-                  <SelectContent className="border-muted rounded-xl">
+                  <SelectContent className="border-border rounded-md">
                     {METIERS.map((m) => (
                       <SelectItem
                         key={m.value}
                         value={m.value}
-                        className="rounded-lg py-3 font-bold"
+                        className="rounded-md py-3 font-medium"
                       >
                         {m.label}
                       </SelectItem>
@@ -237,7 +212,7 @@ export function CreateWorkerModal({
                 <div className="animate-in slide-in-from-top-2 space-y-2.5 duration-200">
                   <Label
                     htmlFor="metier_custom"
-                    className="text-muted-foreground text-[10px] font-black tracking-widest uppercase"
+                    className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
                   >
                     Nom du métier personnalisé
                   </Label>
@@ -247,19 +222,19 @@ export function CreateWorkerModal({
                     required
                     defaultValue={worker?.metier_custom}
                     placeholder="Ex: Étanchéité"
-                    className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                    className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md px-4 font-medium"
                   />
                 </div>
               )}
-              <div className="bg-primary/5 border-primary/10 flex items-center gap-3 rounded-2xl border p-4">
-                <div className="bg-background text-primary border-primary/10 rounded-lg border p-2 shadow-sm">
+              <div className="bg-muted border-border flex items-center gap-3 rounded-md border p-4">
+                <div className="bg-background text-primary border-border rounded-md border p-2 shadow-sm">
                   <Ruler size={14} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-primary/60 mb-1.1 text-[9px] leading-none font-black tracking-widest uppercase">
+                  <p className="text-primary/60 mb-1.1 text-[9px] leading-none font-semibold tracking-widest uppercase">
                     Unité de Production
                   </p>
-                  <p className="text-foreground text-sm font-black">
+                  <p className="text-foreground text-sm font-semibold">
                     {METIERS.find((m) => m.value === selectedMetier)?.unit}
                   </p>
                 </div>
@@ -267,26 +242,25 @@ export function CreateWorkerModal({
             </div>
           </div>
 
-          {/* Section Paiement */}
           <div className="space-y-6 border-t pt-8">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase">
+            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
               <Banknote size={14} className="text-primary" /> Modèle de Rémunération
             </h3>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground text-[10px] font-black tracking-widest uppercase">
+                <Label className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
                   Cycle de paie
                 </Label>
-                <div className="bg-muted/30 grid grid-cols-3 gap-2 rounded-xl border p-1">
+                <div className="bg-muted/30 grid grid-cols-3 gap-2 rounded-md border p-1">
                   {(['journalier', 'hebdomadaire', 'mensuel'] as const).map((type) => (
                     <button
                       key={type}
                       type="button"
                       onClick={() => setPaymentType(type)}
                       className={cn(
-                        'h-10 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all active:scale-95',
+                        'h-8 rounded-md text-[10px] font-semibold tracking-widest uppercase transition-all active:scale-95',
                         paymentType === type
-                          ? 'bg-primary text-primary-foreground shadow-primary/20 shadow-lg'
+                          ? 'bg-primary text-primary-foreground  '
                           : 'text-muted-foreground hover:bg-muted/50'
                       )}
                     >
@@ -298,7 +272,7 @@ export function CreateWorkerModal({
               <div className="space-y-2.5">
                 <Label
                   htmlFor="taux"
-                  className="text-muted-foreground text-[10px] font-black tracking-widest uppercase"
+                  className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
                 >
                   Taux (
                   {paymentType === 'journalier'
@@ -320,9 +294,9 @@ export function CreateWorkerModal({
                     required
                     defaultValue={currentTaux}
                     placeholder="0.00"
-                    className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl pr-12 pl-12 font-bold"
+                    className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md pr-12 pl-12 font-medium"
                   />
-                  <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-[10px] font-black tracking-widest uppercase">
+                  <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-[10px] font-semibold tracking-widest uppercase">
                     DA
                   </span>
                 </div>
@@ -331,9 +305,9 @@ export function CreateWorkerModal({
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
+            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-md border p-4">
               <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black tracking-widest uppercase">
+              <p className="text-destructive text-xs font-semibold tracking-widest uppercase">
                 {error}
               </p>
             </div>
@@ -344,14 +318,14 @@ export function CreateWorkerModal({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="border-muted hover:bg-muted/50 h-12 flex-1 rounded-xl font-bold"
+              className="border-border hover:bg-muted/50 h-9 flex-1 rounded-md font-medium"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="shadow-primary/20 h-12 flex-1 rounded-xl font-bold shadow-lg"
+              className=" h-9 flex-1 rounded-md font-medium "
             >
               {isLoading ? (
                 <>
