@@ -34,18 +34,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useApp } from '@/lib/context/app-context';
 import { cn } from '@/lib/utils';
 
 const METIERS = [
-  { value: 'macon', label: 'Maçon', unit: 'm² / ml' },
-  { value: 'ferrailleur', label: 'Ferrailleur', unit: 'tonne' },
-  { value: 'coffreur', label: 'Coffreur', unit: 'm²' },
-  { value: 'electricien', label: 'Électricien', unit: 'point' },
-  { value: 'plombier', label: 'Plombier', unit: 'point' },
-  { value: 'peintre', label: 'Peintre', unit: 'm²' },
-  { value: 'manoeuvre', label: 'Manoeuvre', unit: 'journée' },
-  { value: 'autre', label: 'Autre...', unit: 'unité' },
+  { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
+  { label: 'Coffreur', value: 'coffreur', unit: 'm²' },
+  { label: 'Ferrailleur', value: 'ferrailleur', unit: 'kg / tonne' },
+  { label: 'Électricien', value: 'electricien', unit: 'point / ml' },
+  { label: 'Plombier', value: 'plombier', unit: 'point / ml' },
+  { label: 'Peintre', value: 'peintre', unit: 'm²' },
+  { label: 'Manoeuvre', value: 'manoeuvre', unit: 'jour' },
+  { label: 'Autre', value: 'autre', unit: 'unité' },
 ];
 
 interface CreateWorkerModalProps {
@@ -72,14 +71,12 @@ export function CreateWorkerModal({
     worker?.type_paiement || 'journalier'
   );
 
-  const isEdit = mode === 'edit' && worker;
-
-  useEffect(() => {
-    if (isOpen && isEdit) {
-      setSelectedMetier(worker.metier);
-      setPaymentType(worker.type_paiement);
-    }
-  }, [isOpen, isEdit, worker]);
+  const currentTaux =
+    paymentType === 'journalier'
+      ? worker?.taux_journalier
+      : paymentType === 'hebdomadaire'
+        ? worker?.salaire_hebdo
+        : worker?.salaire_mensuel;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -103,45 +100,25 @@ export function CreateWorkerModal({
       chantier_ids: selectedProjectId ? [selectedProjectId] : [],
     };
 
-    const result = isEdit
-      ? await updateWorker(worker.id, data)
-      : await createWorker(data as NewWorker);
+    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data);
 
     if (result.error) {
       setError(result.error);
+      setIsLoading(false);
     } else {
       setIsOpen(false);
+      setIsLoading(false);
       onWorkerCreated();
     }
-    setIsLoading(false);
   };
-
-  const currentTaux = isEdit
-    ? worker.type_paiement === 'journalier'
-      ? worker.taux_journalier
-      : worker.type_paiement === 'hebdomadaire'
-        ? worker.salaire_hebdo
-        : worker.salaire_mensuel
-    : undefined;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {children || trigger || (isEdit ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 border border-transparent hover:border-zinc-200 hover:bg-white"
-          >
-            <Edit
-              size={14}
-              className="text-zinc-400 transition-colors group-hover:text-indigo-600"
-            />
-          </Button>
-        ) : (
-          <Button className="font-medium">
-            <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
-            <span className="hidden md:inline">Ajouter un Ouvrier</span>
+        {children || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Ajouter un Ouvrier
           </Button>
         ))}
       </DialogTrigger>

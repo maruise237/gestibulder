@@ -40,9 +40,8 @@ export default function ChantiersPage() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const hasProjects = projects.length > 0;
-  const filteredProjects = projects.filter((p: any) =>
-    (!selectedChantier || p.id === selectedChantier) && (
+  const filteredProjects = projects.filter(
+    (p) =>
       p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.adresse?.toLowerCase().includes(searchQuery.toLowerCase())
     )

@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, AlertCircle } from 'lucide-react';
+import { getWorkers } from '@/lib/server/worker.actions';
+import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, UserPlus, Check } from 'lucide-react';
+import { Project } from '@/types/project';
+import { Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -15,83 +18,144 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/context/app-context';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+
+const CATEGORIES = [
+  { label: 'Matériaux', value: 'materiaux' },
+  { label: "Main d'œuvre", value: 'main_d_oeuvre' },
+  { label: 'Transport', value: 'transport' },
+  { label: 'Divers', value: 'divers' },
+];
 
 export function CreateExpenseModal({
   onExpenseCreated,
 }: {
-  onExpenseCreated: () => void;
+  projects: Project[];
+  onExpenseCreated?: () => void;
 }) {
-  const { selectedProjectId } = useApp();
+  const { enterprise } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const queryClient = useQueryClient();
+
+  const fetchWorkers = useCallback(async () => {
+    setIsLoadingWorkers(true);
+    // Fetch all workers and filter them by project ID locally for robustness
+    const { workers: allWorkers } = await getWorkers(1, 1000);
+    if (allWorkers) {
+      const filtered = (allWorkers as Worker[]).filter(w => w.chantier_ids?.includes(selectedChantier));
+      setWorkers(filtered);
+    }
+    setIsLoadingWorkers(false);
+  }, [selectedChantier]);
+
+  useEffect(() => {
+    if (selectedChantier && category === 'main_d_oeuvre') {
+      fetchWorkers();
+    }
+  }, [selectedChantier, category, fetchWorkers]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!selectedProjectId) {
-        setError('Veuillez sélectionner un chantier dans la barre de navigation');
-        return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
     const formData = new FormData(e.currentTarget);
-    const data: any = {
-      chantier_id: selectedProjectId,
+    const data: NewExpense = {
       libelle: formData.get('libelle') as string,
       montant: Number(formData.get('montant')),
+      categorie: selectedCategory as any,
       date: formData.get('date') as string,
-      categorie: formData.get('categorie') as any,
+      chantier_id: formData.get('chantier_id') as string,
+      entreprise_id: '',
     };
 
-    const result = await addExpense(data);
-
-    if (result.error) {
-      setError(result.error);
-    } else {
-      setIsOpen(false);
-      onExpenseCreated();
+    if (!data.categorie) {
+      setError('Veuillez sélectionner une catégorie');
+      return;
     }
-    setIsLoading(false);
+
+    mutation.mutate(data);
+  };
+
+  const toggleWorker = (id: string) => {
+    setSelectedWorkerIds(prev =>
+      prev.includes(id) ? prev.filter(wId => wId !== id) : [...prev, id]
+    );
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="font-bold shadow-lg shadow-indigo-100 transition-all hover:scale-105 active:scale-95">
-          <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
-          <span className="hidden md:inline">Nouvelle Dépense</span>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Nouvelle Dépense
         </Button>
       </DialogTrigger>
-      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
-        <DialogHeader className="bg-zinc-950 text-white border-b p-8 pb-6">
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader className="bg-muted/30 border-b p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-white/20 rounded-2xl p-3 shadow-lg">
-              <Wallet size={24} strokeWidth={2.5} />
+            <div className="bg-primary text-primary-foreground rounded-md p-2">
+              <Wallet size={20} />
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight uppercase text-white">
-                Saisir une Dépense
-              </DialogTitle>
-              <DialogDescription className="text-white/70 text-xs font-black tracking-widest uppercase">
-                Enregistrement comptable
-              </DialogDescription>
+              <DialogTitle>Nouvelle Dépense</DialogTitle>
+              <DialogDescription>Gestion des flux financiers</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
-          {!selectedProjectId ? (
-            <div className="flex flex-col items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
-              <AlertCircle className="text-amber-600" size={32} />
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-amber-900">Aucun chantier sélectionné</p>
-                <p className="text-xs text-amber-700">
-                  Veuillez d'abord sélectionner un chantier dans la barre de navigation en haut de l'écran.
-                </p>
-              </div>
+          <div className="grid gap-6">
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="chantier_id"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <HardHat size={14} className="text-indigo-600" /> Affectation Chantier
+              </Label>
+              <select
+                id="chantier_id"
+                name="chantier_id"
+                required
+                value={selectedChantier}
+                onChange={(e) => {
+                  setSelectedChantier(e.target.value);
+                  setSelectedWorkerIds([]); // Reset workers when project changes
+                }}
+                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
+              >
+                <option value="">Sélectionner un chantier</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="libelle"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <ReceiptText size={14} className="text-indigo-600" /> Libellé / Objet
+              </Label>
+              <Input
+                id="libelle"
+                name="libelle"
+                required
+                placeholder="Ex: Achat 100 sacs de ciment"
+                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+              />
             </div>
           ) : (
             <div className="grid gap-6">
@@ -116,18 +180,14 @@ export function CreateExpenseModal({
                   id="libelle"
                   name="libelle"
                   required
-                  placeholder="Ex: Achat 100 sacs de ciment"
-                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                  placeholder="Ex: Achat de ciment en gros"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2.5">
-                  <Label
-                    htmlFor="montant"
-                    className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                  >
-                    <Banknote size={14} className="text-indigo-600" /> Montant
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="montant">
+                    Montant ({enterprise?.devise || 'DA'})
                   </Label>
                   <Input
                     id="montant"
@@ -135,77 +195,117 @@ export function CreateExpenseModal({
                     type="number"
                     required
                     placeholder="0.00"
-                    className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
                   />
                 </div>
-                <div className="space-y-2.5">
-                  <Label
-                    htmlFor="date"
-                    className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                  >
-                    <Calendar size={14} className="text-indigo-600" /> Date
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
                   <Input
                     id="date"
                     name="date"
                     type="date"
                     required
                     defaultValue={new Date().toISOString().split('T')[0]}
-                    className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="categorie"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                >
-                  <ReceiptText size={14} className="text-indigo-600" /> Catégorie
-                </Label>
-                <select
-                  id="categorie"
-                  name="categorie"
-                  required
-                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
-                >
-                  <option value="materiaux">Matériaux</option>
-                  <option value="main_d_oeuvre">Main d'œuvre</option>
-                  <option value="transport">Transport</option>
-                  <option value="autre">Autre</option>
-                </select>
+              <div className="space-y-2">
+                <Label htmlFor="chantier_id">Chantier concerné</Label>
+                <Select name="chantier_id" required>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un projet" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {category === 'main_d_oeuvre' && (
+                <div className="space-y-2.5 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                    <UserPlus size={14} className="text-indigo-600" /> Ouvrier(s)
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        type="button"
+                        disabled={!selectedChantier || isLoadingWorkers}
+                        className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 h-12 w-full justify-between rounded-xl px-4 font-bold text-left overflow-hidden"
+                      >
+                        <span className="truncate">
+                          {isLoadingWorkers ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : selectedWorkerIds.length > 0 ? (
+                            `${selectedWorkerIds.length} sélectionné(s)`
+                          ) : (
+                            "Sélectionner"
+                          )}
+                        </span>
+                        <Check className={cn("h-4 w-4 shrink-0 ml-2", selectedWorkerIds.length > 0 ? "text-indigo-600" : "text-zinc-300")} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0 rounded-xl" align="start">
+                      <div className="max-h-[200px] overflow-y-auto p-2 space-y-1">
+                        {workers.length === 0 ? (
+                          <p className="p-2 text-[10px] font-bold text-muted-foreground uppercase text-center italic">
+                            Aucun ouvrier trouvé
+                          </p>
+                        ) : (
+                          workers.map((worker) => (
+                            <label
+                              key={worker.id}
+                              className="flex items-center space-x-2 rounded-md p-2 hover:bg-zinc-100 transition-colors cursor-pointer"
+                            >
+                              <Checkbox
+                                checked={selectedWorkerIds.includes(worker.id)}
+                                onCheckedChange={() => toggleWorker(worker.id)}
+                              />
+                              <span className="text-xs font-bold uppercase truncate">{worker.nom_complet}</span>
+                            </label>
+                          ))
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
-          )}
 
-          {error && (
-            <div className="bg-red-50 border-red-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
-              <div className="bg-red-600 h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-red-600 text-xs font-black tracking-widest uppercase">{error}</p>
-            </div>
-          )}
+            {error && (
+              <div className="bg-destructive/10 border-destructive/20 mt-4 flex items-center gap-3 rounded-md border p-4 text-destructive text-xs">
+                {error}
+              </div>
+            )}
+          </div>
 
-          <DialogFooter className="bg-zinc-50/30 -mx-8 -mb-8 mt-4 gap-3 p-8 sm:gap-0">
+          <DialogFooter className="p-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="h-12 flex-1 rounded-xl font-bold"
+              className="flex-1"
             >
               Annuler
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !selectedProjectId}
-              className="bg-zinc-950 hover:bg-zinc-800 h-12 flex-1 rounded-xl font-bold text-white shadow-lg"
+              disabled={mutation.isPending}
+              className="flex-1"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saisie...
+                  Enregistrement...
                 </>
               ) : (
-                !selectedProjectId ? 'Choisir un chantier' : 'Valider la Dépense'
+                'Enregistrer'
               )}
             </Button>
           </DialogFooter>

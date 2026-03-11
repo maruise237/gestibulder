@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { createMaterial } from '@/lib/server/stock.actions';
-import { Loader2, Plus, Package, Ruler, AlertTriangle, TrendingUp, HardHat, AlertCircle } from 'lucide-react';
+import { Loader2, Plus, Package } from 'lucide-react';
 import { NewMaterial } from '@/types/stock';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,15 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useApp } from '@/lib/context/app-context';
+
+const COMMON_MATERIALS = [
+  { name: 'Ciment Portland', unit: 'Sacs' },
+  { name: 'Sable Lavé', unit: 'm³' },
+  { name: 'Gravier 15/25', unit: 'm³' },
+  { name: 'Rond à Béton 12mm', unit: 'Barres' },
+  { name: 'Briques 8 Trous', unit: 'Unités' },
+  { name: 'Plâtre de Construction', unit: 'Sacs' },
+];
 
 export function CreateMaterialModal({
   onMaterialCreated,
@@ -44,164 +53,106 @@ export function CreateMaterialModal({
       nom: formData.get('nom') as string,
       unite: formData.get('unite') as string,
       seuil_alerte: Number(formData.get('seuil_alerte')),
-      stock_actuel: Number(formData.get('stock_initial')) || 0,
+      chantier_id: chantierId || '',
     };
 
     const result = await createMaterial(data);
 
     if (result.error) {
       setError(result.error);
+      setIsLoading(false);
     } else {
       setIsOpen(false);
+      setIsLoading(false);
       onMaterialCreated();
     }
-    setIsLoading(false);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="font-black tracking-tight shadow-lg shadow-indigo-100 transition-all hover:scale-105 active:scale-95">
-          <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
-          <span className="hidden md:inline">Ajouter un Matériau</span>
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Nouveau Matériau
         </Button>
       </DialogTrigger>
-      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
-        <DialogHeader className="bg-zinc-950 text-white border-b p-8 pb-6">
+      <DialogContent className="sm:max-w-[450px]">
+        <DialogHeader className="bg-muted/30 border-b p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-white/20 rounded-2xl p-3 shadow-lg">
-              <Package size={24} strokeWidth={2.5} />
+            <div className="bg-primary text-primary-foreground rounded-md p-2">
+              <Package size={20} />
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight uppercase text-white">
-                Nouveau Matériau
-              </DialogTitle>
-              <DialogDescription className="text-white/70 text-xs font-black tracking-widest uppercase">
-                Enregistrement dans l'inventaire
-              </DialogDescription>
+              <DialogTitle>Nouveau Matériau</DialogTitle>
+              <DialogDescription>Gestion du catalogue de stock</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
-          {!chantierId ? (
-            <div className="flex flex-col items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
-              <AlertCircle className="text-amber-600" size={32} />
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-amber-900">Aucun chantier sélectionné</p>
-                <p className="text-xs text-amber-700">
-                  Veuillez d'abord sélectionner un chantier dans la barre de navigation en haut de l'écran.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-6">
-              <div className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 p-4">
-                <div className="bg-indigo-600 text-white flex h-8 w-8 items-center justify-center rounded-lg shadow-sm">
-                  <HardHat size={16} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Chantier d'affectation</span>
-                  <span className="text-sm font-black text-zinc-900">Utilisation du chantier actif</span>
-                </div>
-              </div>
-
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="nom"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                >
-                  <Package size={14} className="text-indigo-600" /> Désignation
-                </Label>
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="nom">Désignation du Matériau</Label>
                 <Input
                   id="nom"
                   name="nom"
                   required
-                  placeholder="Ex: Ciment Portland CPJ45"
-                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                  list="common-materials"
+                  placeholder="Ex: Ciment Portland"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2.5">
-                  <Label
-                    htmlFor="unite"
-                    className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                  >
-                    <Ruler size={14} className="text-indigo-600" /> Unité
-                  </Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="unite">Unité Standard</Label>
                   <Input
                     id="unite"
                     name="unite"
                     required
-                    placeholder="Ex: sac, m3, kg"
-                    className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                    placeholder="Sacs, m³, kg..."
                   />
                 </div>
-                <div className="space-y-2.5">
-                  <Label
-                    htmlFor="seuil_alerte"
-                    className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                  >
-                    <AlertTriangle size={14} className="text-indigo-600" /> Seuil d'alerte
-                  </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="seuil_alerte">Seuil d'Alerte</Label>
                   <Input
                     id="seuil_alerte"
                     name="seuil_alerte"
                     type="number"
-                    required
-                    placeholder="Ex: 10"
-                    className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                    defaultValue="5"
                   />
                 </div>
               </div>
+            </div>
 
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="stock_initial"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-                >
-                  <TrendingUp size={14} className="text-indigo-600" /> Stock Initial
-                </Label>
-                <Input
-                  id="stock_initial"
-                  name="stock_initial"
-                  type="number"
-                  placeholder="0"
-                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
-                />
+            {error && (
+              <div className="bg-destructive/10 border-destructive/20 mt-4 flex items-center gap-3 rounded-md border p-4 text-destructive text-xs">
+                {error}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {error && (
-            <div className="bg-red-50 border-red-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
-              <div className="bg-red-600 h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-red-600 text-xs font-black tracking-widest uppercase">{error}</p>
-            </div>
-          )}
-
-          <DialogFooter className="bg-zinc-50/30 -mx-8 -mb-8 mt-4 gap-3 p-8 sm:gap-0">
+          <DialogFooter className="p-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="h-12 flex-1 rounded-xl font-bold"
+              className="flex-1"
             >
               Annuler
             </Button>
             <Button
               type="submit"
-              disabled={isLoading || !chantierId}
-              className="bg-zinc-950 hover:bg-zinc-800 h-12 flex-1 rounded-xl font-bold text-white shadow-lg"
+              disabled={isLoading}
+              className="flex-1"
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Création...
+                  Enregistrement...
                 </>
               ) : (
-                !chantierId ? 'Choisir un chantier' : 'Répertorier le Matériau'
+                'Enregistrer'
               )}
             </Button>
           </DialogFooter>
