@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { getWorkersByProject } from '@/lib/server/worker.actions';
+import { getWorkers } from '@/lib/server/worker.actions';
 import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, UserPlus, Check } from 'lucide-react';
 import { Project } from '@/types/project';
 import { Worker } from '@/types/worker';
@@ -38,16 +38,20 @@ export function CreateExpenseModal({
   const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
 
-  const fetchWorkers = useCallback(async (projectId: string) => {
+  const fetchWorkers = useCallback(async () => {
     setIsLoadingWorkers(true);
-    const { workers: fetchedWorkers } = await getWorkersByProject(projectId);
-    setWorkers(fetchedWorkers || []);
+    // Fetch all workers and filter them by project ID locally for robustness
+    const { workers: allWorkers } = await getWorkers(1, 1000);
+    if (allWorkers) {
+      const filtered = (allWorkers as Worker[]).filter(w => w.chantier_ids?.includes(selectedChantier));
+      setWorkers(filtered);
+    }
     setIsLoadingWorkers(false);
-  }, []);
+  }, [selectedChantier]);
 
   useEffect(() => {
     if (selectedChantier && category === 'main_d_oeuvre') {
-      fetchWorkers(selectedChantier);
+      fetchWorkers();
     }
   }, [selectedChantier, category, fetchWorkers]);
 
@@ -125,7 +129,10 @@ export function CreateExpenseModal({
                 name="chantier_id"
                 required
                 value={selectedChantier}
-                onChange={(e) => setSelectedChantier(e.target.value)}
+                onChange={(e) => {
+                  setSelectedChantier(e.target.value);
+                  setSelectedWorkerIds([]); // Reset workers when project changes
+                }}
                 className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
               >
                 <option value="">Sélectionner un chantier</option>
@@ -221,17 +228,20 @@ export function CreateExpenseModal({
                     <PopoverTrigger asChild>
                       <Button
                         variant="outline"
+                        type="button"
                         disabled={!selectedChantier || isLoadingWorkers}
-                        className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 h-12 w-full justify-between rounded-xl px-4 font-bold"
+                        className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 h-12 w-full justify-between rounded-xl px-4 font-bold text-left overflow-hidden"
                       >
-                        {isLoadingWorkers ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : selectedWorkerIds.length > 0 ? (
-                          `${selectedWorkerIds.length} sélectionné(s)`
-                        ) : (
-                          "Sélectionner"
-                        )}
-                        <Check className={cn("h-4 w-4 ml-2", selectedWorkerIds.length > 0 ? "text-indigo-600" : "text-zinc-300")} />
+                        <span className="truncate">
+                          {isLoadingWorkers ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : selectedWorkerIds.length > 0 ? (
+                            `${selectedWorkerIds.length} sélectionné(s)`
+                          ) : (
+                            "Sélectionner"
+                          )}
+                        </span>
+                        <Check className={cn("h-4 w-4 shrink-0 ml-2", selectedWorkerIds.length > 0 ? "text-indigo-600" : "text-zinc-300")} />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[200px] p-0 rounded-xl" align="start">
@@ -242,17 +252,16 @@ export function CreateExpenseModal({
                           </p>
                         ) : (
                           workers.map((worker) => (
-                            <div
+                            <label
                               key={worker.id}
                               className="flex items-center space-x-2 rounded-md p-2 hover:bg-zinc-100 transition-colors cursor-pointer"
-                              onClick={() => toggleWorker(worker.id)}
                             >
                               <Checkbox
                                 checked={selectedWorkerIds.includes(worker.id)}
                                 onCheckedChange={() => toggleWorker(worker.id)}
                               />
                               <span className="text-xs font-bold uppercase truncate">{worker.nom_complet}</span>
-                            </div>
+                            </label>
                           ))
                         )}
                       </div>
