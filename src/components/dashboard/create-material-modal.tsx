@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useApp } from '@/lib/context/app-context';
 
 const COMMON_MATERIALS = [
   { name: 'Ciment Portland', unit: 'Sacs' },
@@ -28,22 +27,18 @@ const COMMON_MATERIALS = [
 ];
 
 export function CreateMaterialModal({
+  chantierId,
   onMaterialCreated,
 }: {
+  chantierId: string;
   onMaterialCreated: () => void;
 }) {
-  const { selectedProjectId: chantierId } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!chantierId) {
-        setError('Veuillez sélectionner un chantier dans la barre de navigation');
-        return;
-    }
-
     setIsLoading(true);
     setError(null);
 
@@ -94,8 +89,8 @@ export function CreateMaterialModal({
               <div className="space-y-2">
                 <Label htmlFor="nom">Désignation du Matériau</Label>
                 <Input
-                  id="nom"
-                  name="nom"
+                  id="unite"
+                  name="unite"
                   required
                   list="common-materials"
                   placeholder="Ex: Ciment Portland"

@@ -26,7 +26,6 @@ const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-p
 });
 
 export default function ChantiersPage() {
-  const { selectedProjectId: selectedChantier } = useApp();
   const { enterprise } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -44,7 +43,6 @@ export default function ChantiersPage() {
     (p) =>
       p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.adresse?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
   );
 
   const getStatusStyle = (statut: string) => {

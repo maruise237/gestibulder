@@ -34,11 +34,8 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-import { useApp } from '@/lib/context/app-context';
-
 export default function StocksPage() {
-  const { selectedProjectId: selectedChantier } = useApp();
-
+  const [selectedChantier, setSelectedChantier] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   const [movementModal, setMovementModal] = useState<{
     open: boolean;
@@ -52,7 +49,14 @@ export default function StocksPage() {
 
   const queryClient = useQueryClient();
 
-
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      if (res.projects?.length && !selectedChantier) setSelectedChantier(res.projects[0].id);
+      return res.projects || [];
+    },
+  });
 
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['stocks', selectedChantier],
