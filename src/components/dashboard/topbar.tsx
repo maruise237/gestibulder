@@ -3,7 +3,6 @@
 import React, { useEffect, useState, memo } from 'react';
 import { User, Bell, Menu, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ProjectSelector } from './project-selector';
 
 export const Topbar = memo(({
   onMenuClick,
@@ -46,13 +45,8 @@ export const Topbar = memo(({
           <Menu size={18} />
         </button>
 
-        {/* Project Selector */}
-        <div className="flex items-center gap-2">
-           <ProjectSelector />
-        </div>
-
-        {/* Breadcrumb Indicator - Hidden on mobile, shown on tablet/desktop */}
-        <div className="hidden text-[10px] font-semibold tracking-widest text-muted-foreground uppercase xl:block">
+        {/* Breadcrumb Indicator */}
+        <div className="hidden text-[10px] font-semibold tracking-widest text-muted-foreground uppercase sm:block">
           GestiBulder / <span className="text-primary">Dashboard</span>
         </div>
       </div>
