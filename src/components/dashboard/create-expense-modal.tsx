@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote } from 'lucide-react';
+import { Loader2, Plus, Wallet } from 'lucide-react';
 import { NewExpense } from '@/types/expense';
 import { Project } from '@/types/project';
 import { Button } from '@/components/ui/button';
@@ -128,9 +128,8 @@ export function CreateExpenseModal({
                   <Banknote size={14} className="text-indigo-600" /> Montant
                 </Label>
                 <Input
-                  id="montant"
-                  name="montant"
-                  type="number"
+                  id="libelle"
+                  name="libelle"
                   required
                   placeholder="0.00"
                   className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
@@ -152,7 +151,6 @@ export function CreateExpenseModal({
                   className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
                 />
               </div>
-            </div>
 
             <div className="space-y-2.5">
               <Label
@@ -173,7 +171,6 @@ export function CreateExpenseModal({
                 <option value="autre">Autre</option>
               </select>
             </div>
-          </div>
 
           {error && (
             <div className="bg-red-50 border-red-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
@@ -196,7 +193,7 @@ export function CreateExpenseModal({
               disabled={isLoading}
               className="bg-zinc-950 hover:bg-zinc-800 h-12 flex-1 rounded-xl font-bold text-white shadow-lg"
             >
-              {isLoading ? (
+              {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saisie...

@@ -5,8 +5,6 @@ import { deployEquipment } from '@/lib/server/equipment.actions';
 import { getProjects } from '@/lib/server/project.actions';
 import {
   Loader2,
-  Calendar,
-  HardHat,
   ArrowRightLeft,
 } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
@@ -91,114 +89,107 @@ export function DeployEquipmentModal({
         <Button
           variant="outline"
           size="sm"
-          className="group/btn h-10 rounded-xl border-zinc-200 px-4 hover:border-indigo-500"
           disabled={equipment.etat !== 'disponible'}
         >
           <ArrowRightLeft
             size={14}
-            className="text-zinc-400 transition-colors group-hover/btn:text-indigo-600"
+            className="mr-2"
           />
-          <span className="ml-2 text-[10px] font-black tracking-widest uppercase">
-            {equipment.etat === 'disponible' ? 'Déployer' : 'Occupé'}
-          </span>
+          {equipment.etat === 'disponible' ? 'Déployer' : 'Occupé'}
         </Button>
       </DialogTrigger>
-      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
-        <DialogHeader className="bg-muted/30 border-b p-6 sm:p-8 pb-6">
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader className="bg-muted/30 border-b p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground rounded-2xl p-3 shadow-lg">
-              <ArrowRightLeft size={24} strokeWidth={2.5} />
+            <div className="bg-primary text-primary-foreground rounded-md p-2">
+              <ArrowRightLeft size={20} />
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">
-                Déploiement Matériel
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-black tracking-widest uppercase">
-                Affectation sur chantier
-              </DialogDescription>
+              <DialogTitle>Déploiement Matériel</DialogTitle>
+              <DialogDescription>Affectation sur chantier</DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-8 p-6 sm:p-8">
-          <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6 text-center">
-            <p className="mb-2 text-[10px] font-black tracking-[0.2em] text-primary/60 uppercase">
-              Équipement identifié
-            </p>
-            <p className="text-3xl font-black tracking-tight text-foreground">{equipment.nom}</p>
-            <p className="mt-1 text-[11px] font-black tracking-widest text-muted-foreground uppercase">
-              Catégorie: {equipment.categorie}
-            </p>
-          </div>
-
-          <div className="space-y-6">
-            <div className="space-y-2.5">
-              <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
-                <HardHat size={14} className="text-primary" /> Chantier de destination
-              </Label>
-              <Select value={selectedProject} onValueChange={(val) => val && setSelectedProject(val)}>
-                <SelectTrigger className="bg-muted/20 border-muted h-12 rounded-xl px-4 font-bold">
-                  <SelectValue placeholder="Choisir un chantier" />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6">
+            <div className="rounded-xl border border-primary/10 bg-primary/5 p-4 text-center mb-6">
+              <p className="mb-1 text-[10px] font-semibold tracking-widest text-primary/60 uppercase">
+                Équipement identifié
+              </p>
+              <p className="text-xl font-semibold tracking-tight text-foreground">{equipment.nom}</p>
+              <p className="mt-1 text-[10px] font-medium tracking-widest text-muted-foreground uppercase">
+                {equipment.categorie}
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
-                  <Calendar size={14} className="text-primary" /> Date de début
-                </Label>
-                <Input
-                  name="date_debut"
-                  type="date"
-                  required
-                  defaultValue={new Date().toISOString().split('T')[0]}
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
-                />
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Chantier de destination</Label>
+                <Select value={selectedProject} onValueChange={(val) => val && setSelectedProject(val)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choisir un chantier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.nom}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
-                  <Calendar size={14} className="text-primary" /> Fin prévue
-                </Label>
-                <Input
-                  name="date_fin"
-                  type="date"
-                  required
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
-                />
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Date de début</Label>
+                  <Input
+                    name="date_debut"
+                    type="date"
+                    required
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fin prévue</Label>
+                  <Input
+                    name="date_fin"
+                    type="date"
+                    required
+                  />
+                </div>
               </div>
             </div>
+
+            {error && (
+              <div className="bg-destructive/10 border-destructive/20 mt-4 flex items-center gap-3 rounded-md border p-4 text-destructive text-xs">
+                {error}
+              </div>
+            )}
           </div>
 
-          {error && (
-            <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 rounded-xl border p-4">
-              <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black tracking-widest uppercase">{error}</p>
-            </div>
-          )}
-
-          <DialogFooter className="gap-3 pt-4 sm:gap-0">
+          <DialogFooter className="p-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="h-12 flex-1 rounded-xl font-bold"
+              className="flex-1"
             >
               Annuler
             </Button>
             <Button
               type="submit"
-              isLoading={isLoading}
-              className="h-12 flex-1 rounded-xl font-bold shadow-lg"
+              disabled={isLoading}
+              className="flex-1"
             >
-              Confirmer
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Confirmation...
+                </>
+              ) : (
+                'Confirmer'
+              )}
             </Button>
           </DialogFooter>
         </form>
