@@ -33,8 +33,11 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
+import { useApp } from '@/lib/context/app-context';
+
 export default function StocksPage() {
-  const [selectedChantier, setSelectedChantier] = useState<string>('');
+  const { selectedProjectId: selectedChantier } = useApp();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [movementModal, setMovementModal] = useState<{
     open: boolean;
@@ -48,14 +51,7 @@ export default function StocksPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: projectsData } = useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => {
-      const res = await getProjects();
-      if (res.projects?.length && !selectedChantier) setSelectedChantier(res.projects[0].id);
-      return res.projects || [];
-    },
-  });
+
 
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['stocks', selectedChantier],
@@ -102,19 +98,7 @@ export default function StocksPage() {
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Stocks</h1>
-          <div className="relative mt-2">
-            <HardHat className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
-            <select
-              className="h-9 w-full appearance-none rounded-md border border-border bg-background pr-8 pl-9 text-xs font-medium focus:border-primary outline-none sm:w-64"
-              value={selectedChantier}
-              onChange={(e) => setSelectedChantier(e.target.value)}
-            >
-              {projectsData?.map((p) => (
-                <option key={p.id} value={p.id}>{p.nom}</option>
-              ))}
-            </select>
-            <Plus className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" size={14} />
-          </div>
+
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="group relative">

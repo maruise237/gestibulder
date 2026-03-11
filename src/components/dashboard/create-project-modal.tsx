@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: () => void }) {
+export function CreateProjectModal({ onProjectCreated, trigger }: { onProjectCreated?: () => void; trigger?: React.ReactNode }) {
   const { enterprise } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
