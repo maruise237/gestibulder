@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote } from 'lucide-react';
+import { getWorkersByProject } from '@/lib/server/worker.actions';
+import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, UserPlus, Check } from 'lucide-react';
 import { Project } from '@/types/project';
+import { Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,6 +18,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export function CreateExpenseModal({
   projects,
@@ -27,6 +32,24 @@ export function CreateExpenseModal({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedChantier, setSelectedChantier] = useState('');
+  const [category, setCategory] = useState('');
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
+  const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
+
+  const fetchWorkers = useCallback(async (projectId: string) => {
+    setIsLoadingWorkers(true);
+    const { workers: fetchedWorkers } = await getWorkersByProject(projectId);
+    setWorkers(fetchedWorkers || []);
+    setIsLoadingWorkers(false);
+  }, []);
+
+  useEffect(() => {
+    if (selectedChantier && category === 'main_d_oeuvre') {
+      fetchWorkers(selectedChantier);
+    }
+  }, [selectedChantier, category, fetchWorkers]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,6 +63,9 @@ export function CreateExpenseModal({
       montant: Number(formData.get('montant')),
       date: formData.get('date') as string,
       categorie: formData.get('categorie') as any,
+      metadata: {
+        worker_ids: selectedWorkerIds
+      }
     };
 
     const result = await addExpense(data);
@@ -49,8 +75,15 @@ export function CreateExpenseModal({
     } else {
       setIsOpen(false);
       onExpenseCreated();
+      setSelectedWorkerIds([]);
     }
     setIsLoading(false);
+  };
+
+  const toggleWorker = (id: string) => {
+    setSelectedWorkerIds(prev =>
+      prev.includes(id) ? prev.filter(wId => wId !== id) : [...prev, id]
+    );
   };
 
   return (
@@ -91,6 +124,8 @@ export function CreateExpenseModal({
                 id="chantier_id"
                 name="chantier_id"
                 required
+                value={selectedChantier}
+                onChange={(e) => setSelectedChantier(e.target.value)}
                 className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
               >
                 <option value="">Sélectionner un chantier</option>
@@ -153,24 +188,78 @@ export function CreateExpenseModal({
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="categorie"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-              >
-                <ReceiptText size={14} className="text-indigo-600" /> Catégorie
-              </Label>
-              <select
-                id="categorie"
-                name="categorie"
-                required
-                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
-              >
-                <option value="materiaux">Matériaux</option>
-                <option value="main_d_oeuvre">Main d'œuvre</option>
-                <option value="transport">Transport</option>
-                <option value="autre">Autre</option>
-              </select>
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="categorie"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                >
+                  <ReceiptText size={14} className="text-indigo-600" /> Catégorie
+                </Label>
+                <select
+                  id="categorie"
+                  name="categorie"
+                  required
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 w-full cursor-pointer appearance-none rounded-xl px-4 font-bold outline-none"
+                >
+                  <option value="">Choisir...</option>
+                  <option value="materiaux">Matériaux</option>
+                  <option value="main_d_oeuvre">Main d'œuvre</option>
+                  <option value="transport">Transport</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+
+              {category === 'main_d_oeuvre' && (
+                <div className="space-y-2.5 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                    <UserPlus size={14} className="text-indigo-600" /> Ouvrier(s)
+                  </Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        disabled={!selectedChantier || isLoadingWorkers}
+                        className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 h-12 w-full justify-between rounded-xl px-4 font-bold"
+                      >
+                        {isLoadingWorkers ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : selectedWorkerIds.length > 0 ? (
+                          `${selectedWorkerIds.length} sélectionné(s)`
+                        ) : (
+                          "Sélectionner"
+                        )}
+                        <Check className={cn("h-4 w-4 ml-2", selectedWorkerIds.length > 0 ? "text-indigo-600" : "text-zinc-300")} />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0 rounded-xl" align="start">
+                      <div className="max-h-[200px] overflow-y-auto p-2 space-y-1">
+                        {workers.length === 0 ? (
+                          <p className="p-2 text-[10px] font-bold text-muted-foreground uppercase text-center italic">
+                            Aucun ouvrier trouvé
+                          </p>
+                        ) : (
+                          workers.map((worker) => (
+                            <div
+                              key={worker.id}
+                              className="flex items-center space-x-2 rounded-md p-2 hover:bg-zinc-100 transition-colors cursor-pointer"
+                              onClick={() => toggleWorker(worker.id)}
+                            >
+                              <Checkbox
+                                checked={selectedWorkerIds.includes(worker.id)}
+                                onCheckedChange={() => toggleWorker(worker.id)}
+                              />
+                              <span className="text-xs font-bold uppercase truncate">{worker.nom_complet}</span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              )}
             </div>
           </div>
 
