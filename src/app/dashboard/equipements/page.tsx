@@ -29,6 +29,7 @@ export default function EquipementsPage() {
   const [equipments, setEquipments] = useState<Equipment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const hasEquipments = equipments.length > 0;
 
   const fetchEquipments = async () => {
     setIsLoading(true);
@@ -92,7 +93,7 @@ export default function EquipementsPage() {
             Gestion des engins, véhicules et outillage spécialisé du BTP.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className={cn("flex items-center gap-3", !hasEquipments && "hidden")}>
           <div className="group relative">
             <Search
               className="absolute top-1/2 left-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-600"
@@ -121,12 +122,12 @@ export default function EquipementsPage() {
             <Truck size={48} strokeWidth={1.5} />
           </div>
           <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Parc matériel vide
+            Aucun équipement trouvé
           </h2>
           <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
-            {searchQuery
-              ? 'Aucun équipement ne correspond à vos critères de recherche.'
-              : 'Commencez à enregistrer vos engins et outils pour suivre leur déploiement.'}
+            {searchQuery && hasEquipments
+              ? 'Aucun équipement ne correspond à votre recherche.'
+              : 'Votre parc est vide. Enregistrez vos premiers engins et outils pour suivre leur déploiement sur les chantiers.'}
           </p>
           <CreateEquipmentModal onEquipmentCreated={fetchEquipments} />
         </Card>
