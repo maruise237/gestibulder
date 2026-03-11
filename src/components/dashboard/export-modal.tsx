@@ -11,7 +11,6 @@ import {
   Package,
   CheckCircle2,
   Loader2,
-  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -30,6 +29,11 @@ import { getWorkers } from '@/lib/server/worker.actions';
 import { getProjects } from '@/lib/server/project.actions';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 import { getAllMaterials } from '@/lib/server/stock.actions';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 type ExportCategory = 'finances' | 'workers' | 'projects' | 'inventory';
 
@@ -109,14 +113,21 @@ export function ExportModal({ trigger }: ExportModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="outline" className="font-black tracking-tight shadow-sm transition-all hover:bg-zinc-50">
-            <Download size={16} className="mr-2" />
-            Exporter les données
-          </Button>
-        )}
-      </DialogTrigger>
+      {trigger ? (
+        <DialogTrigger asChild>{trigger}</DialogTrigger>
+      ) : (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon" className="shadow-sm transition-all hover:bg-muted active:scale-95">
+                <Download size={18} />
+                <span className="sr-only">Exporter les données</span>
+              </Button>
+            </DialogTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Exporter les données</TooltipContent>
+        </Tooltip>
+      )}
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[600px]">
         <DialogHeader className="bg-zinc-50/50 border-b p-8 pb-6">
           <div className="flex items-center gap-4">
