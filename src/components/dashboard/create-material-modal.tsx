@@ -44,7 +44,6 @@ export function CreateMaterialModal({
 
     const formData = new FormData(e.currentTarget);
     const data: NewMaterial = {
-      chantier_id: chantierId,
       nom: formData.get('nom') as string,
       unite: formData.get('unite') as string,
       seuil_alerte: Number(formData.get('seuil_alerte')),

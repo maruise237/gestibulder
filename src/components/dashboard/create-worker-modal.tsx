@@ -1,19 +1,20 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createWorker, updateWorker } from '@/lib/server/worker.actions';
+import { NewWorker, Worker } from '@/types/worker';
 import {
   Loader2,
-  Plus,
   Briefcase,
+  UserPlus,
   Phone,
-  Banknote,
-  Ruler,
   ShieldCheck,
   Target,
+  Ruler,
+  Banknote,
   Edit,
+  Plus,
 } from 'lucide-react';
-import { NewWorker, Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -37,7 +38,6 @@ import { cn } from '@/lib/utils';
 
 const METIERS = [
   { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
-  { label: 'Coffreur', value: 'coffreur', unit: 'm²' },
   { label: 'Ferrailleur', value: 'ferrailleur', unit: 'kg / tonne' },
   { label: 'Électricien', value: 'electricien', unit: 'point / ml' },
   { label: 'Plombier', value: 'plombier', unit: 'point / ml' },
@@ -68,6 +68,8 @@ export function CreateWorkerModal({
   const [paymentType, setPaymentType] = useState<'journalier' | 'hebdomadaire' | 'mensuel'>(
     worker?.type_paiement || 'journalier'
   );
+
+  const isEdit = mode === 'edit';
 
   const currentTaux =
     paymentType === 'journalier'
@@ -117,7 +119,7 @@ export function CreateWorkerModal({
             <Plus className="mr-2 h-4 w-4" />
             Ajouter un Ouvrier
           </Button>
-        ))}
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto overflow-hidden border-none p-0  sm:max-w-[700px]">
         <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
@@ -130,7 +132,7 @@ export function CreateWorkerModal({
                 {isEdit ? 'Modifier le Profil' : 'Ajouter un Ouvrier'}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground/70 text-xs font-medium tracking-widest uppercase">
-                {isEdit ? `Édition de ${worker.nom_complet}` : 'Nouvelle fiche personnel'}
+                {isEdit ? `Édition de ${worker?.nom_complet}` : 'Nouvelle fiche personnel'}
               </DialogDescription>
             </div>
           </div>
