@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createWorker, updateWorker } from '@/lib/server/worker.actions';
 import {
   Loader2,
@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/lib/context/app-context';
 
 const METIERS = [
   { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
@@ -59,7 +60,6 @@ export function CreateWorkerModal({
   onWorkerCreated,
   worker,
   mode = 'create',
-  trigger,
   children,
 }: CreateWorkerModalProps) {
   const { selectedProjectId } = useApp();
@@ -70,6 +70,8 @@ export function CreateWorkerModal({
   const [paymentType, setPaymentType] = useState<'journalier' | 'hebdomadaire' | 'mensuel'>(
     worker?.type_paiement || 'journalier'
   );
+
+  const isEdit = mode === 'edit';
 
   const currentTaux =
     paymentType === 'journalier'
@@ -100,7 +102,7 @@ export function CreateWorkerModal({
       chantier_ids: selectedProjectId ? [selectedProjectId] : [],
     };
 
-    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data);
+    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data as NewWorker);
 
     if (result.error) {
       setError(result.error);
@@ -120,7 +122,7 @@ export function CreateWorkerModal({
             <Plus className="mr-2 h-4 w-4" />
             Ajouter un Ouvrier
           </Button>
-        ))}
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto overflow-hidden border-none p-0  sm:max-w-[700px]">
         <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
@@ -133,7 +135,7 @@ export function CreateWorkerModal({
                 {isEdit ? 'Modifier le Profil' : 'Ajouter un Ouvrier'}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground/70 text-xs font-medium tracking-widest uppercase">
-                {isEdit ? `Édition de ${worker.nom_complet}` : 'Nouvelle fiche personnel'}
+                {isEdit ? `Édition de ${worker?.nom_complet}` : 'Nouvelle fiche personnel'}
               </DialogDescription>
             </div>
           </div>
@@ -153,7 +155,6 @@ export function CreateWorkerModal({
           )}
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {/* Section Identité */}
             <div className="space-y-6">
               <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 <ShieldCheck size={14} className="text-primary" /> Détails Personnels
@@ -197,7 +198,6 @@ export function CreateWorkerModal({
               </div>
             </div>
 
-            {/* Section Métier */}
             <div className="space-y-6">
               <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
                 <Target size={14} className="text-primary" /> Profil Professionnel
@@ -257,7 +257,6 @@ export function CreateWorkerModal({
             </div>
           </div>
 
-          {/* Section Paiement */}
           <div className="space-y-6 border-t pt-8">
             <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
               <Banknote size={14} className="text-primary" /> Modèle de Rémunération

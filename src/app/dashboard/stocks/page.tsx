@@ -8,14 +8,12 @@ import {
   Search,
   PlusCircle,
   MinusCircle,
-  TrendingUp,
   MoreVertical,
   Loader2,
   HardHat,
   ArrowUpRight,
   ArrowDownRight,
   ChevronDown,
-  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -37,7 +35,7 @@ import {
 import { useApp } from '@/lib/context/app-context';
 
 export default function StocksPage() {
-  const { selectedProjectId: selectedChantier } = useApp();
+  const { selectedProjectId: selectedChantier, setSelectedProjectId: setSelectedChantier } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [movementModal, setMovementModal] = useState<{
@@ -52,7 +50,13 @@ export default function StocksPage() {
 
   const queryClient = useQueryClient();
 
-
+  const { data: projectsData } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
+      const res = await getProjects();
+      return res.projects || [];
+    }
+  });
 
   const { data: materials = [], isLoading } = useQuery({
     queryKey: ['stocks', selectedChantier],
@@ -99,7 +103,6 @@ export default function StocksPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Stocks</h1>
@@ -107,11 +110,11 @@ export default function StocksPage() {
             <HardHat className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
             <select
               className="h-9 w-full appearance-none rounded-md border border-border bg-background pr-8 pl-9 text-xs font-medium focus:border-primary outline-none sm:w-64"
-              value={selectedChantier}
+              value={selectedChantier || ""}
               onChange={(e) => setSelectedChantier(e.target.value)}
             >
               <option value="" disabled>Choisir un chantier</option>
-              {projectsData?.map((p) => (
+              {projectsData?.map((p: any) => (
                 <option key={p.id} value={p.id}>{p.nom}</option>
               ))}
             </select>
@@ -133,7 +136,7 @@ export default function StocksPage() {
             />
           </div>
           {selectedChantier && (
-            <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={handleMaterialCreated} />
+            <CreateMaterialModal onMaterialCreated={handleMaterialCreated} />
           )}
         </div>
       </div>
@@ -167,7 +170,7 @@ export default function StocksPage() {
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
             {searchQuery ? "Aucun résultat pour cette recherche." : "Ajoutez les matériaux nécessaires à ce chantier."}
           </p>
-          {!searchQuery && <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={handleMaterialCreated} />}
+          {!searchQuery && <CreateMaterialModal onMaterialCreated={handleMaterialCreated} />}
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

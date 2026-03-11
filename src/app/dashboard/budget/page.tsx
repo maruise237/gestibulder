@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 import {
   Wallet,
@@ -10,13 +10,10 @@ import {
   Calendar,
   MoreVertical,
   Package,
-  HardHat,
   ArrowDownRight,
-  Plus,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,7 +23,6 @@ import { ExportModal } from '@/components/dashboard/export-modal';
 
 export default function BudgetPage() {
   const { enterprise, selectedProjectId: selectedChantier } = useApp();
-
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['budget-data'],
@@ -44,11 +40,11 @@ export default function BudgetPage() {
   const filteredExpenses =
     !selectedChantier
       ? expenses
-      : expenses.filter((e) => e.chantier_id === selectedChantier);
+      : expenses.filter((e: any) => e.chantier_id === selectedChantier);
 
-  const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.montant, 0);
+  const totalExpenses = filteredExpenses.reduce((sum: number, exp: any) => sum + exp.montant, 0);
 
-  const selectedProjectObj = projects.find((p) => p.id === selectedChantier);
+  const selectedProjectObj = projects.find((p: any) => p.id === selectedChantier);
   const margin =
     selectedProjectObj && selectedProjectObj.budget_total > 0
       ? (((selectedProjectObj.budget_total - totalExpenses) / selectedProjectObj.budget_total) * 100).toFixed(1)
@@ -56,7 +52,6 @@ export default function BudgetPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Finances</h1>
@@ -66,11 +61,10 @@ export default function BudgetPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ExportModal />
-          <CreateExpenseModal onExpenseCreated={refetch} />
+          <CreateExpenseModal projects={projects} onExpenseCreated={refetch} />
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-fluid-md">
         <Card className="group relative overflow-hidden border-border p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-3">
@@ -137,7 +131,6 @@ export default function BudgetPage() {
         </Card>
       </div>
 
-      {/* Transaction Ledger */}
       <Card className="shadow-premium overflow-hidden border-border" padding="none">
         <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
           <div className="flex items-center gap-3">
@@ -148,8 +141,6 @@ export default function BudgetPage() {
               Grand Livre
             </h2>
           </div>
-
-
         </div>
 
         {isLoading && expenses.length === 0 ? (
@@ -172,7 +163,7 @@ export default function BudgetPage() {
           </div>
         ) : (
           <div className="divide-y divide-border">
-            {filteredExpenses.map((expense) => (
+            {filteredExpenses.map((expense: any) => (
               <div
                 key={expense.id}
                 className="group flex items-center justify-between p-4 transition-all duration-200 hover:bg-muted/30 sm:p-6"
