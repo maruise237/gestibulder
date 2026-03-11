@@ -67,7 +67,7 @@ export default function BudgetPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <ExportModal />
-          <CreateExpenseModal projects={projects} onExpenseCreated={refetch} />
+          <CreateExpenseModal onExpenseCreated={refetch} />
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { createMaterial } from '@/lib/server/stock.actions';
-import { Loader2, Plus, Package, Ruler, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Loader2, Plus, Package, Ruler, AlertTriangle, TrendingUp, HardHat, AlertCircle } from 'lucide-react';
 import { NewMaterial } from '@/types/stock';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,20 +16,25 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useApp } from '@/lib/context/app-context';
 
 export function CreateMaterialModal({
-  chantierId,
   onMaterialCreated,
 }: {
-  chantierId: string;
   onMaterialCreated: () => void;
 }) {
+  const { selectedProjectId: chantierId } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!chantierId) {
+        setError('Veuillez sélectionner un chantier dans la barre de navigation');
+        return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -62,7 +67,7 @@ export function CreateMaterialModal({
         </Button>
       </DialogTrigger>
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
-        <DialogHeader className="bg-indigo-600 text-white border-b p-8 pb-6 shadow-lg shadow-indigo-100">
+        <DialogHeader className="bg-zinc-950 text-white border-b p-8 pb-6">
           <div className="flex items-center gap-4">
             <div className="bg-white/20 rounded-2xl p-3 shadow-lg">
               <Package size={24} strokeWidth={2.5} />
@@ -79,73 +84,95 @@ export function CreateMaterialModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
-          <div className="grid gap-6">
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="nom"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-              >
-                <Package size={14} className="text-indigo-600" /> Désignation
-              </Label>
-              <Input
-                id="nom"
-                name="nom"
-                required
-                placeholder="Ex: Ciment Portland CPJ45"
-                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
-              />
+          {!chantierId ? (
+            <div className="flex flex-col items-center gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center">
+              <AlertCircle className="text-amber-600" size={32} />
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-amber-900">Aucun chantier sélectionné</p>
+                <p className="text-xs text-amber-700">
+                  Veuillez d'abord sélectionner un chantier dans la barre de navigation en haut de l'écran.
+                </p>
+              </div>
             </div>
+          ) : (
+            <div className="grid gap-6">
+              <div className="flex items-center gap-3 rounded-xl border border-zinc-100 bg-zinc-50 p-4">
+                <div className="bg-indigo-600 text-white flex h-8 w-8 items-center justify-center rounded-lg shadow-sm">
+                  <HardHat size={16} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black tracking-widest text-zinc-400 uppercase">Chantier d'affectation</span>
+                  <span className="text-sm font-black text-zinc-900">Utilisation du chantier actif</span>
+                </div>
+              </div>
 
-            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2.5">
                 <Label
-                  htmlFor="unite"
+                  htmlFor="nom"
                   className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
                 >
-                  <Ruler size={14} className="text-indigo-600" /> Unité
+                  <Package size={14} className="text-indigo-600" /> Désignation
                 </Label>
                 <Input
-                  id="unite"
-                  name="unite"
+                  id="nom"
+                  name="nom"
                   required
-                  placeholder="Ex: sac, m3, kg"
+                  placeholder="Ex: Ciment Portland CPJ45"
                   className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2.5">
+                  <Label
+                    htmlFor="unite"
+                    className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                  >
+                    <Ruler size={14} className="text-indigo-600" /> Unité
+                  </Label>
+                  <Input
+                    id="unite"
+                    name="unite"
+                    required
+                    placeholder="Ex: sac, m3, kg"
+                    className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                  />
+                </div>
+                <div className="space-y-2.5">
+                  <Label
+                    htmlFor="seuil_alerte"
+                    className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                  >
+                    <AlertTriangle size={14} className="text-indigo-600" /> Seuil d'alerte
+                  </Label>
+                  <Input
+                    id="seuil_alerte"
+                    name="seuil_alerte"
+                    type="number"
+                    required
+                    placeholder="Ex: 10"
+                    className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2.5">
                 <Label
-                  htmlFor="seuil_alerte"
+                  htmlFor="stock_initial"
                   className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
                 >
-                  <AlertTriangle size={14} className="text-indigo-600" /> Seuil d'alerte
+                  <TrendingUp size={14} className="text-indigo-600" /> Stock Initial
                 </Label>
                 <Input
-                  id="seuil_alerte"
-                  name="seuil_alerte"
+                  id="stock_initial"
+                  name="stock_initial"
                   type="number"
-                  required
-                  placeholder="Ex: 10"
+                  placeholder="0"
                   className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
                 />
               </div>
             </div>
-
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="stock_initial"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-              >
-                <TrendingUp size={14} className="text-indigo-600" /> Stock Initial
-              </Label>
-              <Input
-                id="stock_initial"
-                name="stock_initial"
-                type="number"
-                placeholder="0"
-                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
-              />
-            </div>
-          </div>
+          )}
 
           {error && (
             <div className="bg-red-50 border-red-100 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
@@ -165,8 +192,8 @@ export function CreateMaterialModal({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
-              className="bg-indigo-600 hover:bg-indigo-700 h-12 flex-1 rounded-xl font-bold text-white shadow-lg shadow-indigo-100"
+              disabled={isLoading || !chantierId}
+              className="bg-zinc-950 hover:bg-zinc-800 h-12 flex-1 rounded-xl font-bold text-white shadow-lg"
             >
               {isLoading ? (
                 <>
@@ -174,7 +201,7 @@ export function CreateMaterialModal({
                   Création...
                 </>
               ) : (
-                'Répertorier le Matériau'
+                !chantierId ? 'Choisir un chantier' : 'Répertorier le Matériau'
               )}
             </Button>
           </DialogFooter>

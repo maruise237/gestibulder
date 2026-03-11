@@ -115,7 +115,7 @@ export default function StocksPage() {
             />
           </div>
           {selectedChantier && (
-            <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={() => queryClient.invalidateQueries({ queryKey: ['stocks', selectedChantier] })} />
+            <CreateMaterialModal onMaterialCreated={() => queryClient.invalidateQueries({ queryKey: ['stocks', selectedChantier] })} />
           )}
         </div>
       </div>

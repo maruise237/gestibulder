@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppProvider } from '@/lib/context/app-context';
-import { Tooltip } from '@base-ui/react/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
+import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 
 export function Providers({
   children,
@@ -31,11 +32,11 @@ export function Providers({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Tooltip.Provider>
+      <TooltipPrimitive.Provider>
         <AppProvider enterprise={enterprise} userProfile={userProfile}>
           {children}
         </AppProvider>
-      </Tooltip.Provider>
+      </TooltipPrimitive.Provider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

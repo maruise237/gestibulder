@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Target,
   Edit,
+  HardHat,
 } from 'lucide-react';
 import { NewWorker, Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
@@ -62,6 +63,7 @@ export function CreateWorkerModal({
   trigger,
   children,
 }: CreateWorkerModalProps) {
+  const { selectedProjectId } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +73,6 @@ export function CreateWorkerModal({
   );
 
   const isEdit = mode === 'edit' && worker;
-  const { enterprise } = useApp();
 
   useEffect(() => {
     if (isOpen && isEdit) {
@@ -99,6 +100,7 @@ export function CreateWorkerModal({
       taux_journalier: paymentType === 'journalier' ? Number(formData.get('taux')) : undefined,
       salaire_hebdo: paymentType === 'hebdomadaire' ? Number(formData.get('taux')) : undefined,
       salaire_mensuel: paymentType === 'mensuel' ? Number(formData.get('taux')) : undefined,
+      chantier_ids: selectedProjectId ? [selectedProjectId] : [],
     };
 
     const result = isEdit
@@ -161,6 +163,18 @@ export function CreateWorkerModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-4">
+          {!selectedProjectId && !isEdit ? (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3 mb-6">
+              <ShieldCheck className="text-amber-600" size={20} />
+              <p className="text-amber-700 text-xs font-bold">Note: Aucun chantier sélectionné. L'ouvrier sera créé sans affectation initiale.</p>
+            </div>
+          ) : !isEdit && (
+            <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-center gap-3 mb-6">
+              <HardHat className="text-indigo-600" size={20} />
+              <p className="text-indigo-700 text-xs font-bold">Affectation automatique au chantier actif.</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Section Identité */}
             <div className="space-y-6">
@@ -330,7 +344,7 @@ export function CreateWorkerModal({
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-md border p-4">
+            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
               <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
               <p className="text-destructive text-xs font-semibold tracking-widest uppercase">
                 {error}
