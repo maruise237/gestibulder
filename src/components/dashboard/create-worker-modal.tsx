@@ -51,12 +51,16 @@ interface CreateWorkerModalProps {
   onWorkerCreated: () => void;
   worker?: Worker;
   mode?: 'create' | 'edit';
+  trigger?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 export function CreateWorkerModal({
   onWorkerCreated,
   worker,
   mode = 'create',
+  trigger,
+  children,
 }: CreateWorkerModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -121,7 +125,7 @@ export function CreateWorkerModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        {isEdit ? (
+        {children || trigger || (isEdit ? (
           <Button
             variant="ghost"
             size="icon"
@@ -137,7 +141,7 @@ export function CreateWorkerModal({
             <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
             <span className="hidden md:inline">Ajouter un Ouvrier</span>
           </Button>
-        )}
+        ))}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto overflow-hidden border-none p-0  sm:max-w-[700px]">
         <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
