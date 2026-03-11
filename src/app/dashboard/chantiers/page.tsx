@@ -44,6 +44,7 @@ export default function ChantiersPage() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  const hasProjects = projects.length > 0;
   const filteredProjects = projects.filter(
     (p) =>
       p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -86,7 +87,7 @@ export default function ChantiersPage() {
             Suivi et gestion de vos projets de construction actifs.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className={cn("flex items-center gap-3", !hasProjects && "hidden")}>
           <div className="group relative">
             <Search
               className="absolute top-1/2 left-4 -translate-y-1/2 text-zinc-400 transition-colors group-focus-within:text-indigo-600"
@@ -117,11 +118,11 @@ export default function ChantiersPage() {
               </div>
               <div className="flex-1 space-y-6 p-8">
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
+                  <div className={cn("flex items-center gap-3", !hasProjects && "hidden")}>
                     <Skeleton className="h-8 w-8 rounded-lg" />
                     <Skeleton className="h-4 w-48 rounded-md" />
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className={cn("flex items-center gap-3", !hasProjects && "hidden")}>
                     <Skeleton className="h-8 w-8 rounded-lg" />
                     <Skeleton className="h-4 w-32 rounded-md" />
                   </div>
@@ -146,12 +147,12 @@ export default function ChantiersPage() {
             <HardHat size={48} strokeWidth={1.5} />
           </div>
           <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Aucun projet trouvé
+            Aucun chantier trouvé
           </h2>
           <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
-            {searchQuery
-              ? "Nous n'avons trouvé aucun projet correspondant à votre recherche."
-              : 'Votre liste de projets est vide. Créez votre premier chantier pour commencer.'}
+            {searchQuery && hasProjects
+              ? "Nous n'avons trouvé aucun chantier correspondant à votre recherche."
+              : 'Votre liste de chantiers est vide. Lancez votre premier projet pour commencer à suivre vos travaux.'}
           </p>
           <CreateProjectModal onProjectCreated={refetch} />
         </Card>

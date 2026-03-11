@@ -33,20 +33,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useApp } from '@/lib/context/app-context';
+import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 
 const METIERS = [
-  { label: 'Ferrailleur (kg)', value: 'ferrailleur', unit: 'kg' },
-  { label: 'Maçon (m³)', value: 'macon', unit: 'm³' },
-  { label: 'Coffreur (m²)', value: 'coffreur', unit: 'm²' },
-  { label: 'Électricien (points)', value: 'electricien', unit: 'points' },
-  { label: 'Carreleur (m²)', value: 'carreleur', unit: 'm²' },
-  { label: 'Conducteur engins (h)', value: 'conducteur_engins', unit: 'h/machine' },
-  { label: 'Conducteur PL (voyages)', value: 'conducteur_pl', unit: 'voyages' },
-  { label: 'Peintre (m²)', value: 'peintre', unit: 'm²' },
-  { label: 'Plombier (points)', value: 'plombier', unit: 'points' },
-  { label: 'Manoeuvre (jour)', value: 'manoeuvre', unit: 'Journée' },
-  { label: 'Autre (personnalisé)', value: 'autre', unit: 'unité' },
+  { value: 'macon', label: 'Maçon', unit: 'm² / ml' },
+  { value: 'ferrailleur', label: 'Ferrailleur', unit: 'tonne' },
+  { value: 'coffreur', label: 'Coffreur', unit: 'm²' },
+  { value: 'electricien', label: 'Électricien', unit: 'point' },
+  { value: 'plombier', label: 'Plombier', unit: 'point' },
+  { value: 'peintre', label: 'Peintre', unit: 'm²' },
+  { value: 'manoeuvre', label: 'Manoeuvre', unit: 'journée' },
+  { value: 'autre', label: 'Autre...', unit: 'unité' },
 ];
 
 interface CreateWorkerModalProps {
@@ -69,6 +68,7 @@ export function CreateWorkerModal({
   );
 
   const isEdit = mode === 'edit' && worker;
+  const { enterprise } = useApp();
 
   useEffect(() => {
     if (isOpen && isEdit) {
@@ -98,21 +98,22 @@ export function CreateWorkerModal({
       salaire_mensuel: paymentType === 'mensuel' ? Number(formData.get('taux')) : undefined,
     };
 
-    let result;
-    if (isEdit) {
-      result = await updateWorker(worker.id, data);
-    } else {
-      result = await createWorker({ ...data, chantier_ids: [], actif: true });
-    }
+    const result = isEdit
+      ? await updateWorker(worker.id, data)
+      : await createWorker(data as NewWorker);
 
     if (result.error) {
       setError(result.error);
-      setIsLoading(false);
     } else {
       setIsOpen(false);
-      setIsLoading(false);
       onWorkerCreated();
     }
+    setIsLoading(false);
+  };
+
+  const formatMetier = (w: Worker) => {
+    if (w.metier === 'autre') return w.metier_custom;
+    return METIERS.find((m) => m.value === w.metier)?.label || w.metier;
   };
 
   const currentTaux = isEdit
@@ -138,9 +139,9 @@ export function CreateWorkerModal({
             />
           </Button>
         ) : (
-          <Button className="font-medium ">
-            <Plus className="mr-2 h-4 w-4" strokeWidth={3} />
-            Ajouter un Ouvrier
+          <Button className="font-medium">
+            <Plus className="h-4 w-4 md:mr-2" strokeWidth={3} />
+            <span className="hidden md:inline">Ajouter un Ouvrier</span>
           </Button>
         )}
       </DialogTrigger>
