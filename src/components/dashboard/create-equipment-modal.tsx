@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { createEquipment } from '@/lib/server/equipment.actions';
-import { Loader2, Plus, Truck } from 'lucide-react';
+import { Loader2, Plus, Truck, Tag, Hash, ShieldCheck } from 'lucide-react';
 import { NewEquipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import {
@@ -66,85 +66,104 @@ export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreate
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nouvel Équipement
-        </Button>
+        <Button className="font-bold shadow-lg">
+        <Plus className="mr-2 h-4 w-4" strokeWidth={3} />
+        Nouvel Équipement
+      </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[450px]">
-        <DialogHeader className="bg-muted/30 border-b p-6">
+      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
+        <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground rounded-md p-2">
-              <Truck size={20} />
+            <div className="bg-primary text-primary-foreground shadow-primary/20 rounded-2xl p-3 shadow-lg">
+              <Truck size={24} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <DialogTitle>Nouvel Équipement</DialogTitle>
-              <DialogDescription>Inventaire du parc matériel</DialogDescription>
+              <DialogTitle className="text-2xl font-black tracking-tight">
+                Nouvel Équipement
+              </DialogTitle>
+              <DialogDescription className="text-muted-foreground/70 text-xs font-bold tracking-widest uppercase">
+                Inventaire du parc matériel
+              </DialogDescription>
             </div>
           </div>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="grid gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="nom">Désignation du matériel</Label>
-                <Input
-                  id="nom"
-                  name="nom"
-                  required
-                  placeholder="Ex: Pelleteuse Caterpillar 320"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Catégorie</Label>
-                  <Select name="categorie" required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choisir" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="numero_serie">N° de série</Label>
-                  <Input
-                    id="numero_serie"
-                    name="numero_serie"
-                    placeholder="SN-XXXXXX"
-                  />
-                </div>
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
+          <div className="grid gap-6">
+            <div className="space-y-2.5">
+              <Label
+                htmlFor="nom"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+              >
+                <ShieldCheck size={14} className="text-primary" /> Désignation du matériel
+              </Label>
+              <Input
+                id="nom"
+                name="nom"
+                required
+                placeholder="Ex: Pelleteuse Caterpillar 320"
+                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+              />
             </div>
 
-            {error && (
-              <div className="bg-destructive/10 border-destructive/20 mt-4 flex items-center gap-3 rounded-md border p-4 text-destructive text-xs">
-                {error}
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-2.5">
+                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                  <Tag size={14} className="text-primary" /> Catégorie
+                </Label>
+                <Select name="categorie" required>
+                  <SelectTrigger className="bg-muted/20 border-muted focus:ring-primary/20 h-12 rounded-xl px-4 font-bold">
+                    <SelectValue placeholder="Choisir" />
+                  </SelectTrigger>
+                  <SelectContent className="border-muted rounded-xl">
+                    {CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat} className="rounded-lg py-3 font-bold">
+                        {cat}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+
+              <div className="space-y-2.5">
+                <Label
+                  htmlFor="numero_serie"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                >
+                  <Hash size={14} className="text-primary" /> N° de série
+                </Label>
+                <Input
+                  id="numero_serie"
+                  name="numero_serie"
+                  placeholder="SN-XXXXXX"
+                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                />
+              </div>
+            </div>
           </div>
 
-          <DialogFooter className="p-6">
+          {error && (
+            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
+              <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
+              <p className="text-destructive text-xs font-black tracking-widest uppercase">
+                {error}
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="gap-3 pt-4 sm:gap-0">
             <Button
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="flex-1"
+              className="border-muted hover:bg-muted/50 h-12 flex-1 rounded-xl font-bold"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="flex-1"
+              className="shadow-primary/20 h-12 flex-1 rounded-xl font-bold shadow-lg"
             >
               {isLoading ? (
                 <>

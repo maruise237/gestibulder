@@ -18,11 +18,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 export function CreateMaterialModal({
+  chantierId,
   onMaterialCreated,
-  chantierId
 }: {
+  chantierId: string;
   onMaterialCreated: () => void;
-  chantierId?: string;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +35,7 @@ export function CreateMaterialModal({
 
     const formData = new FormData(e.currentTarget);
     const data: NewMaterial = {
+      chantier_id: chantierId,
       nom: formData.get('nom') as string,
       unite: formData.get('unite') as string,
       seuil_alerte: Number(formData.get('seuil_alerte')),
@@ -104,17 +105,12 @@ export function CreateMaterialModal({
                   <Ruler size={14} className="text-indigo-600" /> Unité
                 </Label>
                 <Input
-                  id="nom"
-                  name="nom"
+                  id="unite"
+                  name="unite"
                   required
                   placeholder="Ex: sac, m3, kg"
                   className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
                 />
-                <datalist id="common-materials">
-                  {COMMON_MATERIALS.map((m) => (
-                    <option key={m.name} value={m.name} />
-                  ))}
-                </datalist>
               </div>
               <div className="space-y-2.5">
                 <Label
