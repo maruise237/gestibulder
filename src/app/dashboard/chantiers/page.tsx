@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getProjects } from '@/lib/server/project.actions';
 import {
   HardHat,
@@ -26,7 +26,7 @@ const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-p
 });
 
 export default function ChantiersPage() {
-  const { enterprise } = useApp();
+  const { enterprise, selectedProjectId } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
   const { data: projects = [], isLoading, refetch } = useQuery({
@@ -36,13 +36,16 @@ export default function ChantiersPage() {
       if (result.error) throw new Error(result.error);
       return result.projects || [];
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
   const filteredProjects = projects.filter(
-    (p) =>
-      p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.adresse?.toLowerCase().includes(searchQuery.toLowerCase())
+    (p) => {
+      const matchesSearch = p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            p.adresse?.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSelection = !selectedProjectId || selectedProjectId === 'all' || p.id === selectedProjectId;
+      return matchesSearch && matchesSelection;
+    }
   );
 
   const getStatusStyle = (statut: string) => {
@@ -124,12 +127,12 @@ export default function ChantiersPage() {
             <HardHat size={32} strokeWidth={1.5} />
           </div>
           <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
-            Aucun projet
+            Aucun projet correspondant
           </h2>
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-            {searchQuery
-              ? "Aucun résultat pour cette recherche."
-              : 'Commencez par créer votre premier chantier.'}
+             {selectedProjectId && selectedProjectId !== 'all'
+                ? "Le projet sélectionné n'apparaît pas ou ne correspond pas à la recherche."
+                : "Commencez par créer votre premier chantier."}
           </p>
           <CreateProjectModal onProjectCreated={refetch} />
         </Card>
@@ -142,7 +145,6 @@ export default function ChantiersPage() {
               className="group flex h-full flex-col overflow-hidden border-border p-0"
               padding="none"
             >
-              {/* Card Header with Status */}
               <div className="border-b border-border bg-muted/30 p-4 sm:p-6">
                 <div className="mb-4 flex items-start justify-between">
                   <div
@@ -162,7 +164,6 @@ export default function ChantiersPage() {
                 </h3>
               </div>
 
-              {/* Card Body */}
               <div className="flex-1 space-y-4 p-4 sm:p-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-2.5 text-muted-foreground">
@@ -183,7 +184,6 @@ export default function ChantiersPage() {
                   </div>
                 </div>
 
-                {/* Progress Section */}
                 <div className="space-y-2 pt-2">
                   <div className="flex items-end justify-between text-[9px] font-semibold tracking-widest uppercase text-muted-foreground">
                     <span>Avancement</span>
@@ -200,7 +200,6 @@ export default function ChantiersPage() {
                 </div>
               </div>
 
-              {/* Card Footer */}
               <div className="mt-auto p-4 pt-0 sm:p-6 sm:pt-0">
                 <Link href={`/dashboard/chantiers/${project.id}`} className="w-full">
                   <Button

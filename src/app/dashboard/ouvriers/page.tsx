@@ -21,7 +21,7 @@ import { Worker } from '@/types/worker';
 import { ExportModal } from '@/components/dashboard/export-modal';
 
 export default function OuvriersPage() {
-  const { enterprise } = useApp();
+  const { enterprise, selectedProjectId } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
@@ -36,9 +36,13 @@ export default function OuvriersPage() {
     staleTime: 1000 * 60 * 5,
   });
 
-  const workers = data?.workers || [];
+  const allWorkers = data?.workers || [];
   const totalCount = data?.totalCount || 0;
   const totalPages = data?.totalPages || 1;
+
+  const workers = !selectedProjectId || selectedProjectId === 'all'
+    ? allWorkers
+    : allWorkers.filter(w => w.chantier_ids?.includes(selectedProjectId));
 
   const filteredWorkers = workers.filter(w =>
     w.nom_complet.toLowerCase().includes(searchQuery.toLowerCase())
@@ -92,7 +96,7 @@ export default function OuvriersPage() {
         </div>
       </div>
 
-      {isLoading && workers.length === 0 ? (
+      {isLoading && allWorkers.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <Loader2 className="mb-2 animate-spin text-primary" size={32} />
           <p className="text-xs font-medium uppercase tracking-widest">Chargement...</p>
@@ -106,7 +110,9 @@ export default function OuvriersPage() {
             Aucun ouvrier
           </h2>
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-            Commencez par ajouter votre premier ouvrier.
+             {selectedProjectId && selectedProjectId !== 'all'
+                ? "Aucun ouvrier n'est affecté au chantier sélectionné."
+                : "Commencez par ajouter votre premier ouvrier."}
           </p>
           <CreateWorkerModal onWorkerCreated={refetch} />
         </Card>
@@ -214,7 +220,6 @@ export default function OuvriersPage() {
             </table>
           </div>
 
-          {/* Pagination */}
           <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-3">
             <div className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
               Page {page} / {totalPages || 1}

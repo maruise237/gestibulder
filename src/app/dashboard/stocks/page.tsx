@@ -3,19 +3,18 @@
 import React, { useState } from 'react';
 import { getMaterials, addStockMovement } from '@/lib/server/stock.actions';
 import { getProjects } from '@/lib/server/project.actions';
+import { useApp } from '@/lib/context/app-context';
 import {
   Package,
   Search,
   PlusCircle,
   MinusCircle,
-  TrendingUp,
   MoreVertical,
   Loader2,
   HardHat,
   ArrowUpRight,
   ArrowDownRight,
   ChevronDown,
-  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,7 @@ import {
 } from '@/components/ui/dialog';
 
 export default function StocksPage() {
-  const [selectedChantier, setSelectedChantier] = useState<string>('');
+  const { selectedProjectId } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [movementModal, setMovementModal] = useState<{
     open: boolean;
@@ -49,29 +48,20 @@ export default function StocksPage() {
 
   const queryClient = useQueryClient();
 
-  const { data: projectsData } = useQuery({
-    queryKey: ['projects'],
-    queryFn: async () => {
-      const res = await getProjects();
-      if (res.projects?.length && !selectedChantier) setSelectedChantier(res.projects[0].id);
-      return res.projects || [];
-    },
-  });
-
   const { data: materials = [], isLoading } = useQuery({
-    queryKey: ['stocks', selectedChantier],
+    queryKey: ['stocks', selectedProjectId],
     queryFn: async () => {
-      if (!selectedChantier) return [];
-      const res = await getMaterials(selectedChantier);
+      if (!selectedProjectId) return [];
+      const res = await getMaterials(selectedProjectId);
       return res.materials || [];
     },
-    enabled: !!selectedChantier,
+    enabled: !!selectedProjectId,
   });
 
   const movementMutation = useMutation({
     mutationFn: (data: any) => addStockMovement(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['stocks', selectedChantier] });
+      queryClient.invalidateQueries({ queryKey: ['stocks', selectedProjectId] });
       setMovementModal({ open: false, material: null, type: 'entree' });
     },
   });
@@ -82,12 +72,12 @@ export default function StocksPage() {
 
   const handleMovement = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!movementModal.material) return;
+    if (!movementModal.material || !selectedProjectId) return;
 
     const formData = new FormData(e.currentTarget);
     movementMutation.mutate({
       materiau_id: movementModal.material.id,
-      chantier_id: selectedChantier,
+      chantier_id: selectedProjectId,
       type_mouvement: movementModal.type,
       quantite: Number(formData.get('quantite')),
       cout_unitaire: formData.get('cout_unitaire') ? Number(formData.get('cout_unitaire')) : undefined,
@@ -98,29 +88,14 @@ export default function StocksPage() {
   };
 
   const handleMaterialCreated = () => {
-    queryClient.invalidateQueries({ queryKey: ['stocks', selectedChantier] });
+    queryClient.invalidateQueries({ queryKey: ['stocks', selectedProjectId] });
   };
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Stocks</h1>
-          <div className="relative mt-2">
-            <HardHat className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
-            <select
-              className="h-9 w-full appearance-none rounded-md border border-border bg-background pr-8 pl-9 text-xs font-medium focus:border-primary outline-none sm:w-64"
-              value={selectedChantier}
-              onChange={(e) => setSelectedChantier(e.target.value)}
-            >
-              <option value="" disabled>Choisir un chantier</option>
-              {projectsData?.map((p) => (
-                <option key={p.id} value={p.id}>{p.nom}</option>
-              ))}
-            </select>
-            <ChevronDown className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" size={14} />
-          </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="group relative">
@@ -136,19 +111,19 @@ export default function StocksPage() {
               className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
-          {selectedChantier && (
-            <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={handleMaterialCreated} />
+          {selectedProjectId && (
+            <CreateMaterialModal chantierId={selectedProjectId} onMaterialCreated={handleMaterialCreated} />
           )}
         </div>
       </div>
 
-      {!selectedChantier ? (
+      {!selectedProjectId ? (
         <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
           <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
             <HardHat size={32} strokeWidth={1.5} />
           </div>
           <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
-          <p className="text-size-sm text-muted-foreground mt-1">Veuillez choisir un chantier dans la liste pour voir ses stocks.</p>
+          <p className="text-size-sm text-muted-foreground mt-1">Utilisez le sélecteur en haut pour voir les stocks d'un chantier.</p>
         </Card>
       ) : isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -171,7 +146,7 @@ export default function StocksPage() {
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
             {searchQuery ? "Aucun résultat pour cette recherche." : "Ajoutez les matériaux nécessaires à ce chantier."}
           </p>
-          {!searchQuery && <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={handleMaterialCreated} />}
+          {!searchQuery && <CreateMaterialModal chantierId={selectedProjectId} onMaterialCreated={handleMaterialCreated} />}
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

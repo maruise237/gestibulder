@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 import {
   Wallet,
@@ -12,7 +12,6 @@ import {
   Package,
   HardHat,
   ArrowDownRight,
-  Plus,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -25,8 +24,7 @@ import { CreateExpenseModal } from '@/components/dashboard/create-expense-modal'
 import { ExportModal } from '@/components/dashboard/export-modal';
 
 export default function BudgetPage() {
-  const { enterprise } = useApp();
-  const [selectedChantier, setSelectedChantier] = useState<string>('all');
+  const { enterprise, selectedProjectId } = useApp();
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['budget-data'],
@@ -42,13 +40,13 @@ export default function BudgetPage() {
   const expenses = data?.expenses || [];
 
   const filteredExpenses =
-    selectedChantier === 'all'
+    !selectedProjectId || selectedProjectId === 'all'
       ? expenses
-      : expenses.filter((e) => e.chantier_id === selectedChantier);
+      : expenses.filter((e) => e.chantier_id === selectedProjectId);
 
   const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.montant, 0);
 
-  const selectedProjectObj = projects.find((p) => p.id === selectedChantier);
+  const selectedProjectObj = projects.find((p) => p.id === selectedProjectId);
   const margin =
     selectedProjectObj && selectedProjectObj.budget_total > 0
       ? (((selectedProjectObj.budget_total - totalExpenses) / selectedProjectObj.budget_total) * 100).toFixed(1)
@@ -115,7 +113,7 @@ export default function BudgetPage() {
             {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '--'}
           </p>
           <p className="mt-2 text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">
-            {selectedChantier === 'all' ? 'Sélectionnez un projet' : 'Rentabilité projet'}
+            {!selectedProjectId ? 'Toutes les marges' : 'Rentabilité projet'}
           </p>
         </Card>
 
@@ -148,20 +146,8 @@ export default function BudgetPage() {
               Grand Livre
             </h2>
           </div>
-
-          <div className="relative min-w-[240px]">
-            <HardHat className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
-            <select
-              className="h-9 w-full appearance-none rounded-md border border-border bg-background pr-8 pl-9 text-xs font-medium focus:border-primary outline-none"
-              value={selectedChantier}
-              onChange={(e) => setSelectedChantier(e.target.value)}
-            >
-              <option value="all">Tous les chantiers</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.nom}</option>
-              ))}
-            </select>
-            <Plus className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" size={14} />
+          <div className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+             Filtré par le sélecteur central
           </div>
         </div>
 
