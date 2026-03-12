@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { ExportModal } from '@/components/dashboard/export-modal';
+import { OnboardingWizard } from '@/components/dashboard/onboarding-wizard';
 
 const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-project-modal').then(mod => mod.CreateProjectModal), {
   loading: () => <Skeleton className="h-9 w-32 rounded-md" />,
@@ -57,8 +58,8 @@ export default function DashboardPage() {
               new Date(proj.date_fin_prevue) > new Date()
           )
           .sort(
-            (a: any, b: any) =>
-              new Date(a.date_fin_prevue).getTime() - new Date(b.date_fin_prevue).getTime()
+            (a: any) =>
+              new Date(a.date_fin_prevue).getTime() - new Date().getTime()
           )
           .slice(0, 3) || [];
 
@@ -84,6 +85,15 @@ export default function DashboardPage() {
   };
   const recentProjects = data?.recentProjects || [];
   const recentMovements = data?.recentMovements || [];
+
+  // Show onboarding if no projects and not loading
+  if (!isLoading && stats.projectsCount === 0 && !selectedChantier) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
+        <OnboardingWizard />
+      </div>
+    );
+  }
 
   const cards = [
     {
@@ -131,7 +141,7 @@ export default function DashboardPage() {
         <div className="space-y-0.5">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Tableau de bord</h1>
           <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
-            L'état de vos chantiers aujourd'hui.
+            L''état de vos chantiers aujourd''hui.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -297,13 +307,13 @@ export default function DashboardPage() {
                 <div className="flex justify-between items-center text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
                   <span>Activité</span>
                   <span className="text-emerald-600">
-                    {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
+                    {isLoading ? '...' : (Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100) + "%")}
                   </span>
                 </div>
                 <div className="h-1 w-full rounded-full bg-muted overflow-hidden sm:h-1.5">
                   <div
                     className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
-                    style={{ width: isLoading ? '0%' : `${(stats.activeWorkers / (stats.workersCount || 1)) * 100}%` }}
+                    style={{ width: isLoading ? '0%' : (Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100) + "%") }}
                   />
                 </div>
               </div>

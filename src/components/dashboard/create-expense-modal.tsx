@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
 import { NewExpense } from "@/types/expense";
 import { getWorkers } from '@/lib/server/worker.actions';
-import { Loader2, Plus, Wallet, Calendar, HardHat, ReceiptText, Banknote, UserPlus, Check } from 'lucide-react';
+import { Loader2, Plus, Wallet, HardHat, ReceiptText, UserPlus, Check } from 'lucide-react';
 import { Project } from '@/types/project';
 import { Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
@@ -39,10 +39,15 @@ export function CreateExpenseModal({
   projects: Project[];
   onExpenseCreated?: () => void;
 }) {
-  const { enterprise } = useApp();
+  const { enterprise, selectedProjectId: contextProject } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedChantier, setSelectedChantier] = useState<string>(contextProject || '');
+  const [category, setCategory] = useState<string>('');
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
+  const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
+
   const queryClient = useQueryClient();
   const [selectedChantier, setSelectedChantier] = useState<string>("");
   const [workers, setWorkers] = useState<Worker[]>([]);
@@ -86,6 +91,20 @@ export function CreateExpenseModal({
     }
   }, [selectedChantier, selectedCategory, fetchWorkers]);
 
+  const mutation = useMutation({
+    mutationFn: (data: any) => addExpense(data),
+    onSuccess: (result) => {
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setIsOpen(false);
+        queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
+        queryClient.invalidateQueries({ queryKey: ['budget-data'] });
+        onExpenseCreated?.();
+      }
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -98,7 +117,7 @@ export function CreateExpenseModal({
     const data: NewExpense = {
       libelle: formData.get('libelle') as string,
       montant: Number(formData.get('montant')),
-      categorie: selectedCategory as any,
+      categorie: category as any,
       date: formData.get('date') as string,
       chantier_id: formData.get('chantier_id') as string,
       entreprise_id: enterprise?.id || '',
@@ -189,20 +208,9 @@ export function CreateExpenseModal({
               </select>
             </div>
 
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="libelle"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
-              >
-                <ReceiptText size={14} className="text-indigo-600" /> Libellé / Objet
-              </Label>
-              <Input
-                id="libelle"
-                name="libelle"
-                required
-                placeholder="Ex: Achat 100 sacs de ciment"
-                className="bg-zinc-50 border-zinc-200 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-600/5 h-12 rounded-xl px-4 font-bold outline-none"
-              />
+            <div className="space-y-2">
+              <Label htmlFor="libelle">Libellé</Label>
+              <Input id="libelle" name="libelle" required placeholder="Ex: Achat de ciment" />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
@@ -286,9 +294,7 @@ export function CreateExpenseModal({
             )}
 
             {error && (
-              <div className="bg-destructive/10 border-destructive/20 mt-4 flex items-center gap-3 rounded-md border p-4 text-destructive text-xs">
-                {error}
-              </div>
+              <p className="text-xs font-medium text-destructive">{error}</p>
             )}
           </div>
 
