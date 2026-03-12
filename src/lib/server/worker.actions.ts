@@ -37,11 +37,15 @@ export async function getWorkers(page: number = 1, pageSize: number = 10) {
 }
 
 export async function getWorkersByProject(projectId: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
   const supabase = await createClient();
 
   const { data: workers, error } = await supabase
     .from('ouvriers')
     .select('*')
+    .eq('entreprise_id', entreprise_id)
     .contains('chantier_ids', [projectId])
     .order('nom_complet', { ascending: true });
 
