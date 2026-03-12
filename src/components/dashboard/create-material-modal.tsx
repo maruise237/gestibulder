@@ -88,12 +88,17 @@ export function CreateMaterialModal({
               <div className="space-y-2">
                 <Label htmlFor="nom">Désignation du Matériau</Label>
                 <Input
-                  id="unite"
-                  name="unite"
+                  id="nom"
+                  name="nom"
                   required
                   list="common-materials"
                   placeholder="Ex: Ciment Portland"
                 />
+                <datalist id="common-materials">
+                  {COMMON_MATERIALS.map((m) => (
+                    <option key={m.name} value={m.name} />
+                  ))}
+                </datalist>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
