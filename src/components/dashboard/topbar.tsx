@@ -4,6 +4,7 @@ import React, { useEffect, useState, memo } from 'react';
 import { User, Bell, Menu, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProjectSelector } from './project-selector';
+import { usePathname } from 'next/navigation';
 
 export const Topbar = memo(({
   onMenuClick,
@@ -14,6 +15,7 @@ export const Topbar = memo(({
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
@@ -46,9 +48,9 @@ export const Topbar = memo(({
           <Menu size={18} />
         </button>
 
-        {/* Centralized Project Selector */}
+        {/* Centralized Project Selector - Only on Dashboard */}
         <div className="flex items-center gap-4">
-           <ProjectSelector />
+           {pathname === '/dashboard' && <ProjectSelector />}
         </div>
       </div>
 

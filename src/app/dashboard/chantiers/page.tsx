@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getProjects } from '@/lib/server/project.actions';
 import {
   HardHat,
-  Search,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';

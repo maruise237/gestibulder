@@ -27,12 +27,12 @@ export default function OuvriersPage() {
   const { data, isLoading, refetch } = useQuery({
     queryKey: ['workers', selectedProjectId],
     queryFn: async () => {
-      if (!selectedProjectId) return { workers: [] };
+      if (!selectedProjectId || selectedProjectId === 'all') return { workers: [] };
       const result = await getWorkersByProject(selectedProjectId);
       if (result.error) throw new Error(result.error);
       return result;
     },
-    enabled: !!selectedProjectId,
+    enabled: !!selectedProjectId && selectedProjectId !== 'all',
   });
 
   const workers = data?.workers || [];
@@ -89,7 +89,7 @@ export default function OuvriersPage() {
         </div>
       </div>
 
-      {!selectedProjectId ? (
+      {!selectedProjectId || selectedProjectId === 'all' ? (
         <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
           <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
             <HardHat size={32} strokeWidth={1.5} />
