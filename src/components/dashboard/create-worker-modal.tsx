@@ -2,19 +2,18 @@
 
 import React, { useState } from 'react';
 import { createWorker, updateWorker } from '@/lib/server/worker.actions';
-import { NewWorker, Worker } from '@/types/worker';
 import {
   Loader2,
+  Plus,
   Briefcase,
-  UserPlus,
   Phone,
+  Banknote,
+  Ruler,
   ShieldCheck,
   Target,
-  Ruler,
-  Banknote,
   Edit,
-  Plus,
 } from 'lucide-react';
+import { NewWorker, Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,10 +34,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import { useApp } from '@/lib/context/app-context';
 
 const METIERS = [
   { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
+  { label: 'Coffreur', value: 'coffreur', unit: 'm²' },
   { label: 'Ferrailleur', value: 'ferrailleur', unit: 'kg / tonne' },
   { label: 'Électricien', value: 'electricien', unit: 'point / ml' },
   { label: 'Plombier', value: 'plombier', unit: 'point / ml' },
@@ -51,7 +50,6 @@ interface CreateWorkerModalProps {
   onWorkerCreated: () => void;
   worker?: Worker;
   mode?: 'create' | 'edit';
-  trigger?: React.ReactNode;
   children?: React.ReactNode;
 }
 
@@ -61,6 +59,7 @@ export function CreateWorkerModal({
   mode = 'create',
   children,
 }: CreateWorkerModalProps) {
+  const isEdit = mode === 'edit';
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,8 +67,6 @@ export function CreateWorkerModal({
   const [paymentType, setPaymentType] = useState<'journalier' | 'hebdomadaire' | 'mensuel'>(
     worker?.type_paiement || 'journalier'
   );
-
-  const isEdit = mode === 'edit';
 
   const currentTaux =
     paymentType === 'journalier'
@@ -121,10 +118,10 @@ export function CreateWorkerModal({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto overflow-hidden border-none p-0  sm:max-w-[700px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto border-none p-0 sm:max-w-[700px]">
         <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground  rounded-md p-3 ">
+            <div className="bg-primary text-primary-foreground rounded-md p-3 ">
               {isEdit ? <Edit size={24} strokeWidth={2.5} /> : <Briefcase size={24} strokeWidth={2.5} />}
             </div>
             <div className="space-y-1">
@@ -157,7 +154,7 @@ export function CreateWorkerModal({
                   required
                   defaultValue={worker?.nom_complet}
                   placeholder="Ex: Amine Benali"
-                  className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md px-4 font-medium"
+                  className="h-9 font-medium"
                 />
               </div>
               <div className="space-y-2.5">
@@ -177,7 +174,7 @@ export function CreateWorkerModal({
                     name="telephone"
                     defaultValue={worker?.telephone}
                     placeholder="05XX XX XX XX"
-                    className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md pr-4 pl-12 font-medium"
+                    className="h-9 pr-4 pl-12 font-medium"
                   />
                 </div>
               </div>
@@ -192,15 +189,15 @@ export function CreateWorkerModal({
                   Métier / Spécialité
                 </Label>
                 <Select value={selectedMetier} onValueChange={(val) => val && setSelectedMetier(val)}>
-                  <SelectTrigger className="bg-background border-border focus:ring-primary/20 h-9 rounded-md px-4 font-medium">
+                  <SelectTrigger className="h-9 font-medium">
                     <SelectValue placeholder="Choisir un métier" />
                   </SelectTrigger>
-                  <SelectContent className="border-border rounded-md">
+                  <SelectContent>
                     {METIERS.map((m) => (
                       <SelectItem
                         key={m.value}
                         value={m.value}
-                        className="rounded-md py-3 font-medium"
+                        className="font-medium"
                       >
                         {m.label}
                       </SelectItem>
@@ -222,7 +219,7 @@ export function CreateWorkerModal({
                     required
                     defaultValue={worker?.metier_custom}
                     placeholder="Ex: Étanchéité"
-                    className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md px-4 font-medium"
+                    className="h-9 font-medium"
                   />
                 </div>
               )}
@@ -260,7 +257,7 @@ export function CreateWorkerModal({
                       className={cn(
                         'h-8 rounded-md text-[10px] font-semibold tracking-widest uppercase transition-all active:scale-95',
                         paymentType === type
-                          ? 'bg-primary text-primary-foreground  '
+                          ? 'bg-primary text-primary-foreground'
                           : 'text-muted-foreground hover:bg-muted/50'
                       )}
                     >
@@ -274,13 +271,7 @@ export function CreateWorkerModal({
                   htmlFor="taux"
                   className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
                 >
-                  Taux (
-                  {paymentType === 'journalier'
-                    ? 'Jour'
-                    : paymentType === 'hebdomadaire'
-                      ? 'Semaine'
-                      : 'Mois'}
-                  )
+                  Taux ({paymentType})
                 </Label>
                 <div className="group relative">
                   <Banknote
@@ -294,7 +285,7 @@ export function CreateWorkerModal({
                     required
                     defaultValue={currentTaux}
                     placeholder="0.00"
-                    className="bg-background border-border focus-visible:ring-primary/20 h-9 rounded-md pr-12 pl-12 font-medium"
+                    className="h-9 pr-12 pl-12 font-medium"
                   />
                   <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-[10px] font-semibold tracking-widest uppercase">
                     DA
@@ -318,14 +309,14 @@ export function CreateWorkerModal({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="border-border hover:bg-muted/50 h-9 flex-1 rounded-md font-medium"
+              className="h-9 flex-1 font-medium"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className=" h-9 flex-1 rounded-md font-medium "
+              className="h-9 flex-1 font-medium"
             >
               {isLoading ? (
                 <>

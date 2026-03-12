@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AuthFormWrapper } from '@/components/auth/auth-form-wrapper';
 import { signUp } from '@/lib/server/auth.actions';
 import { Button } from '@/components/ui/button';

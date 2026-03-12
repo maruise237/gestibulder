@@ -8,12 +8,14 @@ import {
   Search,
   PlusCircle,
   MinusCircle,
+  TrendingUp,
   MoreVertical,
   Loader2,
   HardHat,
   ArrowUpRight,
   ArrowDownRight,
   ChevronDown,
+  Plus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -101,6 +103,7 @@ export default function StocksPage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+      {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Stocks</h1>
@@ -108,11 +111,11 @@ export default function StocksPage() {
             <HardHat className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
             <select
               className="h-9 w-full appearance-none rounded-md border border-border bg-background pr-8 pl-9 text-xs font-medium focus:border-primary outline-none sm:w-64"
-              value={selectedChantier || ""}
+              value={selectedChantier}
               onChange={(e) => setSelectedChantier(e.target.value)}
             >
               <option value="" disabled>Choisir un chantier</option>
-              {projectsData?.map((p: any) => (
+              {projectsData?.map((p) => (
                 <option key={p.id} value={p.id}>{p.nom}</option>
               ))}
             </select>
