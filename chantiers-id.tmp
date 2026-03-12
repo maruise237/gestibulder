@@ -1,0 +1,539 @@
+     1	'use client';
+     2
+     3	import React, { useState, useEffect, useCallback, use } from 'react';
+     4	import { getProjectById } from '@/lib/server/project.actions';
+     5	import { getWorkers } from '@/lib/server/worker.actions';
+     6	import { getMaterials } from '@/lib/server/stock.actions';
+     7	import { getBudgetData } from '@/lib/server/dashboard.actions';
+     8	import { getAttendance } from '@/lib/server/attendance.actions';
+     9	import {
+    10	  MapPin,
+    11	  Calendar,
+    12	  Clock,
+    13	  Plus,
+    14	  CheckCircle2,
+    15	  Loader2,
+    16	  ChevronLeft,
+    17	  Users,
+    18	  Package,
+    19	  Wallet,
+    20	  TrendingUp,
+    21	  TrendingDown,
+    22	  Calculator,
+    23	  ArrowDownRight,
+    24	  MoreVertical,
+    25	  Search
+    26	} from 'lucide-react';
+    27	import { cn, formatCurrency, formatDate } from '@/lib/utils';
+    28	import { Button } from '@/components/ui/button';
+    29	import { Card } from '@/components/ui/card';
+    30	import { useApp } from '@/lib/context/app-context';
+    31	import { Skeleton } from '@/components/ui/skeleton';
+    32	import { Badge } from '@/components/ui/badge';
+    33	import Link from 'next/link';
+    34	import { Worker } from '@/types/worker';
+    35	import { Material } from '@/types/stock';
+    36	import { Expense } from '@/types/expense';
+    37	import { Project } from '@/types/project';
+    38	import { Attendance } from '@/types/attendance';
+    39
+    40	export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    41	  const { id } = use(params);
+    42	  const { enterprise } = useApp();
+    43	  const [project, setProject] = useState<Project | null>(null);
+    44	  const [workers, setWorkers] = useState<Worker[]>([]);
+    45	  const [materials, setMaterials] = useState<Material[]>([]);
+    46	  const [expenses, setExpenses] = useState<Expense[]>([]);
+    47	  const [todayAttendance, setTodayAttendance] = useState<Attendance[]>([]);
+    48	  const [isLoading, setIsLoading] = useState(true);
+    49	  const [activeTab, setActiveTab] = useState<'overview' | 'workforce' | 'inventory' | 'finances'>('overview');
+    50
+    51	  const formatMetier = (worker: Worker) => {
+    52	    return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
+    53	  };
+    54
+    55	  const getTaux = (worker: Worker) => {
+    56	    switch (worker.type_paiement) {
+    57	      case 'journalier':
+    58	        return worker.taux_journalier;
+    59	      case 'hebdomadaire':
+    60	        return worker.salaire_hebdo;
+    61	      case 'mensuel':
+    62	        return worker.salaire_mensuel;
+    63	      default:
+    64	        return 0;
+    65	    }
+    66	  };
+    67
+    68	  const fetchData = useCallback(async () => {
+    69	    setIsLoading(true);
+    70	    const [pRes, wRes, sRes, bRes, aRes] = await Promise.all([
+    71	      getProjectById(id),
+    72	      getWorkers(1, 1000),
+    73	      getMaterials(id),
+    74	      getBudgetData(),
+    75	      getAttendance(id, new Date().toISOString().split('T')[0])
+    76	    ]);
+    77
+    78	    if (pRes.project) setProject(pRes.project);
+    79	    if (wRes.workers) setWorkers(wRes.workers.filter((w: Worker) => w.chantier_ids?.includes(id)));
+    80	    if (sRes.materials) setMaterials(sRes.materials);
+    81	    if (bRes.expenses) setExpenses(bRes.expenses.filter((e: Expense) => e.chantier_id === id));
+    82	    if (aRes.logs) setTodayAttendance(aRes.logs);
+    83	    setIsLoading(false);
+    84	  }, [id]);
+    85
+    86	  useEffect(() => {
+    87	    fetchData();
+    88	  }, [fetchData]);
+    89
+    90	  if (isLoading && !project) {
+    91	    return (
+    92	      <div className="flex h-[60vh] items-center justify-center">
+    93	        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    94	      </div>
+    95	    );
+    96	  }
+    97
+    98	  if (!project) return <div className="p-8 text-center">Projet non trouvé</div>;
+    99
+   100	  const totalExpenses = expenses.reduce((sum, e) => sum + e.montant, 0);
+   101	  const marginValue = project.budget_total - totalExpenses;
+   102	  const marginPct = project.budget_total > 0
+   103	    ? ((marginValue / project.budget_total) * 100).toFixed(1)
+   104	    : null;
+   105
+   106	  return (
+   107	    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+   108	      {/* Breadcrumb & Navigation */}
+   109	      <div className="flex flex-col gap-4">
+   110	        <Link href="/dashboard/chantiers" className="flex w-fit items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">
+   111	          <ChevronLeft size={14} />
+   112	          Retour
+   113	        </Link>
+   114
+   115	        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+   116	          <div className="space-y-1">
+   117	            <div className="flex items-center gap-2">
+   118	              <Badge variant="outline" className="text-[8px] uppercase tracking-widest font-semibold h-4 px-1.5 border-border">ID: {project.id.slice(0, 6)}</Badge>
+   119	              <Badge variant="secondary" className="text-[8px] uppercase tracking-widest font-semibold h-4 px-1.5">{project.statut.replace('_', ' ')}</Badge>
+   120	            </div>
+   121	            <h1 className="text-size-2xl font-black tracking-tight text-foreground sm:text-size-3xl uppercase">{project.nom}</h1>
+   122	            <div className="flex flex-wrap items-center gap-3 text-size-xs font-medium text-muted-foreground">
+   123	              <div className="flex items-center gap-1">
+   124	                <MapPin size={12} className="text-primary" />
+   125	                {project.adresse || 'Sans adresse'}
+   126	              </div>
+   127	              <div className="flex items-center gap-1">
+   128	                <Calendar size={12} className="text-primary" />
+   129	                Démarré le {new Date(project.created_at).toLocaleDateString()}
+   130	              </div>
+   131	            </div>
+   132	          </div>
+   133	          <div className="flex items-center gap-2">
+   134	            <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold">
+   135	              <Clock size={14} className="mr-1.5" /> Historique
+   136	            </Button>
+   137	            <Button size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold">
+   138	              <Plus size={14} className="mr-1.5" /> Activité
+   139	            </Button>
+   140	          </div>
+   141	        </div>
+   142	      </div>
+   143
+   144	      {/* Tabs */}
+   145	      <div className="flex items-center gap-1 overflow-x-auto rounded-md border border-border bg-muted/30 p-1 no-scrollbar">
+   146	        {(['overview', 'workforce', 'inventory', 'finances'] as const).map((tab) => (
+   147	          <button
+   148	            key={tab}
+   149	            onClick={() => setActiveTab(tab)}
+   150	            className={cn(
+   151	              'flex-1 rounded-sm px-3 py-1.5 text-[9px] font-semibold uppercase tracking-widest transition-all whitespace-nowrap',
+   152	              activeTab === tab
+   153	                ? 'bg-background text-foreground shadow-sm'
+   154	                : 'text-muted-foreground hover:bg-background/50'
+   155	            )}
+   156	          >
+   157	            {tab}
+   158	          </button>
+   159	        ))}
+   160	      </div>
+   161
+   162	      {/* Content */}
+   163	      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+   164	        {activeTab === 'overview' && (
+   165	          <div className="space-y-4">
+   166	            {/* Stats Grid */}
+   167	            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+   168	              <Card className="p-3 border-l-8 border-l-indigo-600 rounded-2xl">
+   169	                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Effectif</p>
+   170	                <div className="flex items-baseline gap-2">
+   171	                  <span className="text-size-lg font-black">{workers.length}</span>
+   172	                  <span className="text-[8px] font-medium text-emerald-600 flex items-center gap-0.5">
+   173	                     {todayAttendance.length} Présents
+   174	                  </span>
+   175	                </div>
+   176	              </Card>
+   177	              <Card className="p-3 border-l-8 border-l-amber-500 rounded-2xl">
+   178	                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Stock</p>
+   179	                <div className="flex items-baseline gap-2">
+   180	                  <span className="text-size-lg font-black">
+   181	                    {materials.filter((m) => (m.stock_actuel || 0) <= m.seuil_alerte).length}
+   182	                  </span>
+   183	                  <span className="text-[8px] font-medium text-amber-600">Alertes</span>
+   184	                </div>
+   185	              </Card>
+   186	              <Card className="p-3 border-l-8 border-l-emerald-500 rounded-2xl">
+   187	                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Dépensé</p>
+   188	                <span className="text-size-lg font-black truncate block">
+   189	                  {formatCurrency(totalExpenses, enterprise?.devise)}
+   190	                </span>
+   191	              </Card>
+   192	              <Card className="p-3 border-l-8 border-l-indigo-600 rounded-2xl">
+   193	                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Marge</p>
+   194	                <span className={cn(
+   195	                  "text-size-lg font-black",
+   196	                  Number(marginPct) > 0 ? "text-emerald-600" : "text-destructive"
+   197	                )}>
+   198	                  {marginPct ? `${marginPct}%` : '--'}
+   199	                </span>
+   200	              </Card>
+   201	            </div>
+   202
+   203	            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-fluid-md">
+   204	              {/* Progress */}
+   205	              <Card className="p-4 sm:p-6 lg:col-span-2 border-border rounded-2xl">
+   206	                <div className="mb-4 flex items-center justify-between">
+   207	                  <div>
+   208	                    <h3 className="text-size-base font-black tracking-tight uppercase">Avancement</h3>
+   209	                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Global chantier</p>
+   210	                  </div>
+   211	                  <div className="text-size-xl font-black text-primary">{project.avancement_pct || 0}%</div>
+   212	                </div>
+   213	                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+   214	                  <div
+   215	                    className="h-full rounded-full bg-indigo-600 transition-all duration-1000"
+   216	                    style={{ width: `${project.avancement_pct || 0}%` }}
+   217	                  />
+   218	                </div>
+   219	                <div className="mt-6 grid grid-cols-3 gap-2 border-t border-border pt-4">
+   220	                  <div>
+   221	                    <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">Fin</p>
+   222	                    <p className="text-[10px] font-black uppercase">{project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'N/A'}</p>
+   223	                  </div>
+   224	                  <div>
+   225	                    <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">Durée</p>
+   226	                    <p className="text-[10px] font-black uppercase">-- j</p>
+   227	                  </div>
+   228	                  <div className="text-right">
+   229	                    <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">État</p>
+   230	                    <p className="text-[10px] font-black text-emerald-600 uppercase">Ok</p>
+   231	                  </div>
+   232	                </div>
+   233	              </Card>
+   234
+   235	              {/* Daily Log Mini */}
+   236	              <Card className="overflow-hidden border-border rounded-2xl" padding="none">
+   237	                <div className="border-b border-border bg-muted/30 p-3">
+   238	                  <h3 className="text-size-xs font-black uppercase tracking-widest text-muted-foreground">Présences Jour</h3>
+   239	                </div>
+   240	                <div className="divide-y divide-border max-h-[240px] overflow-y-auto">
+   241	                  {todayAttendance.length === 0 ? (
+   242	                    <div className="p-6 text-center text-[10px] text-muted-foreground italic">Aucun log.</div>
+   243	                  ) : (
+   244	                    todayAttendance.slice(0, 5).map((log, i) => (
+   245	                      <div key={i} className="flex items-center justify-between p-3">
+   246	                        <div className="flex items-center gap-2">
+   247	                          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-600/10 text-indigo-600 text-[10px] font-black border border-indigo-600/20">
+   248	                            {workers.find((w) => w.id === log.ouvrier_id)?.nom_complet.charAt(0)}
+   249	                          </div>
+   250	                          <span className="truncate text-[11px] font-black text-foreground max-w-[100px] uppercase">
+   251	                            {workers.find((w) => w.id === log.ouvrier_id)?.nom_complet}
+   252	                          </span>
+   253	                        </div>
+   254	                        <span className="text-[9px] font-mono text-muted-foreground">{log.heure_arrivee}</span>
+   255	                      </div>
+   256	                    ))
+   257	                  )}
+   258	                </div>
+   259	                <Button variant="ghost" size="sm" className="w-full h-8 text-[9px] font-black uppercase tracking-widest rounded-none border-t border-border">
+   260	                  Voir tout
+   261	                </Button>
+   262	              </Card>
+   263	            </div>
+   264	          </div>
+   265	        )}
+   266
+   267	        {activeTab === 'workforce' && (
+   268	          <Card className="shadow-premium overflow-hidden border-border rounded-2xl border-l-8 border-l-indigo-600" padding="none">
+   269	            <div className="overflow-x-auto">
+   270	              <table className="w-full border-collapse text-left">
+   271	                <thead>
+   272	                  <tr className="border-b border-border bg-muted/50">
+   273	                    <th className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+   274	                      Ouvrier
+   275	                    </th>
+   276	                    <th className="hidden px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase sm:table-cell">
+   277	                      Métier
+   278	                    </th>
+   279	                    <th className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+   280	                      Rémunération
+   281	                    </th>
+   282	                    <th className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+   283	                      Statut
+   284	                    </th>
+   285	                  </tr>
+   286	                </thead>
+   287	                <tbody className="divide-y divide-border bg-background">
+   288	                  {workers.length === 0 ? (
+   289	                    <tr>
+   290	                      <td colSpan={4} className="p-8 text-center text-[10px] font-medium text-muted-foreground uppercase italic">
+   291	                        Aucun ouvrier sur ce chantier.
+   292	                      </td>
+   293	                    </tr>
+   294	                  ) : (
+   295	                    workers.map((worker) => (
+   296	                      <tr
+   297	                        key={worker.id}
+   298	                        className="group transition-all duration-200 hover:bg-muted/30"
+   299	                      >
+   300	                        <td className="px-4 py-3">
+   301	                          <div className="flex items-center gap-3">
+   302	                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-[10px] font-black text-foreground">
+   303	                              {worker.nom_complet.charAt(0).toUpperCase()}
+   304	                            </div>
+   305	                            <div className="flex flex-col min-w-0">
+   306	                              <span className="truncate text-size-xs font-black text-foreground sm:text-size-sm uppercase">
+   307	                                {worker.nom_complet}
+   308	                              </span>
+   309	                              <span className="truncate text-[10px] font-semibold text-muted-foreground sm:hidden uppercase">
+   310	                                {formatMetier(worker)}
+   311	                              </span>
+   312	                            </div>
+   313	                          </div>
+   314	                        </td>
+   315	                        <td className="hidden px-4 py-3 sm:table-cell">
+   316	                          <div className="flex flex-col">
+   317	                            <span className="text-size-xs font-black text-foreground uppercase">
+   318	                              {formatMetier(worker)}
+   319	                            </span>
+   320	                            <span className="text-[9px] font-semibold text-muted-foreground uppercase">
+   321	                              {worker.unite_production}
+   322	                            </span>
+   323	                          </div>
+   324	                        </td>
+   325	                        <td className="px-4 py-3">
+   326	                          <div className="flex flex-col">
+   327	                            <span className="text-size-xs font-black text-foreground sm:text-size-sm uppercase">
+   328	                              {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
+   329	                            </span>
+   330	                            <span className="text-[9px] font-semibold text-indigo-600 uppercase">
+   331	                              {worker.type_paiement}
+   332	                            </span>
+   333	                          </div>
+   334	                        </td>
+   335	                        <td className="px-4 py-3">
+   336	                          <div className="flex justify-center">
+   337	                            <span
+   338	                              className={cn(
+   339	                                'rounded-full border px-2 py-0.5 text-[8px] font-black tracking-widest uppercase sm:text-[9px]',
+   340	                                worker.actif
+   341	                                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+   342	                                  : 'border-destructive/20 bg-destructive/10 text-destructive'
+   343	                              )}
+   344	                            >
+   345	                              {worker.actif ? 'Actif' : 'Inactif'}
+   346	                            </span>
+   347	                          </div>
+   348	                        </td>
+   349	                      </tr>
+   350	                    ))
+   351	                  )}
+   352	                </tbody>
+   353	              </table>
+   354	            </div>
+   355	          </Card>
+   356	        )}
+   357
+   358	        {activeTab === 'inventory' && (
+   359	          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+   360	            {materials.length === 0 ? (
+   361	              <Card className="col-span-full border-2 border-dashed border-border bg-muted/30 py-12 text-center rounded-2xl">
+   362	                <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
+   363	                  <Package size={32} strokeWidth={1.5} />
+   364	                </div>
+   365	                <h2 className="mb-1 text-size-lg font-black tracking-tight text-foreground uppercase">
+   366	                  Aucun matériau
+   367	                </h2>
+   368	                <p className="mx-auto text-[10px] font-medium text-muted-foreground uppercase">
+   369	                  Aucun matériau enregistré pour ce chantier.
+   370	                </p>
+   371	              </Card>
+   372	            ) : (
+   373	              materials.map((mat) => {
+   374	                const stock = mat.stock_actuel || 0;
+   375	                const isLow = stock <= mat.seuil_alerte && stock > 0;
+   376	                const isOut = stock <= 0;
+   377
+   378	                return (
+   379	                  <Card
+   380	                    key={mat.id}
+   381	                    className="group flex flex-col overflow-hidden border-border p-0 rounded-2xl"
+   382	                    padding="none"
+   383	                  >
+   384	                    <div className="p-4 sm:p-6">
+   385	                      <div className="mb-4 flex items-start justify-between">
+   386	                        <div className={cn(
+   387	                          "rounded-md p-2",
+   388	                          isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-amber-500/10 text-amber-600" : "bg-indigo-600/10 text-indigo-600"
+   389	                        )}>
+   390	                          <Package size={18} />
+   391	                        </div>
+   392	                        <div className="flex items-center gap-2">
+   393	                           {isOut ? (
+   394	                             <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-destructive uppercase">Rupture</span>
+   395	                           ) : isLow ? (
+   396	                             <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-amber-600 uppercase">Critique</span>
+   397	                           ) : null}
+   398	                        </div>
+   399	                      </div>
+   400
+   401	                      <h3 className="truncate text-size-lg font-black tracking-tight text-foreground group-hover:text-indigo-600 uppercase">
+   402	                        {mat.nom}
+   403	                      </h3>
+   404	                      <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground uppercase">
+   405	                        Seuil: {mat.seuil_alerte} {mat.unite}
+   406	                      </p>
+   407
+   408	                      <div className="my-6 flex items-center justify-between rounded-lg border border-border bg-muted/20 p-4">
+   409	                        <div className="flex flex-col">
+   410	                          <span className={cn(
+   411	                            "text-size-3xl font-black tracking-tight",
+   412	                            isOut ? "text-destructive" : isLow ? "text-amber-600" : "text-foreground"
+   413	                          )}>
+   414	                            {stock}
+   415	                          </span>
+   416	                          <span className="text-[9px] font-black text-muted-foreground uppercase">{mat.unite}</span>
+   417	                        </div>
+   418	                      </div>
+   419
+   420	                      <div className="mt-auto flex items-center justify-between">
+   421	                         <span className="text-[8px] font-semibold text-muted-foreground uppercase">
+   422	                           Maj {new Date(mat.created_at).toLocaleDateString()}
+   423	                         </span>
+   424	                      </div>
+   425	                    </div>
+   426	                  </Card>
+   427	                );
+   428	              })
+   429	            )}
+   430	          </div>
+   431	        )}
+   432
+   433	        {activeTab === 'finances' && (
+   434	          <div className="space-y-6">
+   435	            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+   436	              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-indigo-600">
+   437	                <div className="mb-4 flex items-center gap-3">
+   438	                  <div className="rounded-md bg-indigo-600/10 p-2 text-indigo-600">
+   439	                    <Wallet size={18} />
+   440	                  </div>
+   441	                  <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+   442	                    Total Dépenses
+   443	                  </span>
+   444	                </div>
+   445	                <p className="text-size-2xl font-black tracking-tight text-foreground">
+   446	                  {formatCurrency(totalExpenses, enterprise?.devise)}
+   447	                </p>
+   448	                <div className="mt-2 flex items-center gap-1 text-emerald-600">
+   449	                  <ArrowDownRight size={14} />
+   450	                  <span className="text-[9px] font-black tracking-widest uppercase">
+   451	                    Actualisé
+   452	                  </span>
+   453	                </div>
+   454	              </Card>
+   455
+   456	              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-indigo-600">
+   457	                <div className="mb-4 flex items-center gap-3">
+   458	                  <div className={cn(
+   459	                    "rounded-md p-2",
+   460	                    marginValue > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"
+   461	                  )}>
+   462	                    {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+   463	                  </div>
+   464	                  <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+   465	                    Marge (Currency)
+   466	                  </span>
+   467	                </div>
+   468	                <p className={cn(
+   469	                  "text-size-2xl font-black tracking-tight",
+   470	                  marginValue > 0 ? "text-emerald-600" : "text-destructive"
+   471	                )}>
+   472	                  {formatCurrency(marginValue, enterprise?.devise)}
+   473	                </p>
+   474	                <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase">
+   475	                  {marginPct ? `${marginPct}% de rentabilité` : 'Rentabilité non calculable'}
+   476	                </p>
+   477	              </Card>
+   478	            </div>
+   479
+   480	            <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
+   481	              <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
+   482	                <div className="flex items-center gap-3">
+   483	                  <div className="rounded-md border border-border bg-background p-2">
+   484	                    <Calculator size={18} className="text-indigo-600" />
+   485	                  </div>
+   486	                  <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+   487	                    Grand Livre
+   488	                  </h2>
+   489	                </div>
+   490	              </div>
+   491
+   492	              {expenses.length === 0 ? (
+   493	                <div className="p-12 text-center text-muted-foreground">
+   494	                  <Calculator size={32} className="mx-auto mb-2 opacity-10" />
+   495	                  <p className="text-[10px] font-black uppercase italic">Aucune transaction enregistrée.</p>
+   496	                </div>
+   497	              ) : (
+   498	                <div className="divide-y divide-border">
+   499	                  {expenses.map((expense) => (
+   500	                    <div
+   501	                      key={expense.id}
+   502	                      className="group flex items-center justify-between p-4 transition-all duration-200 hover:bg-muted/30 sm:p-6"
+   503	                    >
+   504	                      <div className="flex items-center gap-3 sm:gap-4">
+   505	                        <div className={cn(
+   506	                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110',
+   507	                          expense.categorie === 'materiaux' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-indigo-600/10 text-indigo-600 border-indigo-600/20'
+   508	                        )}>
+   509	                          {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
+   510	                        </div>
+   511	                        <div className="min-w-0">
+   512	                          <div className="truncate text-size-sm font-black text-foreground group-hover:text-indigo-600 uppercase">
+   513	                            {expense.libelle}
+   514	                          </div>
+   515	                          <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground uppercase">
+   516	                            <span>{new Date(expense.date).toLocaleDateString()}</span>
+   517	                            <span>•</span>
+   518	                            <span>{expense.categorie.replace(/_/g, ' ')}</span>
+   519	                          </div>
+   520	                        </div>
+   521	                      </div>
+   522	                      <div className="flex items-center gap-4 sm:gap-6">
+   523	                        <div className="text-right">
+   524	                          <div className="text-size-sm font-black text-destructive sm:text-size-base uppercase">
+   525	                            - {formatCurrency(expense.montant, enterprise?.devise)}
+   526	                          </div>
+   527	                        </div>
+   528	                      </div>
+   529	                    </div>
+   530	                  ))}
+   531	                </div>
+   532	              )}
+   533	            </Card>
+   534	          </div>
+   535	        )}
+   536	      </div>
+   537	    </div>
+   538	  );
+   539	}
