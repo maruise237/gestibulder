@@ -19,37 +19,31 @@ import { Label } from '@/components/ui/label';
 import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: () => void }) {
+interface CreateProjectModalProps {
+  onProjectCreated?: () => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
+  children?: React.ReactNode;
+}
+
+export function CreateProjectModal({
+  onProjectCreated,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+  trigger,
+  children
+}: CreateProjectModalProps) {
   const { enterprise } = useApp();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+
+  const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setIsOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
+
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: createProject,
-    onMutate: async (newProject) => {
-      // Cancel any outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['projects'] });
-
-      // Snapshot the previous value
-      const previousProjects = queryClient.getQueryData(['projects']);
-
-      // Optimistically update to the new value
-      queryClient.setQueryData(['projects'], (old: any[] | undefined) => [
-        ...(old || []),
-        {
-          id: 'temp-id-' + Date.now(),
-          ...newProject,
-          created_at: new Date().toISOString(),
-          avancement_pct: 0,
-          statut: 'preparation',
-        },
-      ]);
-
-      return { previousProjects };
-    },
-    onError: (err, newProject, context) => {
-      queryClient.setQueryData(['projects'], context?.previousProjects);
-    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
@@ -76,14 +70,20 @@ export function CreateProjectModal({ onProjectCreated }: { onProjectCreated?: ()
     mutation.mutate(data);
   };
 
+  const modalTrigger = trigger || children || (
+    <Button>
+      <Plus className="mr-2 h-4 w-4" />
+      Nouveau Projet
+    </Button>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nouveau Projet
-        </Button>
-      </DialogTrigger>
+      {modalTrigger && (
+        <DialogTrigger asChild>
+          {modalTrigger}
+        </DialogTrigger>
+      )}
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
         <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
           <div className="flex items-center gap-4">
