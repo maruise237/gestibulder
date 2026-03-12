@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { useApp } from '@/lib/context/app-context';
 
 const METIERS = [
   { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
@@ -60,6 +61,7 @@ export function CreateWorkerModal({
   children,
 }: CreateWorkerModalProps) {
   const isEdit = mode === 'edit';
+  const { selectedProjectId } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,13 +79,19 @@ export function CreateWorkerModal({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!isEdit && !selectedProjectId) {
+      setError('Veuillez sélectionner un chantier dans le menu supérieur.');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     const formData = new FormData(e.currentTarget);
     const metierObj = METIERS.find((m) => m.value === selectedMetier);
 
-    const data: Partial<NewWorker> = {
+    const data: any = {
       nom_complet: formData.get('nom_complet') as string,
       telephone: formData.get('telephone') as string,
       metier: selectedMetier,
@@ -96,7 +104,12 @@ export function CreateWorkerModal({
       salaire_mensuel: paymentType === 'mensuel' ? Number(formData.get('taux')) : undefined,
     };
 
-    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data as NewWorker);
+    if (!isEdit && selectedProjectId) {
+       data.chantier_ids = [selectedProjectId];
+       data.actif = true;
+    }
+
+    const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data);
 
     if (result.error) {
       setError(result.error);
@@ -315,7 +328,7 @@ export function CreateWorkerModal({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || (!isEdit && !selectedProjectId)}
               className="h-9 flex-1 font-medium"
             >
               {isLoading ? (

@@ -1,20 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
-import { getWorkers } from '@/lib/server/worker.actions';
+import { getWorkersByProject } from '@/lib/server/worker.actions';
 import {
   Users,
   Search,
   Trash2,
   Loader2,
   Edit,
+  HardHat,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { CreateWorkerModal } from '@/components/dashboard/create-worker-modal';
 import { Worker } from '@/types/worker';
@@ -23,26 +23,19 @@ import { ExportModal } from '@/components/dashboard/export-modal';
 export default function OuvriersPage() {
   const { enterprise, selectedProjectId } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
-  const [page, setPage] = useState(1);
-  const itemsPerPage = 8;
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['workers', page],
+    queryKey: ['workers', selectedProjectId],
     queryFn: async () => {
-      const result = await getWorkers(page, itemsPerPage);
+      if (!selectedProjectId) return { workers: [] };
+      const result = await getWorkersByProject(selectedProjectId);
       if (result.error) throw new Error(result.error);
       return result;
     },
-    staleTime: 1000 * 60 * 5,
+    enabled: !!selectedProjectId,
   });
 
-  const allWorkers = data?.workers || [];
-  const totalCount = data?.totalCount || 0;
-  const totalPages = data?.totalPages || 1;
-
-  const workers = !selectedProjectId || selectedProjectId === 'all'
-    ? allWorkers
-    : allWorkers.filter(w => w.chantier_ids?.includes(selectedProjectId));
+  const workers = data?.workers || [];
 
   const filteredWorkers = workers.filter(w =>
     w.nom_complet.toLowerCase().includes(searchQuery.toLowerCase())
@@ -72,7 +65,7 @@ export default function OuvriersPage() {
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Ouvriers</h1>
           <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
-            Gestion de vos effectifs et de la rémunération.
+            Gestion de vos effectifs par chantier.
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -96,23 +89,29 @@ export default function OuvriersPage() {
         </div>
       </div>
 
-      {isLoading && allWorkers.length === 0 ? (
+      {!selectedProjectId ? (
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
+          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
+            <HardHat size={32} strokeWidth={1.5} />
+          </div>
+          <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
+          <p className="text-size-sm text-muted-foreground mt-1">Veuillez choisir un chantier dans le menu supérieur pour voir les ouvriers affectés.</p>
+        </Card>
+      ) : isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <Loader2 className="mb-2 animate-spin text-primary" size={32} />
-          <p className="text-xs font-medium uppercase tracking-widest">Chargement...</p>
+          <p className="text-xs font-medium uppercase tracking-widest">Chargement des effectifs...</p>
         </div>
-      ) : !isLoading && workers.length === 0 ? (
+      ) : workers.length === 0 ? (
         <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
           <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground/50 shadow-sm">
             <Users size={32} strokeWidth={1.5} />
           </div>
           <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
-            Aucun ouvrier
+            Aucun ouvrier sur ce chantier
           </h2>
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-             {selectedProjectId && selectedProjectId !== 'all'
-                ? "Aucun ouvrier n'est affecté au chantier sélectionné."
-                : "Commencez par ajouter votre premier ouvrier."}
+            Commencez par ajouter un ouvrier à ce chantier.
           </p>
           <CreateWorkerModal onWorkerCreated={refetch} />
         </Card>
@@ -218,32 +217,6 @@ export default function OuvriersPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-3">
-            <div className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
-              Page {page} / {totalPages || 1}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page === 1 || isLoading}
-                onClick={() => setPage(page - 1)}
-                className="h-7 rounded-md px-2 text-[9px] font-semibold uppercase sm:h-8 sm:px-3 sm:text-[10px]"
-              >
-                Précédent
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page === totalPages || isLoading}
-                onClick={() => setPage(page + 1)}
-                className="h-7 rounded-md px-2 text-[9px] font-semibold uppercase sm:h-8 sm:px-3 sm:text-[10px]"
-              >
-                Suivant
-              </Button>
-            </div>
           </div>
         </Card>
       )}

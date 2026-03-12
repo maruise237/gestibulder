@@ -1,67 +1,56 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { getProjects } from '@/lib/server/project.actions';
-import { getWorkers } from '@/lib/server/worker.actions';
+import { getWorkersByProject } from '@/lib/server/worker.actions';
 import { getAttendance, logAttendance, deleteAttendance } from '@/lib/server/attendance.actions';
+import { useApp } from '@/lib/context/app-context';
 import {
   CheckCircle2,
-  XCircle,
   Clock,
   HardHat,
   Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 export default function PointagePage() {
-  const [projects, setProjects] = useState<any[]>([]);
-  const [selectedChantier, setSelectedChantier] = useState('');
+  const { selectedProjectId } = useApp();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [workers, setWorkers] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
+    if (!selectedProjectId) return;
     setIsLoading(true);
-    const [pRes, wRes] = await Promise.all([
-      getProjects(),
-      getWorkers(1, 1000)
-    ]);
+    try {
+      const [wRes, aRes] = await Promise.all([
+        getWorkersByProject(selectedProjectId),
+        getAttendance(selectedProjectId, selectedDate)
+      ]);
 
-    if (pRes.projects) setProjects(pRes.projects);
-    if (pRes.projects?.length && !selectedChantier) setSelectedChantier(pRes.projects[0].id);
-
-    if (selectedChantier) {
-      const filteredWorkers = (wRes.workers || []).filter(w => w.actif);
-      setWorkers(filteredWorkers);
-      const aRes = await getAttendance(selectedChantier, selectedDate);
+      if (wRes.workers) setWorkers(wRes.workers.filter((w: any) => w.actif));
       if (aRes.logs) setLogs(aRes.logs);
+    } catch (err) {
+      console.error(err);
     }
     setIsLoading(false);
-  }, [selectedChantier, selectedDate]);
+  }, [selectedProjectId, selectedDate]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const handleLog = async (worker: any, status: 'present' | 'absent', existingLog?: any) => {
+    if (!selectedProjectId) return;
     setIsSubmitting(worker.id);
     const data: any = {
-      chantier_id: selectedChantier,
+      chantier_id: selectedProjectId,
       ouvrier_id: worker.id,
       date: selectedDate,
       statut: status,
@@ -84,7 +73,6 @@ export default function PointagePage() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Pointages</h1>
@@ -97,25 +85,16 @@ export default function PointagePage() {
             onChange={(e) => setSelectedDate(e.target.value)}
             className="h-9 w-full sm:w-auto"
           />
-          <Select value={selectedChantier} onValueChange={(val) => val && setSelectedChantier(val)}>
-            <SelectTrigger className="h-9 w-full sm:w-64">
-              <SelectValue placeholder="Choisir un chantier" />
-            </SelectTrigger>
-            <SelectContent>
-              {projects.map((p) => (
-                <SelectItem key={p.id} value={p.id}>{p.nom}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
         </div>
       </div>
 
-      {!selectedChantier ? (
+      {!selectedProjectId ? (
         <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
           <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
             <HardHat size={32} strokeWidth={1.5} />
           </div>
           <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
+          <p className="text-size-sm text-muted-foreground mt-1">Veuillez choisir un chantier dans le menu supérieur pour gérer les pointages.</p>
         </Card>
       ) : isLoading && workers.length === 0 ? (
         <div className="space-y-3">
@@ -123,6 +102,10 @@ export default function PointagePage() {
             <Skeleton key={i} className="h-16 w-full rounded-md" />
           ))}
         </div>
+      ) : workers.length === 0 ? (
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
+           <p className="text-muted-foreground">Aucun ouvrier actif affecté à ce chantier.</p>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:gap-4">
           {workers.map((worker) => {
