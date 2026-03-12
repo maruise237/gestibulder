@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
 import { NewExpense } from "@/types/expense";
 import { getWorkers } from '@/lib/server/worker.actions';
-import { Loader2, Plus, Wallet, HardHat, ReceiptText, UserPlus, Check } from 'lucide-react';
+import { Loader2, Plus, Wallet, HardHat, ReceiptText, UserPlus, Check, Banknote, Calendar } from 'lucide-react';
 import { Project } from '@/types/project';
 import { Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
@@ -39,28 +39,30 @@ export function CreateExpenseModal({
   projects: Project[];
   onExpenseCreated?: () => void;
 }) {
-  const { enterprise, selectedProjectId: contextProject } = useApp();
+  const { enterprise } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedChantier, setSelectedChantier] = useState<string>(contextProject || '');
-  const [category, setCategory] = useState<string>('');
+  const [selectedChantier, setSelectedChantier] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
   const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
 
   const queryClient = useQueryClient();
-  const [selectedChantier, setSelectedChantier] = useState<string>("");
-  const [workers, setWorkers] = useState<Worker[]>([]);
-  const [isLoadingWorkers, setIsLoadingWorkers] = useState(false);
-  const [selectedWorkerIds, setSelectedWorkerIds] = useState<string[]>([]);
 
   const mutation = useMutation({
     mutationFn: (data: NewExpense) => addExpense(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["expenses"] });
-      onExpenseCreated?.();
-      setIsOpen(false);
-      resetForm();
+    onSuccess: (result) => {
+      if (result.error) {
+        setError(result.error);
+      } else {
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
+        queryClient.invalidateQueries({ queryKey: ['budget-data'] });
+        onExpenseCreated?.();
+        setIsOpen(false);
+        resetForm();
+      }
     },
     onError: (err: any) => {
       setError(err.message);
@@ -91,20 +93,6 @@ export function CreateExpenseModal({
     }
   }, [selectedChantier, selectedCategory, fetchWorkers]);
 
-  const mutation = useMutation({
-    mutationFn: (data: any) => addExpense(data),
-    onSuccess: (result) => {
-      if (result.error) {
-        setError(result.error);
-      } else {
-        setIsOpen(false);
-        queryClient.invalidateQueries({ queryKey: ['dashboard-data'] });
-        queryClient.invalidateQueries({ queryKey: ['budget-data'] });
-        onExpenseCreated?.();
-      }
-    },
-  });
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -117,9 +105,9 @@ export function CreateExpenseModal({
     const data: NewExpense = {
       libelle: formData.get('libelle') as string,
       montant: Number(formData.get('montant')),
-      categorie: category as any,
+      categorie: selectedCategory as any,
       date: formData.get('date') as string,
-      chantier_id: formData.get('chantier_id') as string,
+      chantier_id: selectedChantier,
       entreprise_id: enterprise?.id || '',
     };
 

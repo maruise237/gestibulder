@@ -124,6 +124,7 @@ export default function ProjectDetailsPage() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-8">
+          <>
           {/* Top Metrics Grid */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
@@ -176,7 +177,6 @@ export default function ProjectDetailsPage() {
               </CardContent>
             </Card>
           </div>
-        )}
 
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Avancement Detail Card */}
@@ -244,6 +244,7 @@ export default function ProjectDetailsPage() {
               </CardFooter>
             </Card>
           </div>
+          </>
         </TabsContent>
 
         <TabsContent value="workforce">

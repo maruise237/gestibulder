@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 import {
   Wallet,
@@ -11,9 +11,10 @@ import {
   MoreVertical,
   Package,
   ArrowDownRight,
+  HardHat,
+  Plus,
 } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
-import { cn } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
