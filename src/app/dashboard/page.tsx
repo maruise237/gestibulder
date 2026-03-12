@@ -87,7 +87,7 @@ export default function DashboardPage() {
   const recentMovements = data?.recentMovements || [];
 
   // Show onboarding if no projects and not loading
-  if (!isLoading && stats.projectsCount === 0 && !selectedChantier) {
+  if (!isLoading && stats.projectsCount === 0) {
     return (
       <div className="flex min-h-[70vh] items-center justify-center px-4">
         <OnboardingWizard />

@@ -134,7 +134,7 @@ export default function StocksPage() {
             />
           </div>
           {selectedChantier && (
-            <CreateMaterialModal onMaterialCreated={handleMaterialCreated} />
+            <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={handleMaterialCreated} />
           )}
         </div>
       </div>
@@ -168,7 +168,7 @@ export default function StocksPage() {
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
             {searchQuery ? "Aucun résultat pour cette recherche." : "Ajoutez les matériaux nécessaires à ce chantier."}
           </p>
-          {!searchQuery && <CreateMaterialModal onMaterialCreated={handleMaterialCreated} />}
+          {!searchQuery && <CreateMaterialModal chantierId={selectedChantier} onMaterialCreated={handleMaterialCreated} />}
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
