@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Clock,
+  Plus,
 } from 'lucide-react';
 import { getDashboardData } from '@/lib/server/dashboard.actions';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
@@ -21,11 +22,12 @@ import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { ExportModal } from '@/components/dashboard/export-modal';
+import { CreateProjectModal } from '@/components/dashboard/create-project-modal';
 
 export default function DashboardPage() {
   const { enterprise } = useApp();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, refetch } = useQuery({
     queryKey: ['dashboard-data'],
     queryFn: async () => {
       const data = await getDashboardData();
@@ -130,6 +132,15 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <ExportModal />
+          <CreateProjectModal
+            onProjectCreated={refetch}
+            trigger={
+              <Button size="sm" className="h-9 px-3 text-[10px] font-bold uppercase tracking-widest">
+                <Plus size={14} className="mr-2" />
+                Nouveau Projet
+              </Button>
+            }
+          />
         </div>
       </div>
 

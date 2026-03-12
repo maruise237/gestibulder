@@ -12,9 +12,8 @@ import {
   SelectValue,
   SelectGroup,
   SelectLabel,
-  SelectSeparator
 } from '@/components/ui/select';
-import { HardHat, Plus, Building2, LayoutGrid } from 'lucide-react';
+import { HardHat, Building2, LayoutGrid } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CreateProjectModal } from './create-project-modal';
 
@@ -104,20 +103,6 @@ export function ProjectSelector() {
                 ))
               )}
             </SelectGroup>
-
-            <SelectSeparator />
-
-            <div className="p-1">
-              <CreateProjectModal
-                onProjectCreated={() => {}}
-                trigger={
-                  <button className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-xs font-semibold text-indigo-600 transition-colors hover:bg-indigo-50">
-                    <Plus size={14} strokeWidth={3} />
-                    NOUVEAU CHANTIER
-                  </button>
-                }
-              />
-            </div>
           </SelectContent>
         </Select>
       </div>
