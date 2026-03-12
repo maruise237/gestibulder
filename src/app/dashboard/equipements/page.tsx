@@ -10,7 +10,7 @@ import {
   Edit,
   Search,
 } from 'lucide-react';
-import { getEquipments } from '@/lib/server/equipment.actions';
+import { getEquipments, deleteEquipment } from '@/lib/server/equipment.actions';
 import { Equipment } from '@/types/equipment';
 import { CreateEquipmentModal } from '@/components/dashboard/create-equipment-modal';
 import { DeployEquipmentModal } from '@/components/dashboard/deploy-equipment-modal';
@@ -76,6 +76,16 @@ export default function EquipementsPage() {
     }
   };
 
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Supprimer cet équipement ?')) return;
+    const result = await deleteEquipment(id);
+    if (result.error) {
+      alert(result.error);
+    } else {
+      fetchEquipments();
+    }
+  };
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       {/* Header */}
@@ -172,7 +182,7 @@ export default function EquipementsPage() {
                       <Button variant="ghost" size="icon-sm" className="h-7 w-7">
                         <Edit size={14} className="text-muted-foreground hover:text-primary" />
                       </Button>
-                      <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-destructive hover:bg-destructive/5">
+                      <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-destructive hover:bg-destructive/5" onClick={() => handleDelete(equipment.id)}>
                         <Trash2 size={14} />
                       </Button>
                     </div>

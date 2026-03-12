@@ -94,3 +94,20 @@ export async function deployEquipment(data: {
   revalidatePath('/dashboard/equipements');
   return { success: true };
 }
+
+export async function deleteEquipment(id: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('equipements')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting equipment:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/equipements');
+  return { success: true };
+}

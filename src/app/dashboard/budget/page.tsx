@@ -27,13 +27,13 @@ export default function BudgetPage() {
   const { enterprise, selectedProjectId } = useApp();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['budget-data'],
+    queryKey: ['budget-data', selectedProjectId],
     queryFn: async () => {
       const result = await getBudgetData();
       if (result.error) throw new Error(result.error);
       return result;
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 0,
   });
 
   const projects = data?.projects || [];
