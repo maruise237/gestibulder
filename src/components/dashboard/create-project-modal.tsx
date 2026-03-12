@@ -70,18 +70,21 @@ export function CreateProjectModal({
     mutation.mutate(data);
   };
 
-  const modalTrigger = trigger || children || (
-    <Button>
-      <Plus className="mr-2 h-4 w-4" />
-      Nouveau Projet
-    </Button>
-  );
+  // If trigger is explicitly null, we don't render any DialogTrigger.
+  // This allows the modal to be controlled purely by the 'open' prop.
+  const hasTrigger = trigger !== null;
+  const modalTrigger = trigger || children;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {modalTrigger && (
+      {hasTrigger && (
         <DialogTrigger asChild>
-          {modalTrigger}
+          {modalTrigger || (
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau Projet
+            </Button>
+          )}
         </DialogTrigger>
       )}
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
