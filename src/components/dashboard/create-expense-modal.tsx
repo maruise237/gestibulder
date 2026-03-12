@@ -1,9 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
-import { Loader2, Plus, Wallet, Banknote, Calendar, HardHat } from 'lucide-react';
-import { Project } from '@/types/project';
+import { Loader2, Plus, Wallet, Banknote, Calendar } from 'lucide-react';
 import { NewExpense } from '@/types/expense';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,13 +16,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,10 +28,8 @@ const CATEGORIES = [
 ];
 
 export function CreateExpenseModal({
-  projects,
   onExpenseCreated,
 }: {
-  projects: Project[];
   onExpenseCreated?: () => void;
 }) {
   const { enterprise, selectedProjectId } = useApp();
@@ -47,15 +37,8 @@ export function CreateExpenseModal({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [localChantierId, setLocalChantierId] = useState<string>('');
 
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (selectedProjectId && selectedProjectId !== 'all') {
-      setLocalChantierId(selectedProjectId);
-    }
-  }, [selectedProjectId, isOpen]);
 
   const mutation = useMutation({
     mutationFn: addExpense,
@@ -80,6 +63,11 @@ export function CreateExpenseModal({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!selectedProjectId) {
+      setError('Veuillez sélectionner un chantier dans le sélecteur principal');
+      return;
+    }
+
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     const data: NewExpense = {
@@ -87,15 +75,9 @@ export function CreateExpenseModal({
       montant: Number(formData.get('montant')),
       categorie: selectedCategory as any,
       date: formData.get('date') as string,
-      chantier_id: localChantierId,
+      chantier_id: selectedProjectId,
       entreprise_id: enterprise?.id || '',
     };
-
-    if (!data.chantier_id) {
-      setError('Veuillez sélectionner un chantier');
-      setIsLoading(false);
-      return;
-    }
 
     if (!data.categorie) {
       setError('Veuillez sélectionner une catégorie');
@@ -129,6 +111,12 @@ export function CreateExpenseModal({
 
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6">
+            {!selectedProjectId && (
+              <div className="bg-amber-50 border-amber-200 text-amber-700 mb-6 rounded-md border p-3 text-xs font-medium">
+                Veuillez sélectionner un chantier dans le sélecteur principal avant de créer une dépense.
+              </div>
+            )}
+
             <div className="grid gap-6">
               <div className="space-y-2">
                 <Label htmlFor="libelle">Libellé de la dépense</Label>
@@ -165,24 +153,6 @@ export function CreateExpenseModal({
                     defaultValue={new Date().toISOString().split('T')[0]}
                   />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="chantier_id" className="flex items-center gap-2">
-                   <HardHat size={14} className="text-primary" /> Chantier concerné
-                </Label>
-                <Select value={localChantierId} onValueChange={(val) => val && setLocalChantierId(val)} required>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Sélectionner un projet" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {projects.map((p) => (
-                      <SelectItem key={p.id} value={p.id}>
-                        {p.nom}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">
@@ -225,10 +195,10 @@ export function CreateExpenseModal({
             </Button>
             <Button
               type="submit"
-              disabled={mutation.isPending}
+              disabled={isLoading || !selectedProjectId}
               className="flex-1"
             >
-              {mutation.isPending ? (
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Enregistrement...
