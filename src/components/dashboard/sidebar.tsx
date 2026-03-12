@@ -14,7 +14,6 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Target,
   Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,6 +22,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getProjects } from '@/lib/server/project.actions';
 import { getWorkers } from '@/lib/server/worker.actions';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
+import Image from 'next/image';
 
 const navigation = [
   { name: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard },
@@ -67,8 +67,14 @@ export const Sidebar = memo(({
       {/* Brand Header */}
       <div className="flex h-16 items-center border-b border-border px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-sm">
-            <Target size={20} strokeWidth={2.5} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-white p-1 shadow-sm border border-border">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={28}
+              height={28}
+              className="object-contain"
+            />
           </div>
           <div className="flex flex-col">
             <span className="text-size-sm font-semibold tracking-tight text-foreground">
