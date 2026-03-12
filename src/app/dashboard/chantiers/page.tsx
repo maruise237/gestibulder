@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { getProjects } from '@/lib/server/project.actions';
 import {
   HardHat,
@@ -18,18 +18,12 @@ import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import dynamic from 'next/dynamic';
-
-const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-project-modal').then(mod => mod.CreateProjectModal), {
-  loading: () => <Skeleton className="h-9 w-32 rounded-md" />,
-  ssr: false
-});
 
 export default function ChantiersPage() {
   const { enterprise, selectedProjectId } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: projects = [], isLoading, refetch } = useQuery({
+  const { data: projects = [], isLoading } = useQuery({
     queryKey: ['projects'],
     queryFn: async () => {
       const result = await getProjects();
@@ -43,7 +37,7 @@ export default function ChantiersPage() {
     (p) => {
       const matchesSearch = p.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             p.adresse?.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesSelection = !selectedProjectId || selectedProjectId === 'all' || p.id === selectedProjectId;
+      const matchesSelection = !selectedProjectId || p.id === selectedProjectId;
       return matchesSearch && matchesSelection;
     }
   );
@@ -98,7 +92,6 @@ export default function ChantiersPage() {
               className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
-          <CreateProjectModal onProjectCreated={refetch} />
         </div>
       </div>
 
@@ -130,11 +123,10 @@ export default function ChantiersPage() {
             Aucun projet correspondant
           </h2>
           <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-             {selectedProjectId && selectedProjectId !== 'all'
+             {selectedProjectId
                 ? "Le projet sélectionné n'apparaît pas ou ne correspond pas à la recherche."
                 : "Commencez par créer votre premier chantier."}
           </p>
-          <CreateProjectModal onProjectCreated={refetch} />
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

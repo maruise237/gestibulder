@@ -20,13 +20,7 @@ import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
-import dynamic from 'next/dynamic';
 import { ExportModal } from '@/components/dashboard/export-modal';
-
-const CreateProjectModal = dynamic(() => import('@/components/dashboard/create-project-modal').then(mod => mod.CreateProjectModal), {
-  loading: () => <Skeleton className="h-9 w-32 rounded-md" />,
-  ssr: false
-});
 
 export default function DashboardPage() {
   const { enterprise } = useApp();
@@ -136,7 +130,6 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <ExportModal />
-          <CreateProjectModal onProjectCreated={() => window.location.reload()} />
         </div>
       </div>
 
