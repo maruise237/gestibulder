@@ -95,3 +95,20 @@ export async function updateWorker(id: string, data: any) {
   revalidatePath('/dashboard/ouvriers');
   return { worker };
 }
+
+export async function deleteWorker(id: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('ouvriers')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error deleting worker:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/ouvriers');
+  return { success: true };
+}

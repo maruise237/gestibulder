@@ -50,7 +50,7 @@ export const Topbar = memo(({
 
         {/* Centralized Project Selector - Only on Dashboard */}
         <div className="flex items-center gap-4">
-           {pathname === '/dashboard' && <ProjectSelector />}
+           {pathname.startsWith('/dashboard') && <ProjectSelector />}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { getWorkersByProject } from '@/lib/server/worker.actions';
+import { getWorkersByProject, deleteWorker } from '@/lib/server/worker.actions';
 import {
   Users,
   Search,
@@ -58,6 +58,16 @@ export default function OuvriersPage() {
     }
   };
 
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet ouvrier ?')) return;
+    const result = await deleteWorker(id);
+    if (result.error) {
+      alert(result.error);
+    } else {
+      refetch();
+    }
+  };
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       {/* Page Header */}
@@ -208,6 +218,7 @@ export default function OuvriersPage() {
                           variant="ghost"
                           size="icon-sm"
                           className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDelete(worker.id)}
                         >
                           <Trash2 size={14} />
                         </Button>
