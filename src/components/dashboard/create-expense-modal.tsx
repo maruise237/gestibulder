@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { addExpense } from '@/lib/server/expense.actions';
 import { Loader2, Plus, Wallet, Banknote, Calendar, HardHat } from 'lucide-react';
 import { Project } from '@/types/project';
@@ -42,12 +42,20 @@ export function CreateExpenseModal({
   projects: Project[];
   onExpenseCreated?: () => void;
 }) {
-  const { enterprise } = useApp();
+  const { enterprise, selectedProjectId } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [localChantierId, setLocalChantierId] = useState<string>('');
+
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (selectedProjectId && selectedProjectId !== 'all') {
+      setLocalChantierId(selectedProjectId);
+    }
+  }, [selectedProjectId, isOpen]);
 
   const mutation = useMutation({
     mutationFn: addExpense,
@@ -79,9 +87,15 @@ export function CreateExpenseModal({
       montant: Number(formData.get('montant')),
       categorie: selectedCategory as any,
       date: formData.get('date') as string,
-      chantier_id: formData.get('chantier_id') as string,
+      chantier_id: localChantierId,
       entreprise_id: enterprise?.id || '',
     };
+
+    if (!data.chantier_id) {
+      setError('Veuillez sélectionner un chantier');
+      setIsLoading(false);
+      return;
+    }
 
     if (!data.categorie) {
       setError('Veuillez sélectionner une catégorie');
@@ -157,7 +171,7 @@ export function CreateExpenseModal({
                 <Label htmlFor="chantier_id" className="flex items-center gap-2">
                    <HardHat size={14} className="text-primary" /> Chantier concerné
                 </Label>
-                <Select name="chantier_id" required>
+                <Select value={localChantierId} onValueChange={(val) => val && setLocalChantierId(val)} required>
                   <SelectTrigger>
                     <SelectValue placeholder="Sélectionner un projet" />
                   </SelectTrigger>
@@ -211,10 +225,10 @@ export function CreateExpenseModal({
             </Button>
             <Button
               type="submit"
-              disabled={isLoading}
+              disabled={mutation.isPending}
               className="flex-1"
             >
-              {isLoading ? (
+              {mutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Enregistrement...
