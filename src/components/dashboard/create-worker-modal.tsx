@@ -3,17 +3,16 @@
 import React, { useState } from 'react';
 import { createWorker, updateWorker } from '@/lib/server/worker.actions';
 import {
+  Briefcase,
   Loader2,
   Plus,
-  Briefcase,
+  Edit,
   Phone,
-  Banknote,
-  Ruler,
   ShieldCheck,
   Target,
-  Edit,
+  Ruler,
+  Banknote,
 } from 'lucide-react';
-import { NewWorker, Worker } from '@/types/worker';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,78 +34,71 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/lib/context/app-context';
+import { Worker } from '@/types/worker';
 
 const METIERS = [
-  { label: 'Maçon', value: 'macon', unit: 'm² / m³' },
+  { label: 'Chef de chantier', value: 'chef_chantier', unit: 'Forfait' },
+  { label: 'Maçon', value: 'macon', unit: 'm²' },
   { label: 'Coffreur', value: 'coffreur', unit: 'm²' },
-  { label: 'Ferrailleur', value: 'ferrailleur', unit: 'kg / tonne' },
-  { label: 'Électricien', value: 'electricien', unit: 'point / ml' },
-  { label: 'Plombier', value: 'plombier', unit: 'point / ml' },
+  { label: 'Ferrailleur', value: 'ferrailleur', unit: 'Tonne' },
+  { label: 'Plombier', value: 'plombier', unit: 'Point' },
+  { label: 'Électricien', value: 'electricien', unit: 'Point' },
+  { label: 'Manœuvre', value: 'manoeuvre', unit: 'Jour' },
   { label: 'Peintre', value: 'peintre', unit: 'm²' },
-  { label: 'Manoeuvre', value: 'manoeuvre', unit: 'jour' },
-  { label: 'Autre', value: 'autre', unit: 'unité' },
+  { label: 'Autre', value: 'autre', unit: 'Unité' },
 ];
 
-interface CreateWorkerModalProps {
-  onWorkerCreated: () => void;
-  worker?: Worker;
-  mode?: 'create' | 'edit';
-  children?: React.ReactNode;
-}
-
 export function CreateWorkerModal({
-  onWorkerCreated,
-  worker,
-  mode = 'create',
   children,
-}: CreateWorkerModalProps) {
-  const isEdit = mode === 'edit';
+  worker,
+  onWorkerCreated,
+  mode = 'create',
+}: {
+  children?: React.ReactNode;
+  worker?: Worker;
+  onWorkerCreated: () => void;
+  mode?: 'create' | 'edit';
+}) {
   const { selectedProjectId } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMetier, setSelectedMetier] = useState(worker?.metier || METIERS[0].value);
+
+  const isEdit = mode === 'edit';
+  const [selectedMetier, setSelectedMetier] = useState(worker?.metier || 'macon');
   const [paymentType, setPaymentType] = useState<'journalier' | 'hebdomadaire' | 'mensuel'>(
-    worker?.type_paiement || 'journalier'
+    (worker?.type_paiement as any) || 'journalier'
   );
 
   const currentTaux =
     paymentType === 'journalier'
       ? worker?.taux_journalier
       : paymentType === 'hebdomadaire'
-        ? worker?.salaire_hebdo
-        : worker?.salaire_mensuel;
+      ? worker?.salaire_hebdo
+      : worker?.salaire_mensuel;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!isEdit && !selectedProjectId) {
-      setError('Veuillez sélectionner un chantier dans le menu supérieur.');
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     const formData = new FormData(e.currentTarget);
-    const metierObj = METIERS.find((m) => m.value === selectedMetier);
-
     const data: any = {
       nom_complet: formData.get('nom_complet') as string,
       telephone: formData.get('telephone') as string,
       metier: selectedMetier,
-      metier_custom:
-        selectedMetier === 'autre' ? (formData.get('metier_custom') as string) : undefined,
-      unite_production: metierObj?.unit || 'unité',
+      metier_custom: formData.get('metier_custom') as string,
       type_paiement: paymentType,
-      taux_journalier: paymentType === 'journalier' ? Number(formData.get('taux')) : undefined,
-      salaire_hebdo: paymentType === 'hebdomadaire' ? Number(formData.get('taux')) : undefined,
-      salaire_mensuel: paymentType === 'mensuel' ? Number(formData.get('taux')) : undefined,
+      unite_production: METIERS.find((m) => m.value === selectedMetier)?.unit,
+      actif: true,
     };
 
-    if (!isEdit && selectedProjectId) {
-       data.chantier_ids = [selectedProjectId];
-       data.actif = true;
+    if (paymentType === 'journalier') data.taux_journalier = Number(formData.get('taux'));
+    else if (paymentType === 'hebdomadaire') data.salaire_hebdo = Number(formData.get('taux'));
+    else data.salaire_mensuel = Number(formData.get('taux'));
+
+    if (!isEdit) {
+      data.chantier_ids = [selectedProjectId];
     }
 
     const result = isEdit && worker ? await updateWorker(worker.id, data) : await createWorker(data);

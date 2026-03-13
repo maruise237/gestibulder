@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Truck,
   Loader2,
-  Tag,
+  Plus, Tag,
   Hash,
   Trash2,
   Edit,
@@ -120,19 +120,26 @@ export default function EquipementsPage() {
           <p className="text-xs font-medium uppercase tracking-widest">Chargement...</p>
         </div>
       ) : filteredEquipments.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground/50 shadow-sm">
-            <Truck size={32} strokeWidth={1.5} />
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-20 text-center">
+          <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium">
+            <Truck size={40} className="text-primary/20" />
+            <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-premium animate-bounce">
+              <Plus size={16} />
+            </div>
           </div>
-          <h2 className="mb-2 text-2xl font-black tracking-tight text-zinc-950">
-            Aucun équipement trouvé
+          <h2 className="mb-2 text-size-xl font-semibold tracking-tight text-foreground uppercase">
+            {searchQuery && hasEquipments ? 'Aucun résultat' : 'Parc matériel vide'}
           </h2>
-          <p className="mx-auto mb-10 max-w-sm font-bold tracking-tight text-zinc-500">
+          <p className="mx-auto mb-10 max-w-sm text-size-sm font-medium text-muted-foreground italic">
             {searchQuery && hasEquipments
               ? 'Aucun équipement ne correspond à votre recherche.'
-              : 'Votre parc est vide. Enregistrez vos premiers engins et outils pour suivre leur déploiement sur les chantiers.'}
+              : 'Enregistrez vos premiers engins et outils pour suivre leur déploiement sur les chantiers.'}
           </p>
-          <CreateEquipmentModal onEquipmentCreated={fetchEquipments} />
+          <CreateEquipmentModal onEquipmentCreated={fetchEquipments}>
+             <Button className="h-11 rounded-xl px-8 font-bold uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
+               Ajouter un équipement
+             </Button>
+          </CreateEquipmentModal>
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

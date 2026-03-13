@@ -52,7 +52,7 @@ export function ProjectSelector() {
         trigger={null}
       />
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2" data-tour="project-selector">
         <Select
           value={selectedProjectId || ''}
           onValueChange={(val) => setSelectedProjectId(val || null)}
@@ -90,7 +90,7 @@ export function ProjectSelector() {
               ) : (
                 projects.map((project) => (
                   <SelectItem key={project.id} value={project.id} className="py-2.5">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" data-tour="project-selector">
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
                         <Building2 size={16} />
                       </div>

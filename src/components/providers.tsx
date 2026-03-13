@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AppProvider } from '@/lib/context/app-context';
+import { TourProvider } from '@/lib/context/tour-context';
 
 export function Providers({
   children,
@@ -31,7 +32,9 @@ export function Providers({
   return (
     <QueryClientProvider client={queryClient}>
       <AppProvider enterprise={enterprise} userProfile={userProfile}>
-        {children}
+        <TourProvider>
+          {children}
+        </TourProvider>
       </AppProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>

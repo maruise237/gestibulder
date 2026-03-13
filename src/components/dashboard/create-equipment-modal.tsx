@@ -33,7 +33,13 @@ const CATEGORIES = [
   'Autre',
 ];
 
-export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreated: () => void }) {
+export function CreateEquipmentModal({
+  children,
+  onEquipmentCreated
+}: {
+  children?: React.ReactNode;
+  onEquipmentCreated: () => void
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,10 +72,12 @@ export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreate
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="font-bold shadow-lg">
-        <Plus className="mr-2 h-4 w-4" strokeWidth={3} />
-        Nouvel Équipement
-      </Button>
+        {children || (
+          <Button className="font-bold shadow-lg">
+            <Plus className="mr-2 h-4 w-4" strokeWidth={3} />
+            Nouvel Équipement
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
         <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
@@ -102,7 +110,7 @@ export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreate
                 name="nom"
                 required
                 placeholder="Ex: Pelleteuse Caterpillar 320"
-                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-9 rounded-xl px-4 font-bold"
               />
             </div>
 
@@ -112,7 +120,7 @@ export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreate
                   <Tag size={14} className="text-primary" /> Catégorie
                 </Label>
                 <Select name="categorie" required>
-                  <SelectTrigger className="bg-muted/20 border-muted focus:ring-primary/20 h-12 rounded-xl px-4 font-bold">
+                  <SelectTrigger className="bg-muted/20 border-muted focus:ring-primary/20 h-9 rounded-xl px-4 font-bold">
                     <SelectValue placeholder="Choisir" />
                   </SelectTrigger>
                   <SelectContent className="border-muted rounded-xl">
@@ -136,7 +144,7 @@ export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreate
                   id="numero_serie"
                   name="numero_serie"
                   placeholder="SN-XXXXXX"
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-9 rounded-xl px-4 font-bold"
                 />
               </div>
             </div>
@@ -156,14 +164,14 @@ export function CreateEquipmentModal({ onEquipmentCreated }: { onEquipmentCreate
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="border-muted hover:bg-muted/50 h-12 flex-1 rounded-xl font-bold"
+              className="border-muted hover:bg-muted/50 h-9 flex-1 rounded-xl font-bold"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="shadow-primary/20 h-12 flex-1 rounded-xl font-bold shadow-lg"
+              className="shadow-primary/20 h-9 flex-1 rounded-xl font-bold shadow-lg"
             >
               {isLoading ? (
                 <>

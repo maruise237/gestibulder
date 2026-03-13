@@ -105,7 +105,30 @@ export function OnboardingWizard() {
                     className="h-9 rounded-md"
                   />
                 </div>
-              </motion.div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-border"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">Ou essayez</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setProjectName('Chantier Démo Sandbox');
+                    setUseSeed(true);
+                    setStep(2);
+                  }}
+                  className="w-full h-9 border-dashed border-primary/40 text-primary hover:bg-primary/5"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Mode Sandbox (Données pré-remplies)
+                </Button>
+</motion.div>
             )}
 
             {step === 2 && (

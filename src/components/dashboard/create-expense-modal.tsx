@@ -28,8 +28,10 @@ const CATEGORIES = [
 ];
 
 export function CreateExpenseModal({
+  children,
   onExpenseCreated,
 }: {
+  children?: React.ReactNode;
   onExpenseCreated?: () => void;
 }) {
   const { enterprise, selectedProjectId } = useApp();
@@ -91,10 +93,12 @@ export function CreateExpenseModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nouvelle Dépense
-        </Button>
+        {children || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouvelle Dépense
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="bg-muted/30 border-b p-6">
