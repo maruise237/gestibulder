@@ -8,32 +8,15 @@ import { getAuthenticatedEnterpriseId } from './utils';
 export async function getMaterials(chantierId: string) {
   const supabase = await createClient();
 
-  // 1. Get all materials for this chantier
   const { data: materials, error: matError } = await supabase
-    .from('materiaux')
+    .from('materiaux_avec_stock')
     .select('*')
     .eq('chantier_id', chantierId)
     .order('nom', { ascending: true });
 
   if (matError) return { error: matError.message };
 
-  // 2. Get all movements for these materials to calculate stock_actuel
-  const { data: movements, error: movError } = await supabase
-    .from('mouvements_stock')
-    .select('materiau_id, type_mouvement, quantite')
-    .eq('chantier_id', chantierId);
-
-  if (movError) return { error: movError.message };
-
-  const materialsWithStock = materials.map((mat) => {
-    const matMovements = movements.filter((m) => m.materiau_id === mat.id);
-    const stock_actuel = matMovements.reduce((acc, m) => {
-      return m.type_mouvement === 'entree' ? acc + Number(m.quantite) : acc - Number(m.quantite);
-    }, 0);
-    return { ...mat, stock_actuel };
-  });
-
-  return { materials: materialsWithStock };
+  return { materials: materials || [] };
 }
 
 export async function getAllMaterials() {
