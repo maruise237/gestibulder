@@ -97,12 +97,15 @@ export async function updateWorker(id: string, data: any) {
 }
 
 export async function deleteWorker(id: string) {
-  const supabase = await createClient();
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
 
+  const supabase = await createClient();
   const { error } = await supabase
     .from('ouvriers')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .eq('entreprise_id', entreprise_id);
 
   if (error) {
     console.error('Error deleting worker:', error);
