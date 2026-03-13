@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -14,69 +14,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { HardHat, Coins, Sparkles, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { createProject, seedDemoData } from '@/lib/server/project.actions';
+import { Coins, Sparkles, Clock, ArrowRight, CheckCircle2, HardHat } from 'lucide-react';
+import { createProject } from '@/lib/server/project.actions';
+import { seedDemoData } from '@/lib/server/seed.actions';
 import { updateEnterprise } from '@/lib/server/enterprise.actions';
 import { CURRENCIES } from '@/lib/currencies';
-import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
-export function OnboardingWizard() {
+export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [projectName, setProjectName] = useState('');
+  const [projectBudget, setProjectBudget] = useState('');
   const [currency, setCurrency] = useState('DZD');
-  const [useSeed, setUseSeed] = useState(true);
-  const router = useRouter();
-
-  const totalSteps = 3;
-  const progress = (step / totalSteps) * 100;
+  const [useDemoData, setUseDemoData] = useState(true);
 
   const handleNext = async () => {
     if (step === 1) {
-      if (!projectName.trim()) return;
       setStep(2);
     } else if (step === 2) {
       setLoading(true);
       try {
-        // Update enterprise currency
+        // 1. Update Enterprise Currency
         await updateEnterprise({ devise: currency });
-        // Create first project
-        const { project } = await createProject({
+
+        // 2. Create First Project
+        const res = await createProject({
           nom: projectName,
+          budget_total: Number(projectBudget) || 0,
           statut: 'en_cours',
-          date_debut: new Date().toISOString().split('T')[0],
         });
 
-        if (project && useSeed) {
-           await seedDemoData(project.id);
+        if (res.project && useDemoData) {
+          // 3. Optional Seed Data
+          await seedDemoData(res.project.id);
         }
         setStep(3);
       } catch (error) {
-        console.error('Onboarding error:', error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
     } else {
-      // Finish onboarding
-      window.location.reload();
+      onComplete();
     }
   };
 
   return (
-    <Card className="mx-auto max-w-lg rounded-2xl border-2 border-primary/10 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="p-6 space-y-6">
-        {/* Header & Progress */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold tracking-tight">Bienvenue sur GestiBulder</h2>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-              Étape {step} sur {totalSteps}
-            </span>
-          </div>
-          <Progress value={progress} className="h-1.5" />
+    <Card className="mx-auto max-w-lg border-none bg-card shadow-elevated rounded-3xl overflow-hidden">
+      <div className="bg-indigo-600 p-8 text-white">
+        <h2 className="text-xl font-black uppercase tracking-tight">Configuration Initiale</h2>
+        <p className="text-indigo-100 text-xs font-semibold uppercase mt-1 tracking-widest opacity-80">
+          Étape {step} sur 3
+        </p>
+        <div className="mt-6 flex gap-1.5">
+          <div className={cn("h-1.5 flex-1 rounded-full bg-white/20 transition-all", step >= 1 && "bg-white")} />
+          <div className={cn("h-1.5 flex-1 rounded-full bg-white/20 transition-all", step >= 2 && "bg-white")} />
+          <div className={cn("h-1.5 flex-1 rounded-full bg-white/20 transition-all", step >= 3 && "bg-white")} />
         </div>
+      </div>
 
-        <div className="min-h-[280px] flex flex-col justify-center">
+      <div className="p-8 space-y-6">
+        <div className="min-h-[200px] flex flex-col justify-center">
           <AnimatePresence mode="wait">
             {step === 1 && (
               <motion.div
@@ -84,51 +83,32 @@ export function OnboardingWizard() {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
-                className="space-y-6"
+                className="space-y-4"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <HardHat size={24} />
-                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="project" className="text-base font-semibold">
-                    Quel est le nom de votre premier chantier ?
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    C'est par ici que tout commence. Vous pourrez en ajouter d'autres plus tard.
-                  </p>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Votre premier chantier</Label>
                   <Input
-                    id="project"
-                    placeholder="Ex: Villa El Biar, Rénovation Centre..."
+                    placeholder="Ex: Résidence Les Palmiers"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    autoFocus
-                    className="h-9 rounded-md"
+                    className="h-12 text-lg font-bold rounded-xl"
                   />
+                  <p className="text-[10px] text-muted-foreground italic">Vous pourrez en ajouter d'autres plus tard.</p>
                 </div>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                    <div className="w-full border-t border-border"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background px-2 text-muted-foreground">Ou essayez</span>
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Budget prévisionnel</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="0.00"
+                      value={projectBudget}
+                      onChange={(e) => setProjectBudget(e.target.value)}
+                      className="h-12 pl-12 text-lg font-bold rounded-xl"
+                    />
+                    <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                   </div>
                 </div>
-
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setProjectName('Chantier Démo Sandbox');
-                    setUseSeed(true);
-                    setStep(2);
-                  }}
-                  className="w-full h-9 border-dashed border-primary/40 text-primary hover:bg-primary/5"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Mode Sandbox (Données pré-remplies)
-                </Button>
-</motion.div>
+              </motion.div>
             )}
 
             {step === 2 && (
@@ -139,43 +119,38 @@ export function OnboardingWizard() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600">
-                  <Coins size={24} />
-                </div>
                 <div className="space-y-2">
-                  <Label htmlFor="currency" className="text-base font-semibold">
-                    Quelle devise utilisez-vous ?
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    Nous utiliserons cette devise pour tous vos calculs de budget et de stock.
-                  </p>
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Devise de l'entreprise</Label>
                   <Select value={currency} onValueChange={(val) => val && setCurrency(val)}>
-                    <SelectTrigger id="currency" className="h-9 rounded-md">
-                      <SelectValue placeholder="Sélectionnez une devise" />
+                    <SelectTrigger className="h-12 rounded-xl font-bold">
+                      <SelectValue placeholder="Choisir une devise" />
                     </SelectTrigger>
                     <SelectContent>
                       {CURRENCIES.map((c) => (
                         <SelectItem key={c.code} value={c.code}>
-                          {c.label} ({c.symbol})
+                          {c.symbol} - {c.label} ({c.code})
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
 
-                  <div className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
-                      <Sparkles size={16} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-bold">Remplir avec des données démo</p>
-                      <p className="text-[10px] text-muted-foreground">Ajoutera des ouvriers et du stock fictifs pour tester.</p>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={useSeed}
-                      onChange={(e) => setUseSeed(e.target.checked)}
-                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
-                    />
+                <div
+                  onClick={() => setUseDemoData(!useDemoData)}
+                  className={cn(
+                    "cursor-pointer rounded-2xl border-2 p-4 transition-all flex items-center gap-4",
+                    useDemoData ? "border-indigo-600 bg-indigo-50/50" : "border-border hover:bg-muted/50"
+                  )}
+                >
+                  <div className={cn(
+                    "h-10 w-10 shrink-0 flex items-center justify-center rounded-xl",
+                    useDemoData ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"
+                  )}>
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-black uppercase tracking-tight">Mode Sandbox</p>
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase leading-tight mt-0.5">Pré-remplir avec des données de test (ouvriers, stocks, dépenses)</p>
                   </div>
                 </div>
               </motion.div>

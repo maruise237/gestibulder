@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
-import { getProjectById } from '@/lib/server/project.actions';
+import { getProjectById, updateProjectStatus, updateProjectProgress, getProjectActivity } from '@/lib/server/project.actions';
 import { getWorkers } from '@/lib/server/worker.actions';
 import { getMaterials } from '@/lib/server/stock.actions';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
@@ -11,7 +11,6 @@ import {
   Calendar,
   Clock,
   Plus,
-  CheckCircle2,
   Loader2,
   ChevronLeft,
   Users,
@@ -21,21 +20,35 @@ import {
   TrendingDown,
   Calculator,
   ArrowDownRight,
-  MoreVertical,
-  Search
+  Search,
+  HardHat,
+  History,
+  Activity as ActivityIcon
 } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Worker } from '@/types/worker';
 import { Material } from '@/types/stock';
 import { Expense } from '@/types/expense';
-import { Project } from '@/types/project';
+import { Project, ProjectStatus } from '@/types/project';
 import { Attendance } from '@/types/attendance';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -45,8 +58,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const [materials, setMaterials] = useState<Material[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [todayAttendance, setTodayAttendance] = useState<Attendance[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'workforce' | 'inventory' | 'finances'>('overview');
+  const [activityModalOpen, setActivityModalOpen] = useState(false);
 
   const formatMetier = (worker: Worker) => {
     return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
@@ -55,11 +71,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const getTaux = (worker: Worker) => {
     switch (worker.type_paiement) {
       case 'journalier':
-        return worker.taux_journalier;
+        return worker.taux_journalier || 0;
       case 'hebdomadaire':
-        return worker.salaire_hebdo;
+        return worker.salaire_hebdo || 0;
       case 'mensuel':
-        return worker.salaire_mensuel;
+        return worker.salaire_mensuel || 0;
       default:
         return 0;
     }
@@ -67,25 +83,46 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const [pRes, wRes, sRes, bRes, aRes] = await Promise.all([
+    const [pRes, wRes, sRes, bRes, aRes, actRes] = await Promise.all([
       getProjectById(id),
       getWorkers(1, 1000),
       getMaterials(id),
       getBudgetData(),
-      getAttendance(id, new Date().toISOString().split('T')[0])
+      getAttendance(id, new Date().toISOString().split('T')[0]),
+      getProjectActivity(id)
     ]);
 
-    if (pRes.project) setProject(pRes.project);
+    if (pRes.project) setProject(pRes.project as Project);
     if (wRes.workers) setWorkers(wRes.workers.filter((w: Worker) => w.chantier_ids?.includes(id)));
     if (sRes.materials) setMaterials(sRes.materials);
     if (bRes.expenses) setExpenses(bRes.expenses.filter((e: Expense) => e.chantier_id === id));
     if (aRes.logs) setTodayAttendance(aRes.logs);
+    if (actRes.activities) setActivities(actRes.activities);
     setIsLoading(false);
   }, [id]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleUpdateStatus = async (status: ProjectStatus | null) => {
+    if (!status) return;
+    setIsUpdating(true);
+    const res = await updateProjectStatus(id, status);
+    if (res.success) {
+      setProject(prev => prev ? { ...prev, statut: status } : null);
+    }
+    setIsUpdating(false);
+  };
+
+  const handleUpdateProgress = async (progress: number) => {
+    setIsUpdating(true);
+    const res = await updateProjectProgress(id, progress);
+    if (res.success) {
+      setProject(prev => prev ? { ...prev, avancement_pct: progress } : null);
+    }
+    setIsUpdating(false);
+  };
 
   if (isLoading && !project) {
     return (
@@ -95,251 +132,338 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     );
   }
 
-  if (!project) return <div className="p-8 text-center">Projet non trouvé</div>;
+  if (!project) return <div className="p-8 text-center uppercase font-black">Projet non trouvé</div>;
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.montant, 0);
   const marginValue = project.budget_total - totalExpenses;
-  const marginPct = project.budget_total > 0
-    ? ((marginValue / project.budget_total) * 100).toFixed(1)
-    : null;
 
   return (
-    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      {/* Breadcrumb & Navigation */}
-      <div className="flex flex-col gap-4">
-        <Link href="/dashboard/chantiers" className="flex w-fit items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors">
-          <ChevronLeft size={14} />
-          Retour
-        </Link>
+    <div className="space-y-6">
+      {/* Back Button */}
+      <Link
+        href="/dashboard/chantiers"
+        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+      >
+        <ChevronLeft size={14} />
+        Retour aux chantiers
+      </Link>
 
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+      {/* Header Profile */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-start gap-5">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-premium">
+            <HardHat size={32} />
+          </div>
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[8px] uppercase tracking-widest font-semibold h-4 px-1.5 border-border">ID: {project.id.slice(0, 6)}</Badge>
-              <Badge variant="secondary" className="text-[8px] uppercase tracking-widest font-semibold h-4 px-1.5">{project.statut.replace('_', ' ')}</Badge>
-            </div>
-            <h1 className="text-size-2xl font-black tracking-tight text-foreground sm:text-size-3xl uppercase">{project.nom}</h1>
-            <div className="flex flex-wrap items-center gap-3 text-size-xs font-medium text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <MapPin size={12} className="text-primary" />
-                {project.adresse || 'Sans adresse'}
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar size={12} className="text-primary" />
-                Démarré le {new Date(project.created_at).toLocaleDateString()}
-              </div>
+            <h1 className="text-size-3xl font-black tracking-tight text-foreground uppercase">
+              {project.nom}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <MapPin size={12} /> {project.adresse || 'Non spécifié'}
+              </span>
+              <span>•</span>
+              <span className="flex items-center gap-1">
+                <Calendar size={12} /> Fin : {project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'N/A'}
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold">
-              <Clock size={14} className="mr-1.5" /> Historique
-            </Button>
-            <Button size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold">
-              <Plus size={14} className="mr-1.5" /> Activité
-            </Button>
-          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+           <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-xl border border-border">
+             <Select
+               value={project.statut}
+               onValueChange={handleUpdateStatus}
+               disabled={isUpdating}
+             >
+               <SelectTrigger className="h-8 w-[140px] border-none bg-transparent text-[10px] font-black uppercase tracking-widest shadow-none">
+                 <SelectValue />
+               </SelectTrigger>
+               <SelectContent>
+                 <SelectItem value="preparation">En attente</SelectItem>
+                 <SelectItem value="en_cours">En cours</SelectItem>
+                 <SelectItem value="termine">Terminé</SelectItem>
+                 <SelectItem value="pause">Suspendu</SelectItem>
+               </SelectContent>
+             </Select>
+
+             <div className="h-4 w-[1px] bg-border mx-1" />
+
+             <div className="flex items-center gap-2 px-2">
+               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progrès:</span>
+               <div className="flex items-center gap-1">
+                 <Input
+                   type="number"
+                   min="0"
+                   max="100"
+                   defaultValue={project.avancement_pct || 0}
+                   onBlur={(e) => handleUpdateProgress(Number(e.target.value))}
+                   disabled={isUpdating}
+                   className="h-7 w-14 border-border bg-background px-1 text-center text-[11px] font-black"
+                 />
+                 <span className="text-[11px] font-black">%</span>
+               </div>
+             </div>
+           </div>
+
+           <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold" onClick={() => setActivityModalOpen(true)}>
+             <History size={14} className="mr-1.5" /> Historique
+           </Button>
+           <Button size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold" onClick={() => setActivityModalOpen(true)}>
+             <ActivityIcon size={14} className="mr-1.5" /> Activité
+           </Button>
         </div>
       </div>
 
+      {/* Activity Modal */}
+      <Dialog open={activityModalOpen} onOpenChange={setActivityModalOpen}>
+        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-none">
+          <DialogHeader className="bg-indigo-600 p-6 text-white">
+            <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+              <History size={20} /> Journal d'Activité
+            </DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto p-6">
+            {activities.length === 0 ? (
+              <div className="py-12 text-center text-muted-foreground italic uppercase text-[10px] font-black">
+                Aucune activité enregistrée.
+              </div>
+            ) : (
+              <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted">
+                {activities.map((act) => (
+                  <div key={act.id} className="relative pl-10">
+                    <div className={cn(
+                      "absolute left-0 top-0 h-8 w-8 rounded-full flex items-center justify-center border-2 border-background shadow-sm",
+                      act.type === 'expense' ? "bg-rose-500 text-white" :
+                      act.subType === 'entree' ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+                    )}>
+                      {act.type === 'expense' ? <Wallet size={14} /> : <Package size={14} />}
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase text-foreground leading-tight">{act.title}</p>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className={cn(
+                          "text-size-sm font-black",
+                          act.type === 'expense' ? "text-rose-600" :
+                          act.subType === 'entree' ? "text-emerald-600" : "text-amber-600"
+                        )}>
+                          {act.type === 'expense' ? `- ${formatCurrency(act.amount, enterprise?.devise)}` :
+                           `${act.subType === 'entree' ? '+' : '-'}${act.amount} ${act.unit}`}
+                        </span>
+                        <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                          • {new Date(act.date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Tabs */}
-      <div className="flex items-center gap-1 overflow-x-auto rounded-md border border-border bg-muted/30 p-1 no-scrollbar">
-        {(['overview', 'workforce', 'inventory', 'finances'] as const).map((tab) => (
+      <div className="flex gap-1 overflow-x-auto rounded-xl bg-muted/30 p-1">
+        {[
+          { id: 'overview', label: 'Vue d\'ensemble' },
+          { id: 'workforce', label: 'Main d\'œuvre' },
+          { id: 'inventory', label: 'Stocks' },
+          { id: 'finances', label: 'Finances' }
+        ].map((tab) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as any)}
             className={cn(
-              'flex-1 rounded-sm px-3 py-1.5 text-[9px] font-semibold uppercase tracking-widest transition-all whitespace-nowrap',
-              activeTab === tab
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:bg-background/50'
+              "whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all",
+              activeTab === tab.id
+                ? "bg-white text-indigo-600 shadow-sm border border-border"
+                : "text-muted-foreground hover:bg-white/50"
             )}
           >
-            {tab}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      {/* Content */}
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+      {/* Tab Content */}
+      <div className="mt-6">
         {activeTab === 'overview' && (
-          <div className="space-y-4">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              <Card className="p-3 border-l-8 border-l-indigo-600 rounded-2xl">
-                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Effectif</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-size-lg font-black">{workers.length}</span>
-                  <span className="text-[8px] font-medium text-emerald-600 flex items-center gap-0.5">
-                     {todayAttendance.length} Présents
-                  </span>
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <div className="space-y-6 lg:col-span-2">
+              <Card className="shadow-premium border-border rounded-2xl p-6">
+                <div className="mb-6 flex items-center justify-between">
+                   <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">Statut d'Avancement</h2>
+                   <span className="text-size-2xl font-black text-indigo-600">{project.avancement_pct || 0}%</span>
+                </div>
+                <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
+                   <div
+                     className="h-full bg-indigo-600 transition-all duration-1000 ease-out"
+                     style={{ width: `${project.avancement_pct || 0}%` }}
+                   />
+                </div>
+                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Effectif total</p>
+                    <p className="text-size-xl font-black text-foreground">{workers.length}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Présents (jour)</p>
+                    <p className="text-size-xl font-black text-emerald-600">
+                      {todayAttendance.filter(a => a.statut === 'present').length}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Alertes stock</p>
+                    <p className="text-size-xl font-black text-amber-600">
+                      {materials.filter(m => (m.stock_actuel || 0) <= m.seuil_alerte).length}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Budget consommé</p>
+                    <p className="text-size-xl font-black text-foreground">
+                       {project.budget_total > 0 ? Math.round((totalExpenses / project.budget_total) * 100) : 0}%
+                    </p>
+                  </div>
                 </div>
               </Card>
-              <Card className="p-3 border-l-8 border-l-amber-500 rounded-2xl">
-                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Stock</p>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-size-lg font-black">
-                    {materials.filter((m) => (m.stock_actuel || 0) <= m.seuil_alerte).length}
-                  </span>
-                  <span className="text-[8px] font-medium text-amber-600">Alertes</span>
-                </div>
-              </Card>
-              <Card className="p-3 border-l-8 border-l-emerald-500 rounded-2xl">
-                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Dépensé</p>
-                <span className="text-size-lg font-black truncate block">
-                  {formatCurrency(totalExpenses, enterprise?.devise)}
-                </span>
-              </Card>
-              <Card className="p-3 border-l-8 border-l-indigo-600 rounded-2xl">
-                <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Marge</p>
-                <span className={cn(
-                  "text-size-lg font-black",
-                  Number(marginPct) > 0 ? "text-emerald-600" : "text-destructive"
-                )}>
-                  {marginPct ? `${marginPct}%` : '--'}
-                </span>
-              </Card>
+
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                 <Card className="border-border p-6 rounded-2xl">
+                   <div className="mb-4 flex items-center justify-between">
+                      <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
+                        <Users size={20} />
+                      </div>
+                      <Link href="/dashboard/pointage" className="text-[9px] font-black uppercase tracking-widest text-indigo-600">Pointage</Link>
+                   </div>
+                   <h3 className="text-size-sm font-black text-muted-foreground uppercase tracking-widest">Main d'œuvre</h3>
+                   <p className="mt-1 text-size-xl font-black text-foreground">{workers.length} ouvriers</p>
+                 </Card>
+
+                 <Card className="border-border p-6 rounded-2xl">
+                    <div className="mb-4 flex items-center justify-between">
+                       <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600">
+                         <Package size={20} />
+                       </div>
+                       <Link href="/dashboard/stocks" className="text-[9px] font-black uppercase tracking-widest text-indigo-600">Stocks</Link>
+                    </div>
+                    <h3 className="text-size-sm font-black text-muted-foreground uppercase tracking-widest">Matériaux</h3>
+                    <p className="mt-1 text-size-xl font-black text-foreground">{materials.length} références</p>
+                 </Card>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-fluid-md">
-              {/* Progress */}
-              <Card className="p-4 sm:p-6 lg:col-span-2 border-border rounded-2xl">
-                <div className="mb-4 flex items-center justify-between">
-                  <div>
-                    <h3 className="text-size-base font-black tracking-tight uppercase">Avancement</h3>
-                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest">Global chantier</p>
-                  </div>
-                  <div className="text-size-xl font-black text-primary">{project.avancement_pct || 0}%</div>
-                </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-indigo-600 transition-all duration-1000"
-                    style={{ width: `${project.avancement_pct || 0}%` }}
-                  />
-                </div>
-                <div className="mt-6 grid grid-cols-3 gap-2 border-t border-border pt-4">
-                  <div>
-                    <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">Fin</p>
-                    <p className="text-[10px] font-black uppercase">{project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">Durée</p>
-                    <p className="text-[10px] font-black uppercase">-- j</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[8px] font-semibold text-muted-foreground uppercase tracking-widest">État</p>
-                    <p className="text-[10px] font-black text-emerald-600 uppercase">Ok</p>
-                  </div>
-                </div>
-              </Card>
+            <div className="space-y-6">
+               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-indigo-600">
+                 <div className="mb-4 flex items-center gap-3">
+                    <div className="rounded-lg bg-indigo-600/10 p-2 text-indigo-600">
+                      <Wallet size={18} />
+                    </div>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Budget Total</span>
+                 </div>
+                 <p className="text-size-2xl font-black text-foreground">{formatCurrency(project.budget_total, enterprise?.devise)}</p>
+               </Card>
 
-              {/* Daily Log Mini */}
-              <Card className="overflow-hidden border-border rounded-2xl" padding="none">
-                <div className="border-b border-border bg-muted/30 p-3">
-                  <h3 className="text-size-xs font-black uppercase tracking-widest text-muted-foreground">Présences Jour</h3>
-                </div>
-                <div className="divide-y divide-border max-h-[240px] overflow-y-auto">
-                  {todayAttendance.length === 0 ? (
-                    <div className="p-6 text-center text-[10px] text-muted-foreground italic">Aucun log.</div>
-                  ) : (
-                    todayAttendance.slice(0, 5).map((log, i) => (
-                      <div key={i} className="flex items-center justify-between p-3">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-indigo-600/10 text-indigo-600 text-[10px] font-black border border-indigo-600/20">
-                            {workers.find((w) => w.id === log.ouvrier_id)?.nom_complet.charAt(0)}
-                          </div>
-                          <span className="truncate text-[11px] font-black text-foreground max-w-[100px] uppercase">
-                            {workers.find((w) => w.id === log.ouvrier_id)?.nom_complet}
-                          </span>
-                        </div>
-                        <span className="text-[9px] font-mono text-muted-foreground">{log.heure_arrivee}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-                <Button variant="ghost" size="sm" className="w-full h-8 text-[9px] font-black uppercase tracking-widest rounded-none border-t border-border">
-                  Voir tout
-                </Button>
-              </Card>
+               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-rose-500">
+                  <div className="mb-4 flex items-center gap-3">
+                     <div className="rounded-lg bg-rose-500/10 p-2 text-rose-600">
+                       <TrendingDown size={18} />
+                     </div>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dépenses réelles</span>
+                  </div>
+                  <p className="text-size-2xl font-black text-foreground">{formatCurrency(totalExpenses, enterprise?.devise)}</p>
+               </Card>
+
+               <Card className={cn(
+                 "border-border p-6 rounded-2xl border-l-8",
+                 marginValue > 0 ? "border-l-emerald-500" : "border-l-rose-500"
+               )}>
+                  <div className="mb-4 flex items-center gap-3">
+                     <div className={cn(
+                       "rounded-lg p-2",
+                       marginValue > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+                     )}>
+                       {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+                     </div>
+                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Marge actuelle</span>
+                  </div>
+                  <p className={cn(
+                    "text-size-2xl font-black",
+                    marginValue > 0 ? "text-emerald-600" : "text-rose-600"
+                  )}>{formatCurrency(marginValue, enterprise?.devise)}</p>
+               </Card>
             </div>
           </div>
         )}
 
         {activeTab === 'workforce' && (
-          <Card className="shadow-premium overflow-hidden border-border rounded-2xl border-l-8 border-l-indigo-600" padding="none">
+          <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
+            <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
+              <div className="flex items-center gap-3">
+                <div className="rounded-md border border-border bg-background p-2">
+                  <Users size={18} className="text-indigo-600" />
+                </div>
+                <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+                  Ouvriers affectés
+                </h2>
+              </div>
+              <div className="group relative">
+                <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  className="h-9 w-full rounded-md border border-border bg-background pl-9 text-xs font-medium outline-none focus:border-indigo-600 sm:w-64"
+                />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                      Ouvrier
-                    </th>
-                    <th className="hidden px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase sm:table-cell">
-                      Métier
-                    </th>
-                    <th className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                      Rémunération
-                    </th>
-                    <th className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-                      Statut
-                    </th>
+                  <tr className="border-b border-border bg-muted/20">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nom complet</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Métier</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paiement</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Taux</th>
+                    <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">Statut</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border bg-background">
                   {workers.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="p-8 text-center text-[10px] font-medium text-muted-foreground uppercase italic">
-                        Aucun ouvrier sur ce chantier.
+                      <td colSpan={5} className="py-12 text-center text-muted-foreground italic uppercase text-[10px] font-black">
+                         Aucun ouvrier affecté.
                       </td>
                     </tr>
                   ) : (
                     workers.map((worker) => (
-                      <tr
-                        key={worker.id}
-                        className="group transition-all duration-200 hover:bg-muted/30"
-                      >
-                        <td className="px-4 py-3">
+                      <tr key={worker.id} className="group transition-colors hover:bg-muted/30">
+                        <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted text-[10px] font-black text-foreground">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
                               {worker.nom_complet.charAt(0).toUpperCase()}
                             </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="truncate text-size-xs font-black text-foreground sm:text-size-sm uppercase">
-                                {worker.nom_complet}
-                              </span>
-                              <span className="truncate text-[10px] font-semibold text-muted-foreground sm:hidden uppercase">
-                                {formatMetier(worker)}
-                              </span>
-                            </div>
+                            <span className="text-size-sm font-black text-foreground uppercase truncate max-w-[150px]">{worker.nom_complet}</span>
                           </div>
                         </td>
-                        <td className="hidden px-4 py-3 sm:table-cell">
-                          <div className="flex flex-col">
-                            <span className="text-size-xs font-black text-foreground uppercase">
-                              {formatMetier(worker)}
-                            </span>
-                            <span className="text-[9px] font-semibold text-muted-foreground uppercase">
-                              {worker.unite_production}
-                            </span>
-                          </div>
+                        <td className="px-6 py-4">
+                          <span className="text-size-sm font-semibold text-muted-foreground uppercase">{formatMetier(worker)}</span>
                         </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col">
-                            <span className="text-size-xs font-black text-foreground sm:text-size-sm uppercase">
-                              {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
-                            </span>
-                            <span className="text-[9px] font-semibold text-indigo-600 uppercase">
-                              {worker.type_paiement}
-                            </span>
-                          </div>
+                        <td className="px-6 py-4">
+                          <span className="text-size-sm font-black text-indigo-600 uppercase">{worker.type_paiement}</span>
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-6 py-4">
+                          <span className="text-size-sm font-black text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
+                        </td>
+                        <td className="px-6 py-4">
                           <div className="flex justify-center">
                             <span
                               className={cn(
-                                'rounded-full border px-2 py-0.5 text-[8px] font-black tracking-widest uppercase sm:text-[9px]',
+                                'rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest',
                                 worker.actif
-                                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
-                                  : 'border-destructive/20 bg-destructive/10 text-destructive'
+                                  ? 'bg-emerald-500/10 text-emerald-700'
+                                  : 'bg-rose-500/10 text-rose-700'
                               )}
                             >
                               {worker.actif ? 'Actif' : 'Inactif'}
@@ -472,7 +596,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   {formatCurrency(marginValue, enterprise?.devise)}
                 </p>
                 <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase">
-                  {marginPct ? `${marginPct}% de rentabilité` : 'Rentabilité non calculable'}
+                   Reste à dépenser
                 </p>
               </Card>
             </div>
