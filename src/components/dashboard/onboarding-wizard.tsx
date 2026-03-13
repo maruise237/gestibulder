@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { HardHat, Coins, Sparkles, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { createProject } from '@/lib/server/project.actions';
+import { createProject, seedDemoData } from '@/lib/server/project.actions';
 import { updateEnterprise } from '@/lib/server/enterprise.actions';
 import { CURRENCIES } from '@/lib/currencies';
 import { useRouter } from 'next/navigation';
@@ -25,6 +25,7 @@ export function OnboardingWizard() {
   const [loading, setLoading] = useState(false);
   const [projectName, setProjectName] = useState('');
   const [currency, setCurrency] = useState('DZD');
+  const [useSeed, setUseSeed] = useState(true);
   const router = useRouter();
 
   const totalSteps = 3;
@@ -40,11 +41,15 @@ export function OnboardingWizard() {
         // Update enterprise currency
         await updateEnterprise({ devise: currency });
         // Create first project
-        await createProject({
+        const { project } = await createProject({
           nom: projectName,
           statut: 'en_cours',
           date_debut: new Date().toISOString().split('T')[0],
         });
+
+        if (project && useSeed) {
+           await seedDemoData(project.id);
+        }
         setStep(3);
       } catch (error) {
         console.error('Onboarding error:', error);
@@ -58,7 +63,7 @@ export function OnboardingWizard() {
   };
 
   return (
-    <Card className="mx-auto max-w-lg border-2 border-primary/10 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <Card className="mx-auto max-w-lg rounded-2xl border-2 border-primary/10 shadow-xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="p-6 space-y-6">
         {/* Header & Progress */}
         <div className="space-y-4">
@@ -97,7 +102,7 @@ export function OnboardingWizard() {
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
                     autoFocus
-                    className="h-11 rounded-md"
+                    className="h-9 rounded-md"
                   />
                 </div>
               </motion.div>
@@ -122,7 +127,7 @@ export function OnboardingWizard() {
                     Nous utiliserons cette devise pour tous vos calculs de budget et de stock.
                   </p>
                   <Select value={currency} onValueChange={(val) => val && setCurrency(val)}>
-                    <SelectTrigger id="currency" className="h-11 rounded-md">
+                    <SelectTrigger id="currency" className="h-9 rounded-md">
                       <SelectValue placeholder="Sélectionnez une devise" />
                     </SelectTrigger>
                     <SelectContent>
@@ -133,6 +138,22 @@ export function OnboardingWizard() {
                       ))}
                     </SelectContent>
                   </Select>
+
+                  <div className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-muted/50">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                      <Sparkles size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold">Remplir avec des données démo</p>
+                      <p className="text-[10px] text-muted-foreground">Ajoutera des ouvriers et du stock fictifs pour tester.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={useSeed}
+                      onChange={(e) => setUseSeed(e.target.checked)}
+                      className="h-4 w-4 rounded border-border text-primary focus:ring-primary/20"
+                    />
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -186,7 +207,7 @@ export function OnboardingWizard() {
               variant="outline"
               onClick={() => setStep(step - 1)}
               disabled={loading}
-              className="flex-1 h-11"
+              className="flex-1 h-9"
             >
               Retour
             </Button>
@@ -194,7 +215,7 @@ export function OnboardingWizard() {
           <Button
             onClick={handleNext}
             disabled={loading || (step === 1 && !projectName.trim())}
-            className="flex-1 h-11 font-semibold"
+            className="flex-1 h-9 font-semibold"
             rightIcon={step < 3 ? <ArrowRight size={18} /> : <Sparkles size={18} />}
             isLoading={loading}
           >
