@@ -49,27 +49,19 @@ export default function DashboardPage() {
         data.projects
           ?.filter(
             (proj: any) =>
-              proj.statut !== 'termine' &&
-              proj.date_fin_prevue &&
-              new Date(proj.date_fin_prevue) > new Date()
+              proj.date_fin_prevue && new Date(proj.date_fin_prevue) > new Date()
           )
           .sort(
             (a: any, b: any) =>
               new Date(a.date_fin_prevue).getTime() - new Date(b.date_fin_prevue).getTime()
-          )
-          .slice(0, 3) || [];
+          ) || [];
 
       return {
         stats,
-        recentProjects: soon,
         recentMovements: data.movements || [],
-        expensesByCategory: data.expenses?.reduce((acc: any, exp: any) => {
-          acc[exp.categorie] = (acc[exp.categorie] || 0) + exp.montant;
-          return acc;
-        }, {}),
+        recentProjects: soon,
       };
     },
-    staleTime: 1000 * 60 * 5,
   });
 
   const stats = data?.stats || {
@@ -80,122 +72,123 @@ export default function DashboardPage() {
     activeProjects: 0,
     stockAlerts: 0,
   };
-  const recentProjects = data?.recentProjects || [];
   const recentMovements = data?.recentMovements || [];
-
-  const cards = [
-    {
-      title: 'Chantiers',
-      value: isLoading ? null : stats.activeProjects.toString(),
-      change: '+12%',
-      isPositive: true,
-      icon: HardHat,
-      color: 'bg-primary/10 text-primary',
-      href: '/dashboard/chantiers',
-    },
-    {
-      title: 'Effectif',
-      value: isLoading ? null : stats.workersCount.toString(),
-      change: '+3',
-      isPositive: true,
-      icon: Users,
-      color: 'bg-emerald-500/10 text-emerald-600',
-      href: '/dashboard/ouvriers',
-    },
-    {
-      title: 'Dépenses',
-      value: isLoading ? null : formatCurrency(stats.totalExpenses, enterprise?.devise),
-      change: '-8%',
-      isPositive: false,
-      icon: TrendingUp,
-      color: 'bg-amber-500/10 text-amber-600',
-      href: '/dashboard/budget',
-    },
-    {
-      title: 'Stocks',
-      value: isLoading ? null : stats.stockAlerts.toString(),
-      change: 'Alertes',
-      isPositive: stats.stockAlerts === 0,
-      icon: Package,
-      color: 'bg-indigo-500/10 text-indigo-600',
-      href: '/dashboard/stocks',
-    },
-  ];
+  const recentProjects = data?.recentProjects || [];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
+    <div className="space-y-fluid-md">
       {!isLoading && stats.projectsCount === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <OnboardingWizard />
-        </div>
+        <OnboardingWizard onComplete={() => refetch()} />
       ) : (
         <>
-          {/* Header Section */}
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div className="space-y-1">
-              <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">
-                Tableau de bord
-              </h1>
-              <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
-                Aperçu global de votre activité et chantiers.
+              <h1 className="text-size-2xl font-black tracking-tight text-foreground sm:text-size-3xl uppercase">Tableau de bord</h1>
+              <p className="text-size-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                {isLoading ? (
+                  <Skeleton className="h-3 w-48" />
+                ) : (
+                  `Vue d'ensemble • ${stats.projectsCount} Chantiers`
+                )}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <ExportModal />
-              <CreateProjectModal onProjectCreated={refetch} />
+            <div className="flex gap-2 sm:gap-3">
+              <ExportModal enterprise={enterprise} />
+              <CreateProjectModal onProjectCreated={() => refetch()} />
             </div>
           </div>
 
-          {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:gap-fluid-md">
-            {cards.map((card, i) => (
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-fluid-md">
+            {/* Quick Stats */}
+            {[
+              {
+                label: 'Chantiers',
+                value: stats.activeProjects,
+                icon: HardHat,
+                color: 'indigo',
+                sub: 'En cours',
+              },
+              {
+                label: 'Dépenses',
+                value: formatCurrency(stats.totalExpenses, enterprise?.devise),
+                icon: TrendingDown,
+                color: 'rose',
+                sub: 'Total cumulé',
+              },
+              {
+                label: 'Effectifs',
+                value: stats.activeWorkers,
+                icon: Users,
+                color: 'emerald',
+                sub: 'Présents ce jour',
+              },
+              {
+                label: 'Stocks',
+                value: stats.stockAlerts,
+                icon: AlertCircle,
+                color: stats.stockAlerts > 0 ? 'amber' : 'emerald',
+                sub: 'Alertes critiques',
+              },
+            ].map((stat, i) => (
               <Card
                 key={i}
-                hoverable
-                className="group relative flex flex-col justify-between overflow-hidden border-border p-4 transition-all duration-300 hover:-translate-y-1 sm:p-6"
-                padding="none"
+                className={cn(
+                  'group relative overflow-hidden border-border p-3 transition-all duration-300 hover:border-primary/20 hover:shadow-premium sm:p-fluid-md rounded-2xl',
+                  stat.color === 'rose' && 'border-l-8 border-l-rose-500',
+                  stat.color === 'indigo' && 'border-l-8 border-l-indigo-600',
+                  stat.color === 'emerald' && 'border-l-8 border-l-emerald-500',
+                  stat.color === 'amber' && 'border-l-8 border-l-amber-500'
+                )}
               >
-                <Link href={card.href} className="absolute inset-0 z-10" />
-                <div className="flex items-center justify-between">
-                  <div className={cn('rounded-md p-1.5 sm:p-2', card.color)}>
-                    <card.icon size={16} className="sm:size-5" />
-                  </div>
+                <div className="mb-2 flex items-center justify-between sm:mb-4">
                   <div
                     className={cn(
-                      'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-tight sm:px-2 sm:text-[10px]',
-                      card.isPositive
-                        ? 'bg-emerald-500/10 text-emerald-600'
-                        : 'bg-destructive/10 text-destructive'
+                      'rounded-md p-1.5 transition-transform group-hover:scale-110 sm:p-2',
+                      stat.color === 'rose' && 'bg-rose-500/10 text-rose-600',
+                      stat.color === 'indigo' && 'bg-indigo-600/10 text-indigo-600',
+                      stat.color === 'emerald' && 'bg-emerald-500/10 text-emerald-600',
+                      stat.color === 'amber' && 'bg-amber-500/10 text-amber-600'
                     )}
                   >
-                    {card.isPositive ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
-                    {card.change}
+                    <stat.icon size={16} className="sm:size-5" />
                   </div>
+                  {stat.color === 'rose' ? (
+                    <div className="flex items-center gap-0.5 text-rose-600">
+                      <ArrowDownRight size={10} strokeWidth={3} className="sm:size-12" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-0.5 text-emerald-600">
+                      <ArrowUpRight size={10} strokeWidth={3} className="sm:size-12" />
+                    </div>
+                  )}
                 </div>
-                <div className="mt-4 sm:mt-6">
-                  <p className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-xs">
-                    {card.title}
+                <div className="space-y-0.5 sm:space-y-1">
+                  <p className="text-[8px] font-black tracking-widest text-muted-foreground uppercase sm:text-[10px]">
+                    {stat.label}
                   </p>
-                  <p className="text-size-xl font-semibold tracking-tight text-foreground sm:text-size-2xl">
-                    {card.value === null ? <Skeleton className="h-8 w-20" /> : card.value}
+                  <p className="text-size-base font-black tracking-tight text-foreground sm:text-size-2xl">
+                    {isLoading ? <Skeleton className="h-6 w-16 sm:h-8 sm:w-24" /> : stat.value}
                   </p>
-                </div>
-                <div className="absolute -right-4 -bottom-4 opacity-5 transition-transform group-hover:scale-110">
-                  <card.icon size={48} strokeWidth={1} />
+                  <p className="text-[7px] font-semibold text-muted-foreground uppercase sm:text-[9px]">
+                    {stat.sub}
+                  </p>
                 </div>
               </Card>
             ))}
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-fluid-md">
-            {/* Recent Activity - 8 columns */}
-            <Card className="shadow-premium overflow-hidden border-border lg:col-span-8" padding="none">
+            {/* Recent Activity */}
+            <Card
+              className="shadow-premium overflow-hidden border-border lg:col-span-8 rounded-2xl"
+              padding="none"
+            >
               <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-md border border-border bg-card p-1.5 sm:p-2">
+                  <div className="rounded-md border border-border bg-card p-1.5">
                     <Clock size={14} className="text-primary sm:size-5" />
                   </div>
-                  <h2 className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-xl">Mouvements</h2>
+                  <h2 className="text-size-base font-bold tracking-tight text-foreground sm:text-size-xl uppercase">Mouvements</h2>
                 </div>
                 <Button variant="ghost" size="sm" asChild className="h-7 px-2 text-[9px] font-semibold tracking-widest uppercase sm:h-9 sm:px-3 sm:text-[10px]">
                   <Link href="/dashboard/stocks">Tout voir</Link>
@@ -216,7 +209,7 @@ export default function DashboardPage() {
                 ) : recentMovements.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-6 text-muted-foreground sm:p-12">
                     <Package size={24} className="mb-1 opacity-10 sm:size-32 sm:mb-2" />
-                    <p className="text-[10px] font-medium italic sm:text-sm">Aucun mouvement récent.</p>
+                    <p className="text-[10px] font-medium italic sm:text-sm uppercase">Aucun mouvement récent.</p>
                   </div>
                 ) : (
                   recentMovements.slice(0, 4).map((mov, i) => (
@@ -240,7 +233,7 @@ export default function DashboardPage() {
                           )}
                         </div>
                         <div>
-                          <div className="text-size-xs leading-none font-semibold text-foreground transition-colors group-hover:text-primary sm:text-size-base">
+                          <div className="text-size-xs leading-none font-semibold text-foreground transition-colors group-hover:text-primary sm:text-size-base uppercase">
                             {mov.materiaux?.nom}
                           </div>
                           <div className="mt-1 flex items-center gap-1.5 text-[7px] font-semibold tracking-wider text-muted-foreground uppercase sm:mt-2 sm:text-[10px]">
@@ -272,13 +265,13 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-4 lg:grid-cols-1 lg:gap-fluid-md">
               {/* Teams Status */}
-              <Card className="shadow-premium overflow-hidden border-border" padding="none">
+              <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
                 <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
                   <div className="flex items-center gap-2">
                     <div className="rounded-md border border-border bg-card p-1.5">
                       <Users size={14} className="text-emerald-600 sm:size-5" />
                     </div>
-                    <h2 className="text-size-base font-semibold tracking-tight text-foreground">Équipes</h2>
+                    <h2 className="text-size-base font-semibold tracking-tight text-foreground uppercase">Équipes</h2>
                   </div>
                 </div>
                 <div className="p-3 space-y-4 sm:p-fluid-md sm:space-y-6">
@@ -321,13 +314,13 @@ export default function DashboardPage() {
               </Card>
 
               {/* Deadlines */}
-              <Card className="shadow-premium overflow-hidden border-border" padding="none">
+              <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
                 <div className="border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
                   <div className="flex items-center gap-2">
                     <div className="rounded-md border border-border bg-card p-1.5">
                       <AlertCircle size={14} className="text-primary sm:size-5" />
                     </div>
-                    <h2 className="text-size-base font-semibold tracking-tight text-foreground">
+                    <h2 className="text-size-base font-semibold tracking-tight text-foreground uppercase">
                       Échéances
                     </h2>
                   </div>
@@ -340,7 +333,7 @@ export default function DashboardPage() {
                       </div>
                     ))
                   ) : recentProjects.length === 0 ? (
-                    <p className="py-4 text-center text-[10px] font-semibold text-muted-foreground italic sm:py-6 sm:text-xs">
+                    <p className="py-4 text-center text-[10px] font-semibold text-muted-foreground italic sm:py-6 sm:text-xs uppercase">
                       Aucune échéance.
                     </p>
                   ) : (
@@ -357,7 +350,7 @@ export default function DashboardPage() {
                             {formatDate(proj.date_fin_prevue)}
                           </span>
                         </div>
-                        <p className="truncate text-[10px] font-semibold text-foreground sm:text-size-sm">
+                        <p className="truncate text-[10px] font-semibold text-foreground sm:text-size-sm uppercase">
                           {proj.nom}
                         </p>
                       </div>

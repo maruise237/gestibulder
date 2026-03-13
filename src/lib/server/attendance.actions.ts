@@ -6,9 +6,12 @@ import { NewAttendance } from '@/types/attendance';
 import { getAuthenticatedEnterpriseId } from './utils';
 
 export async function getAttendance(chantierId?: string, date?: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
   const supabase = await createClient();
 
-  let query = supabase.from('pointages').select('*').order('date', { ascending: false });
+  let query = supabase.from('pointages').select('*').eq('entreprise_id', entreprise_id).order('date', { ascending: false });
   if (chantierId) query = query.eq('chantier_id', chantierId);
   if (date) query = query.eq('date', date);
 
@@ -36,6 +39,7 @@ export async function logAttendance(data: NewAttendance) {
     .from('ouvriers')
     .select('taux_journalier, salaire_hebdo, salaire_mensuel, type_paiement')
     .eq('id', data.ouvrier_id)
+    .eq('entreprise_id', entreprise_id)
     .single();
 
   if (!worker) return { error: 'Ouvrier non trouvé' };
@@ -82,8 +86,11 @@ export async function logAttendance(data: NewAttendance) {
 }
 
 export async function deleteAttendance(id: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
   const supabase = await createClient();
-  const { error } = await supabase.from('pointages').delete().eq('id', id);
+  const { error } = await supabase.from('pointages').delete().eq('id', id).eq('entreprise_id', entreprise_id);
   if (error) return { error: error.message };
   revalidatePath('/dashboard/pointage');
   return { success: true };

@@ -45,9 +45,16 @@ export async function createProject(data: any) {
 }
 
 export async function updateProjectStatus(projectId: string, status: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
   const supabase = await createClient();
 
-  const { error } = await supabase.from('chantiers').update({ statut: status }).eq('id', projectId);
+  const { error } = await supabase
+    .from('chantiers')
+    .update({ statut: status })
+    .eq('id', projectId)
+    .eq('entreprise_id', entreprise_id);
 
   if (error) {
     console.error('Error updating project status:', error);
@@ -58,13 +65,38 @@ export async function updateProjectStatus(projectId: string, status: string) {
   return { success: true };
 }
 
+export async function updateProjectProgress(projectId: string, progress: number) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
+  const supabase = await createClient();
+
+  const { error } = await supabase
+    .from('chantiers')
+    .update({ avancement_pct: progress })
+    .eq('id', projectId)
+    .eq('entreprise_id', entreprise_id);
+
+  if (error) {
+    console.error('Error updating project progress:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/chantiers');
+  return { success: true };
+}
+
 export async function getProjectById(id: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
   const supabase = await createClient();
 
   const { data: project, error } = await supabase
     .from('chantiers')
     .select('*')
     .eq('id', id)
+    .eq('entreprise_id', entreprise_id)
     .single();
 
   if (error) {
@@ -75,91 +107,63 @@ export async function getProjectById(id: string) {
   return { project };
 }
 
-export async function seedDemoData(projectId: string) {
+export async function getProjectActivity(projectId: string, limit: number = 20) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { error: authError };
 
   const supabase = await createClient();
 
-  // 1. Seed Workers
-  const demoWorkers = [
-    {
-      nom_complet: 'Jean Dupont',
-      metier: 'Chef de chantier',
-      type_paiement: 'mensuel',
-      salaire_mensuel: 45000,
-      chantier_ids: [projectId],
-      entreprise_id,
-      actif: true
-    },
-    {
-      nom_complet: 'Marc Perrin',
-      metier: 'Maçon',
-      type_paiement: 'journalier',
-      taux_journalier: 2500,
-      chantier_ids: [projectId],
-      entreprise_id,
-      actif: true
-    }
-  ];
+  // Fetch expenses and stock movements for this project
+  const [expensesRes, movementsRes] = await Promise.all([
+    supabase
+      .from('depenses')
+      .select('id, libelle, montant, date, created_at, categorie')
+      .eq('chantier_id', projectId)
+      .eq('entreprise_id', entreprise_id)
+      .order('date', { ascending: false })
+      .limit(limit),
+    supabase
+      .from('mouvements_stock')
+      .select('id, type_mouvement, quantite, date, created_at, materiaux(nom, unite)')
+      .eq('chantier_id', projectId)
+      .eq('entreprise_id', entreprise_id)
+      .order('date', { ascending: false })
+      .limit(limit)
+  ]);
 
-  await supabase.from('ouvriers').insert(demoWorkers);
+  const activities: any[] = [];
 
-  // 2. Seed Materials
-  const demoMaterials = [
-    {
-      nom: 'Ciment Portland',
-      unite: 'Sacs',
-      seuil_alerte: 10,
-      chantier_id: projectId,
-      entreprise_id
-    },
-    {
-      nom: 'Briques 12 trous',
-      unite: 'Unités',
-      seuil_alerte: 100,
-      chantier_id: projectId,
-      entreprise_id
-    }
-  ];
-
-  const { data: materials } = await supabase.from('materiaux').insert(demoMaterials).select();
-
-  // 3. Seed Stock Movements
-  if (materials) {
-    const movements = materials.map(m => ({
-      materiau_id: m.id,
-      chantier_id: projectId,
-      entreprise_id,
-      type_mouvement: 'entree',
-      quantite: m.nom.includes('Ciment') ? 50 : 500,
-      date: new Date().toISOString()
-    }));
-    await supabase.from('mouvements_stock').insert(movements);
+  if (expensesRes.data) {
+    expensesRes.data.forEach(e => {
+      activities.push({
+        id: e.id,
+        type: 'expense',
+        title: e.libelle,
+        amount: e.montant,
+        date: e.date,
+        created_at: e.created_at,
+        categorie: e.categorie
+      });
+    });
   }
 
-  // 4. Seed Expenses
-  const demoExpenses = [
-    {
-      libelle: 'Location pelleteuse',
-      montant: 15000,
-      categorie: 'divers',
-      date: new Date().toISOString(),
-      chantier_id: projectId,
-      entreprise_id
-    },
-    {
-      libelle: 'Achat outillage main',
-      montant: 5000,
-      categorie: 'divers',
-      date: new Date().toISOString(),
-      chantier_id: projectId,
-      entreprise_id
-    }
-  ];
+  if (movementsRes.data) {
+    movementsRes.data.forEach((m: any) => {
+      activities.push({
+        id: m.id,
+        type: 'stock',
+        title: `${m.type_mouvement === 'entree' ? 'Réapprovisionnement' : 'Consommation'} ${m.materiaux?.nom}`,
+        amount: m.quantite,
+        unit: m.materiaux?.unite,
+        date: m.date,
+        created_at: m.created_at,
+        subType: m.type_mouvement
+      });
+    });
+  }
 
-  await supabase.from('depenses').insert(demoExpenses);
+  // Sort by date descending
+  activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  revalidatePath('/dashboard');
-  return { success: true };
+  return { activities: activities.slice(0, limit) };
 }
