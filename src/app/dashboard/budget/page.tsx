@@ -4,7 +4,7 @@ import React from 'react';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 import {
   Wallet,
-  Calculator,
+  Calculator, Plus,
   TrendingUp,
   TrendingDown,
   Calendar,
@@ -165,9 +165,24 @@ export default function BudgetPage() {
             ))}
           </div>
         ) : filteredExpenses.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground">
-            <Calculator size={32} className="mx-auto mb-2 opacity-10" />
-            <p className="text-xs font-medium italic">Aucune transaction enregistrée.</p>
+          <div className="py-20 text-center">
+            <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium">
+              <Calculator size={40} className="text-primary/20" />
+              <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-premium animate-bounce">
+                <Plus size={16} />
+              </div>
+            </div>
+            <h2 className="mb-2 text-size-xl font-semibold tracking-tight text-foreground uppercase">
+              Grand Livre vide
+            </h2>
+            <p className="mx-auto mb-10 max-w-sm text-size-sm font-medium text-muted-foreground italic">
+              Aucune transaction n'a été enregistrée pour ce chantier. Saisissez vos premières dépenses pour suivre la rentabilité.
+            </p>
+            <CreateExpenseModal onExpenseCreated={refetch}>
+               <Button className="h-11 rounded-xl px-8 font-bold uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
+                 Saisir une dépense
+               </Button>
+            </CreateExpenseModal>
           </div>
         ) : (
           <div className="divide-y divide-border">

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { getWorkersByProject, deleteWorker } from '@/lib/server/worker.actions';
 import {
-  Users,
+  Users, Plus,
   Search,
   Trash2,
   Loader2,
@@ -113,17 +113,24 @@ export default function OuvriersPage() {
           <p className="text-xs font-medium uppercase tracking-widest">Chargement des effectifs...</p>
         </div>
       ) : workers.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground/50 shadow-sm">
-            <Users size={32} strokeWidth={1.5} />
+        <Card className="border-2 border-dashed border-border bg-muted/30 py-20 text-center">
+          <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium">
+            <Users size={40} className="text-primary/20" />
+            <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-premium animate-bounce">
+              <Plus size={16} />
+            </div>
           </div>
-          <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
-            Aucun ouvrier sur ce chantier
+          <h2 className="mb-2 text-size-xl font-semibold tracking-tight text-foreground uppercase">
+            Effectif vide
           </h2>
-          <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-            Commencez par ajouter un ouvrier à ce chantier.
+          <p className="mx-auto mb-10 max-w-sm text-size-sm font-medium text-muted-foreground italic">
+            Il semble que personne n'ait encore été affecté à ce chantier. Ajoutez vos premiers ouvriers pour commencer le pointage.
           </p>
-          <CreateWorkerModal onWorkerCreated={refetch} />
+          <CreateWorkerModal onWorkerCreated={refetch}>
+             <Button className="h-11 rounded-xl px-8 font-bold uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
+               Ajouter un ouvrier
+             </Button>
+          </CreateWorkerModal>
         </Card>
       ) : (
         <Card className="shadow-premium overflow-hidden border-border" padding="none">

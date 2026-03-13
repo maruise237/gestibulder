@@ -5,7 +5,7 @@ import { getMaterials, addStockMovement } from '@/lib/server/stock.actions';
 import { getProjects } from '@/lib/server/project.actions';
 import { useApp } from '@/lib/context/app-context';
 import {
-  Package,
+  Package, Plus,
   Search,
   PlusCircle,
   MinusCircle,

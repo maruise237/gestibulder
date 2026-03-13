@@ -27,9 +27,11 @@ const COMMON_MATERIALS = [
 ];
 
 export function CreateMaterialModal({
+  children,
   chantierId,
   onMaterialCreated,
 }: {
+  children?: React.ReactNode;
   chantierId: string;
   onMaterialCreated: () => void;
 }) {
@@ -65,10 +67,12 @@ export function CreateMaterialModal({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Nouveau Matériau
-        </Button>
+        {children || (
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Nouveau Matériau
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px]">
         <DialogHeader className="bg-muted/30 border-b p-6">

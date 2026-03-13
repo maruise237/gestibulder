@@ -214,3 +214,68 @@ body {
   --radius-3xl: calc(var(--radius) * 3.5);
   --radius-4xl: calc(var(--radius) * 4);
 }
+
+/* Shepherd.js SaaS Custom Styles */
+.shepherd-element {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-elevated);
+  max-width: 400px;
+  outline: none;
+  z-index: 9999;
+}
+
+.shepherd-header {
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1rem;
+}
+
+.shepherd-title {
+  color: var(--foreground);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.shepherd-text {
+  color: var(--muted-foreground);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  padding: 1rem;
+}
+
+.shepherd-footer {
+  padding: 0 1rem 1rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.shepherd-button {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+
+.shepherd-button:hover {
+  filter: brightness(1.1);
+}
+
+.shepherd-button-secondary {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.shepherd-modal-overlay-container {
+  opacity: 0.5;
+}
