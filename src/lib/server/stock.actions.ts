@@ -10,7 +10,7 @@ export async function getMaterials(chantierId: string) {
 
   // 1. Get all materials for this chantier
   const { data: materials, error: matError } = await supabase
-    .from('materiaux')
+    .from('materiaux_avec_stock')
     .select('*')
     .eq('chantier_id', chantierId)
     .order('nom', { ascending: true });

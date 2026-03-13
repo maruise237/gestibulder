@@ -96,7 +96,7 @@ export function ProjectSelector() {
                       </div>
                       <div className="flex flex-col overflow-hidden">
                         <span className="truncate font-medium">{project.nom}</span>
-                        <span className="truncate text-[10px] text-zinc-500">{project.lieu || 'Sans lieu'}</span>
+                        <span className="truncate text-[10px] text-zinc-500">{project.adresse || 'Sans lieu'}</span>
                       </div>
                     </div>
                   </SelectItem>
