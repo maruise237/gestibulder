@@ -69,12 +69,22 @@ export async function getBudgetData(selectedProjectId?: string) {
       .eq('entreprise_id', entreprise_id)
       .order('date_operation', { ascending: false }),
     getEnterprise(),
-    selectedProjectId && selectedProjectId !== 'all' ? getProjectLaborSummary(selectedProjectId) : Promise.resolve(null),
+    getProjectLaborSummary(selectedProjectId && selectedProjectId !== 'all' ? selectedProjectId : undefined),
   ]);
 
+  // Unified financial calculation
+  // We treat pointage as the source of truth for labor costs to capture existing data correctly
+  const projects = projectsRes.data || [];
+  const rawExpenses = expensesRes.data || [];
+
+  // Filter expenses that are NOT labor (to avoid double counting with laborSummary)
+  // or that were manually added before the new synchronization
+  const nonLaborExpenses = rawExpenses.filter(e => e.categorie !== 'main_d_oeuvre');
+
   return {
-    projects: projectsRes.data || [],
-    expenses: expensesRes.data || [],
+    projects,
+    expenses: rawExpenses,
+    nonLaborExpenses,
     enterprise: enterpriseRes.enterprise || null,
     laborSummary,
     error: projectsRes.error?.message || expensesRes.error?.message || (laborSummary as any)?.error || null,

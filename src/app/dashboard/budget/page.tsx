@@ -44,26 +44,39 @@ export default function BudgetPage() {
 
   const projects = data?.projects || [];
   const expenses = data?.expenses || [];
+  const nonLaborExpenses = data?.nonLaborExpenses || [];
   const laborSummary = data?.laborSummary;
 
-  const filteredExpenses =
-    !selectedProjectId || selectedProjectId === 'all'
-      ? expenses
-      : expenses.filter((e) => e.chantier_id === selectedProjectId);
+  // Real-time financial calculations
+  // 1. Total paid from non-labor categories (materials, transport, etc.)
+  const totalNonLaborPaid = nonLaborExpenses
+    .filter(e => !selectedProjectId || selectedProjectId === 'all' || e.chantier_id === selectedProjectId)
+    .reduce((sum, e) => sum + (Number(e.montant) || 0), 0);
 
-  const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.montant, 0);
-  const totalLaborDebt = laborSummary?.totalDebt || 0;
-  const totalFinancialPressure = totalExpenses + totalLaborDebt;
+  // 2. Total labor cost (Source of truth: Pointage)
+  const totalLaborCost = laborSummary?.workers.reduce((sum: number, w: any) => sum + w.totalDue, 0) || 0;
+
+  // 3. Actual paid labor (Source of truth: Payments)
+  const totalLaborPaid = laborSummary?.workers.reduce((sum: number, w: any) => sum + w.totalPaid, 0) || 0;
+
+  // 4. Financial Pressure (Everything the enterprise must pay eventually)
+  const totalEngaged = totalNonLaborPaid + totalLaborCost;
+
+  // 5. Unpaid Debt
+  const totalLaborDebt = Math.max(0, totalLaborCost - totalLaborPaid);
 
   const selectedProjectObj = projects.find((p) => p.id === selectedProjectId);
   const budgetTotal = selectedProjectObj?.budget_total || 0;
-  const budgetRemaining = Math.max(0, budgetTotal - totalFinancialPressure);
+  const budgetRemaining = Math.max(0, budgetTotal - totalEngaged);
 
-  // Margin calculation accounts for both paid expenses and outstanding labor debt
   const margin =
     budgetTotal > 0
-      ? (((budgetTotal - totalFinancialPressure) / budgetTotal) * 100).toFixed(1)
+      ? (((budgetTotal - totalEngaged) / budgetTotal) * 100).toFixed(1)
       : null;
+
+  const filteredExpensesForTable = !selectedProjectId || selectedProjectId === 'all'
+    ? expenses
+    : expenses.filter((e) => e.chantier_id === selectedProjectId);
 
   return (
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
@@ -88,7 +101,7 @@ export default function BudgetPage() {
       </div>
 
       {/* Alerte budget dépassé */}
-      {selectedProjectObj && totalFinancialPressure > budgetTotal && budgetTotal > 0 && (
+      {selectedProjectObj && totalEngaged > budgetTotal && budgetTotal > 0 && (
         <div className="flex items-center gap-3 rounded-2xl border-2 border-destructive/20 bg-destructive/5 p-4 animate-in fade-in slide-in-from-top-2">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-white shadow-lg shadow-destructive/20">
             <AlertCircle size={20} />
@@ -96,8 +109,8 @@ export default function BudgetPage() {
           <div className="min-w-0">
             <p className="text-[11px] font-black uppercase tracking-widest text-destructive">Risque budgétaire élevé</p>
             <p className="text-[10px] font-bold text-destructive/80 uppercase">
-              Dépassement de {formatCurrency(totalFinancialPressure - budgetTotal, enterprise?.devise)}
-              (Dépenses + Dettes Main d'œuvre)
+              Dépassement de {formatCurrency(totalEngaged - budgetTotal, enterprise?.devise)}
+              (Matériaux + Tout le Personnel pointé)
             </p>
           </div>
         </div>
@@ -118,10 +131,10 @@ export default function BudgetPage() {
             {isLoading ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              formatCurrency(totalFinancialPressure, enterprise?.devise)
+              formatCurrency(totalEngaged, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Dépenses + Dettes MO</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic text-rose-600">Total Personnel + Matériaux</p>
         </Card>
 
         <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-rose-600">
@@ -130,7 +143,7 @@ export default function BudgetPage() {
               <Banknote size={18} />
             </div>
             <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-              Dettes à Payer
+              Impayés (Dettes)
             </span>
           </div>
           <p className="text-size-2xl font-black tracking-tight text-rose-600">
@@ -140,7 +153,7 @@ export default function BudgetPage() {
               formatCurrency(totalLaborDebt, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Salaires non réglés</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Salaires dus à ce jour</p>
         </Card>
 
         <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-emerald-600">
@@ -159,7 +172,7 @@ export default function BudgetPage() {
               formatCurrency(budgetRemaining, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Marge de manoeuvre</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Trésorerie théorique</p>
         </Card>
 
         <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
@@ -180,7 +193,7 @@ export default function BudgetPage() {
           )}>
             {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '--'}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Marge nette estimée</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Santé financière globale</p>
         </Card>
       </div>
 
@@ -198,11 +211,11 @@ export default function BudgetPage() {
                 </h2>
               </div>
               <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Dépenses enregistrées
+                Historique des sorties
               </div>
             </div>
 
-            {isLoading && expenses.length === 0 ? (
+            {isLoading && filteredExpensesForTable.length === 0 ? (
               <div className="divide-y divide-border">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex items-center justify-between p-4 sm:p-6">
@@ -215,7 +228,7 @@ export default function BudgetPage() {
                   </div>
                 ))}
               </div>
-            ) : filteredExpenses.length === 0 ? (
+            ) : filteredExpensesForTable.length === 0 ? (
               <div className="py-20 text-center">
                 <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium border border-border">
                   <Calculator size={40} className="text-primary/20" />
@@ -227,7 +240,7 @@ export default function BudgetPage() {
                   Historique vide
                 </h2>
                 <p className="mx-auto mb-10 max-w-sm text-size-sm font-bold text-muted-foreground italic uppercase">
-                  Aucune transaction n'a été enregistrée pour ce chantier.
+                  Aucune transaction n'a été enregistrée.
                 </p>
                 <CreateExpenseModal onExpenseCreated={refetch}>
                   <Button className="h-11 rounded-xl px-8 font-black uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95 bg-indigo-600">
@@ -237,7 +250,7 @@ export default function BudgetPage() {
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {filteredExpenses.map((expense) => (
+                {filteredExpensesForTable.map((expense) => (
                   <div
                     key={expense.id}
                     className="group flex items-center justify-between p-4 transition-all duration-200 hover:bg-muted/30 sm:p-6"
@@ -287,10 +300,10 @@ export default function BudgetPage() {
                   </div>
                   <div>
                     <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
-                      Soldes Ouvriers
+                      Impayés
                     </h2>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      Reste à payer
+                      Soldes par ouvrier
                     </p>
                   </div>
                 </div>
@@ -310,21 +323,18 @@ export default function BudgetPage() {
                 ) : !laborSummary || laborSummary.workers.length === 0 ? (
                   <div className="py-12 text-center">
                     <HardHat size={32} className="mx-auto mb-2 text-muted-foreground/20" />
-                    <p className="text-[10px] font-black text-muted-foreground uppercase italic">Aucune dette MO</p>
+                    <p className="text-[10px] font-black text-muted-foreground uppercase italic">Tout est réglé</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
-                    {laborSummary.workers.map((worker: any) => (
+                    {laborSummary.workers.filter((w: any) => w.remaining > 0).map((worker: any) => (
                       <div key={worker.id} className="flex items-center justify-between p-3 rounded-xl transition-colors hover:bg-muted/50 border border-transparent hover:border-border">
                          <div className="min-w-0">
                             <p className="text-[11px] font-black text-foreground uppercase truncate">{worker.nom_complet}</p>
                             <p className="text-[9px] font-bold text-muted-foreground uppercase">{worker.daysPresent} jours présents</p>
                          </div>
                          <div className="text-right">
-                            <p className={cn(
-                              "text-xs font-black",
-                              worker.remaining > 0 ? "text-rose-600" : "text-emerald-600"
-                            )}>
+                            <p className="text-xs font-black text-rose-600">
                               {formatCurrency(worker.remaining, enterprise?.devise)}
                             </p>
                             <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Solde restant</p>
@@ -337,20 +347,20 @@ export default function BudgetPage() {
 
              <div className="border-t border-border bg-muted/20 p-4">
                 <div className="flex justify-between items-center">
-                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Total Dû</span>
+                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Dette Totale Personnel</span>
                    <span className="text-sm font-black text-rose-600">{formatCurrency(totalLaborDebt, enterprise?.devise)}</span>
                 </div>
              </div>
           </Card>
 
           <Card className="bg-indigo-600 text-white border-none p-6 rounded-2xl shadow-xl shadow-indigo-100">
-             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Budget Total</h3>
+             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Enveloppe Budgétaire</h3>
              <p className="text-2xl font-black mb-4">
                {formatCurrency(budgetTotal, enterprise?.devise)}
              </p>
              <div className="space-y-2">
                 <div className="flex justify-between text-[10px] font-bold uppercase">
-                   <span>Budget Engagé</span>
+                   <span>Consommation Réelle</span>
                    <span>{margin ? (100 - Number(margin)).toFixed(1) : 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
