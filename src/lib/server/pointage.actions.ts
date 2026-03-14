@@ -101,19 +101,7 @@ export async function pointageRapideQR(ouvrier_id: string, chantier_id: string) 
   const supabase = await createClient();
   const today = new Date().toISOString().split('T')[0];
 
-  // Vérifier si déjà pointé
-  const { data: existing } = await supabase
-    .from('pointages')
-    .select('id')
-    .eq('ouvrier_id', ouvrier_id)
-    .eq('date', today)
-    .single();
-
-  if (existing) {
-    return { alreadyPointed: true };
-  }
-
-  // Créer pointage présent
+  // 1. Récupérer d'abord les infos de l'ouvrier pour pouvoir les retourner même si déjà pointé
   const { data: ouvrier } = await supabase
     .from('ouvriers')
     .select('nom_complet, taux_journalier')
@@ -122,6 +110,24 @@ export async function pointageRapideQR(ouvrier_id: string, chantier_id: string) 
 
   if (!ouvrier) return { error: "Ouvrier non trouvé" };
 
+  // 2. Vérifier si déjà pointé
+  const { data: existing } = await supabase
+    .from('pointages')
+    .select('id, heure_arrivee')
+    .eq('ouvrier_id', ouvrier_id)
+    .eq('date', today)
+    .single();
+
+  if (existing) {
+    return {
+      alreadyPointed: true,
+      ouvrier: { nom_complet: ouvrier.nom_complet },
+      heure_arrivee: existing.heure_arrivee
+    };
+  }
+
+  // 3. Créer pointage présent
+  const nowTime = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   const { error } = await supabase
     .from('pointages')
     .insert({
@@ -130,14 +136,18 @@ export async function pointageRapideQR(ouvrier_id: string, chantier_id: string) 
       ouvrier_id,
       date: today,
       statut: 'present',
-      heure_arrivee: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      heure_arrivee: nowTime,
       salaire_jour: ouvrier.taux_journalier || 0
     });
 
   if (error) return { error: error.message };
 
   revalidatePath('/dashboard/pointage');
-  return { success: true, ouvrier: { nom_complet: ouvrier.nom_complet } };
+  return {
+    success: true,
+    ouvrier: { nom_complet: ouvrier.nom_complet },
+    heure_arrivee: nowTime
+  };
 }
 
 /**

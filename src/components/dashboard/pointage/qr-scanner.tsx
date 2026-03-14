@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Camera, X, CheckCircle2, AlertCircle, ListChecks } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Camera, X, CheckCircle2, AlertCircle, ListChecks, UserCheck } from 'lucide-react';
 import { pointageRapideQR } from '@/lib/server/pointage.actions';
 import { toast } from 'sonner';
 
@@ -22,15 +22,14 @@ interface ScanSession {
 export function QRScanner({ chantierId }: QRScannerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [history, setHistory] = useState<ScanSession[]>([]);
-  const [lastScan, setLastScan] = useState<string | null>(null);
+  const [lastScanResult, setLastScanResult] = useState<{ name: string; time: string; already: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
     let html5QrCode: Html5Qrcode | null = null;
 
-    if (isOpen) {
-      // Small delay to ensure the #reader element is in the DOM
+    if (isOpen && !lastScanResult) {
       const timer = setTimeout(() => {
         const element = document.getElementById("reader");
         if (!element) return;
@@ -50,6 +49,10 @@ export function QRScanner({ chantierId }: QRScannerProps) {
             if (decodedText.startsWith("gestibulder://worker/")) {
               const workerId = decodedText.split("/").pop();
               if (workerId) {
+                // Stopper le scanner temporairement pour éviter les scans multiples
+                if (scannerRef.current?.isScanning) {
+                   await scannerRef.current.pause(true);
+                }
                 handleScan(workerId);
               }
             } else {
@@ -59,7 +62,6 @@ export function QRScanner({ chantierId }: QRScannerProps) {
           () => {}
         ).catch(err => {
           console.error("Camera error:", err);
-          // toast.error("Impossible d'accéder à la caméra");
         });
       }, 300);
 
@@ -70,29 +72,45 @@ export function QRScanner({ chantierId }: QRScannerProps) {
         }
       };
     }
-  }, [isOpen]);
+  }, [isOpen, lastScanResult]);
 
   const handleScan = async (workerId: string) => {
     setIsProcessing(true);
     try {
       const res = await pointageRapideQR(workerId, chantierId);
-      const time = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-      if (res.success) {
-        setHistory(prev => [{ time, workerName: res.ouvrier!.nom_complet, status: 'success' }, ...prev]);
-        setLastScan(res.ouvrier!.nom_complet);
-        toast.success(`Pointage réussi: ${res.ouvrier!.nom_complet}`);
-      } else if (res.alreadyPointed) {
-        setHistory(prev => [{ time, workerName: "Ouvrier", status: 'already' }, ...prev]);
-        toast.info("Déjà pointé aujourd'hui");
+      if (res.error) {
+        toast.error(res.error);
+        if (scannerRef.current?.isScanning) {
+          scannerRef.current.resume();
+        }
+        return;
+      }
+
+      const name = res.ouvrier?.nom_complet || "Ouvrier";
+      const time = res.heure_arrivee || new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+      if (res.success || res.alreadyPointed) {
+        setHistory(prev => [
+          { time, workerName: name, status: res.success ? 'success' : 'already' },
+          ...prev
+        ]);
+        setLastScanResult({ name, time, already: !!res.alreadyPointed });
       }
     } catch (error) {
       toast.error("Erreur lors du scan");
+      if (scannerRef.current?.isScanning) {
+        scannerRef.current.resume();
+      }
     } finally {
-      setTimeout(() => {
-        setIsProcessing(false);
-        setLastScan(null);
-      }, 2000);
+      setIsProcessing(false);
+    }
+  };
+
+  const handleContinue = () => {
+    setLastScanResult(null);
+    if (scannerRef.current) {
+        // Le scanner va redémarrer via le useEffect car lastScanResult devient null
     }
   };
 
@@ -125,7 +143,7 @@ export function QRScanner({ chantierId }: QRScannerProps) {
               <div key={i} className="flex items-center justify-between p-3 bg-card border rounded-xl animate-in fade-in slide-in-from-left-2 duration-300">
                 <div className="flex items-center gap-3">
                   <span className="text-xs font-bold text-muted-foreground">{item.time}</span>
-                  <span className="font-bold text-sm">{item.workerName}</span>
+                  <span className="font-bold text-sm uppercase">{item.workerName}</span>
                 </div>
                 {item.status === 'success' ? (
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
@@ -138,51 +156,80 @@ export function QRScanner({ chantierId }: QRScannerProps) {
         </div>
       )}
 
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={isOpen} onOpenChange={(v) => !v && setIsOpen(false)}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black border-none h-[80vh] sm:h-auto" showCloseButton={false}>
-          <div className="relative">
+          <div className="relative h-full min-h-[400px]">
             <div id="reader" className="w-full"></div>
 
-            {/* Overlay UI */}
-            <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-6">
-              <div className="w-full flex justify-between items-center text-white">
-                <h2 className="font-black text-lg uppercase tracking-wider">Scanner</h2>
+            {/* Camera Overlay */}
+            {!lastScanResult && (
+              <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-6">
+                <div className="w-full flex justify-between items-center text-white">
+                  <h2 className="font-black text-lg uppercase tracking-wider">Scanner</h2>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsOpen(false)}
+                    className="text-white hover:bg-white/20 pointer-events-auto"
+                  >
+                    <X className="h-6 w-6" />
+                  </Button>
+                </div>
+
+                <div className="relative w-64 h-64">
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-500 rounded-tl-lg"></div>
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 rounded-tr-lg"></div>
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 rounded-bl-lg"></div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 rounded-br-lg"></div>
+                  {isProcessing && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 animate-pulse rounded-lg">
+                      <span className="text-white font-black text-sm uppercase">Traitement...</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-center">
+                  <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mb-4">
+                    Placez le QR Code au centre du carré
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Success/Already Result Overlay */}
+            {lastScanResult && (
+              <div className="absolute inset-0 bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-300">
+                <div className={cn(
+                  "h-24 w-24 rounded-full flex items-center justify-center mb-6",
+                  lastScanResult.already ? "bg-amber-100" : "bg-emerald-100"
+                )}>
+                  {lastScanResult.already ? (
+                    <AlertCircle className="h-12 w-12 text-amber-600" />
+                  ) : (
+                    <UserCheck className="h-12 w-12 text-emerald-600" />
+                  )}
+                </div>
+
+                <h2 className="text-2xl font-black uppercase mb-1">{lastScanResult.name}</h2>
+                <p className="text-muted-foreground font-bold mb-8 uppercase text-xs tracking-widest">
+                  {lastScanResult.already ? "DÉJÀ POINTÉ À" : "POINTÉ AVEC SUCCÈS À"} {lastScanResult.time}
+                </p>
+
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsOpen(false)}
-                  className="text-white hover:bg-white/20 pointer-events-auto"
+                  onClick={handleContinue}
+                  className="w-full h-14 rounded-2xl font-black uppercase text-lg tracking-wider bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-200"
                 >
-                  <X className="h-6 w-6" />
+                  OKAY
                 </Button>
               </div>
-
-              <div className="relative w-64 h-64">
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-500 rounded-tl-lg"></div>
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 rounded-tr-lg"></div>
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 rounded-bl-lg"></div>
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 rounded-br-lg"></div>
-                {isProcessing && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40 animate-pulse rounded-lg">
-                    <span className="text-white font-black text-sm uppercase">Traitement...</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="text-center">
-                <p className="text-white/70 text-[10px] font-bold uppercase tracking-widest mb-4">
-                  Placez le QR Code au centre du carré
-                </p>
-                {lastScan && (
-                  <div className="bg-emerald-500 text-white px-4 py-2 rounded-full font-bold text-xs animate-bounce">
-                    ✓ {lastScan} pointé
-                  </div>
-                )}
-              </div>
-            </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
     </div>
   );
+}
+
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(' ');
 }
