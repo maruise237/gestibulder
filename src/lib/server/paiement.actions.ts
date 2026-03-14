@@ -127,7 +127,7 @@ export async function createPayment(data: {
       chantier_id: data.chantier_id,
       libelle: `${statusLabel} - ${worker?.nom_complet || 'Ouvrier'}`,
       montant: data.montant,
-      categorie: 'main_doeuvre',
+      categorie: 'main_d_oeuvre',
       date_operation: data.date_paiement,
       saisi_par: user?.id,
     }]);
@@ -229,7 +229,7 @@ export async function enregistrerPaiement(
       chantier_id: current.chantier_id,
       libelle: `${statusLabel} - ${(current.ouvriers as any)?.nom_complet || 'Ouvrier'}`,
       montant: montantPaye,
-      categorie: 'main_doeuvre',
+      categorie: 'main_d_oeuvre',
       date_operation: new Date().toISOString(),
       saisi_par: user?.id,
     }]);
@@ -237,4 +237,61 @@ export async function enregistrerPaiement(
   revalidatePath('/dashboard/paiements');
   revalidatePath('/dashboard/budget');
   return { paiement: data }
+}
+
+export async function getProjectLaborSummary(projectId: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { workers: [], totalDebt: 0, error: authError };
+
+  const supabase = await createClient();
+
+  // 1. Get all workers for this project
+  const { data: workers, error: workersError } = await supabase
+    .from('ouvriers')
+    .select('id, nom_complet')
+    .eq('entreprise_id', entreprise_id)
+    .contains('chantier_ids', [projectId]);
+
+  if (workersError) return { workers: [], totalDebt: 0, error: workersError.message };
+
+  // 2. Get all attendance logs for this project
+  const { data: logs, error: logsError } = await supabase
+    .from('pointages')
+    .select('ouvrier_id, salaire_jour')
+    .eq('chantier_id', projectId)
+    .eq('statut', 'present');
+
+  if (logsError) return { workers: [], totalDebt: 0, error: logsError.message };
+
+  // 3. Get all payments for this project
+  const { data: payments, error: paymentsError } = await supabase
+    .from('paiements_ouvriers')
+    .select('ouvrier_id, montant_paye')
+    .eq('chantier_id', projectId)
+    .eq('entreprise_id', entreprise_id);
+
+  if (paymentsError) return { workers: [], totalDebt: 0, error: paymentsError.message };
+
+  // 4. Aggregate data
+  const workerSummaries = workers.map(w => {
+    const workerLogs = logs.filter(l => l.ouvrier_id === w.id);
+    const workerPayments = payments.filter(p => p.ouvrier_id === w.id);
+
+    const totalDue = workerLogs.reduce((sum, l) => sum + (Number(l.salaire_jour) || 0), 0);
+    const totalPaid = workerPayments.reduce((sum, p) => sum + (Number(p.montant_paye) || 0), 0);
+    const remaining = Math.max(0, totalDue - totalPaid);
+
+    return {
+      id: w.id,
+      nom_complet: w.nom_complet,
+      totalDue,
+      totalPaid,
+      remaining,
+      daysPresent: workerLogs.length
+    };
+  }).filter(w => w.totalDue > 0 || w.totalPaid > 0); // Only workers with some activity
+
+  const totalDebt = workerSummaries.reduce((sum, w) => sum + w.remaining, 0);
+
+  return { workers: workerSummaries, totalDebt };
 }

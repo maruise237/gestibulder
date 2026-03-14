@@ -54,7 +54,7 @@ export const Sidebar = memo(({
   const prefetchData = (key: string) => {
     if (key === 'projects') queryClient.prefetchQuery({ queryKey: ['projects'], queryFn: getProjects });
     if (key === 'workers') queryClient.prefetchQuery({ queryKey: ['workers', 1, ''], queryFn: () => getWorkers(1, 8) });
-    if (key === 'budget') queryClient.prefetchQuery({ queryKey: ['budget-data'], queryFn: getBudgetData });
+    if (key === 'budget') queryClient.prefetchQuery({ queryKey: ['budget-data'], queryFn: () => getBudgetData() });
   };
 
   return (
