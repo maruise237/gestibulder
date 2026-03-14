@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/tooltip';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { generateReportId } from '@/lib/utils/report-id';
 
 type ExportCategory = 'finances' | 'workers' | 'projects' | 'inventory';
 
@@ -65,11 +66,12 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
 
   const handleExport = async () => {
     setIsLoading(true);
+    const reportId = generateReportId();
     try {
       if (format === 'pdf') {
-        await handlePdfExport();
+        await handlePdfExport(reportId);
       } else {
-        await handleExcelCsvExport();
+        await handleExcelCsvExport(reportId);
       }
       setIsOpen(false);
     } catch (error) {
@@ -79,9 +81,12 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
     }
   };
 
-  const handlePdfExport = async () => {
+  const handlePdfExport = async (reportId: string) => {
     const doc = new jsPDF();
     const dateStr = new Date().toLocaleDateString();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 14;
 
     // Header
     doc.setFontSize(22);
@@ -133,10 +138,26 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
       }
     }
 
+    // Footer
+    const totalPages = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(7);
+        doc.setTextColor(160, 160, 160);
+        doc.text(
+          `GestiBulder · gestibulder.com · ID: ${reportId} · Page ${i}/${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 8,
+          { align: 'center' }
+        );
+        doc.setDrawColor(220, 220, 220);
+        doc.line(margin, pageHeight - 12, pageWidth - margin, pageHeight - 12);
+    }
+
     doc.save(`rapport_gestibulder_${new Date().toISOString().split('T')[0]}.pdf`);
   };
 
-  const handleExcelCsvExport = async () => {
+  const handleExcelCsvExport = async (reportId: string) => {
     const wb = XLSX.utils.book_new();
 
     if (selectedCategories.includes('workers')) {
@@ -170,6 +191,18 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
         XLSX.utils.book_append_sheet(wb, ws, 'Stocks');
       }
     }
+
+    // Ajouter une feuille "Certification"
+    const certData = [{
+      'Document': 'Rapport GestiBulder',
+      'Identifiant': reportId,
+      'Généré le': new Date().toLocaleString('fr-FR'),
+      'Entreprise': enterprise?.nom || '',
+      'Vérification': `https://gestibulder.com/verifier?id=${reportId}`,
+      'Logiciel': 'GestiBulder — gestibulder.com',
+    }];
+    const wsCert = XLSX.utils.json_to_sheet(certData);
+    XLSX.utils.book_append_sheet(wb, wsCert, 'Certification');
 
     const wbout = XLSX.write(wb, { bookType: format as any, type: 'array' });
     const fileName = `export_gestibulder_${new Date().toISOString().split('T')[0]}.${format}`;
