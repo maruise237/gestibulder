@@ -239,36 +239,52 @@ export async function enregistrerPaiement(
   return { paiement: data }
 }
 
-export async function getProjectLaborSummary(projectId: string) {
+export async function getProjectLaborSummary(projectId?: string) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { workers: [], totalDebt: 0, error: authError };
 
   const supabase = await createClient();
 
-  // 1. Get all workers for this project
-  const { data: workers, error: workersError } = await supabase
+  // 1. Get all workers for this project/enterprise
+  let workersQuery = supabase
     .from('ouvriers')
     .select('id, nom_complet')
-    .eq('entreprise_id', entreprise_id)
-    .contains('chantier_ids', [projectId]);
+    .eq('entreprise_id', entreprise_id);
+
+  if (projectId && projectId !== 'all') {
+    workersQuery = workersQuery.contains('chantier_ids', [projectId]);
+  }
+
+  const { data: workers, error: workersError } = await workersQuery;
 
   if (workersError) return { workers: [], totalDebt: 0, error: workersError.message };
 
-  // 2. Get all attendance logs for this project
-  const { data: logs, error: logsError } = await supabase
+  // 2. Get all attendance logs
+  let logsQuery = supabase
     .from('pointages')
     .select('ouvrier_id, salaire_jour')
-    .eq('chantier_id', projectId)
+    .eq('entreprise_id', entreprise_id)
     .eq('statut', 'present');
+
+  if (projectId && projectId !== 'all') {
+    logsQuery = logsQuery.eq('chantier_id', projectId);
+  }
+
+  const { data: logs, error: logsError } = await logsQuery;
 
   if (logsError) return { workers: [], totalDebt: 0, error: logsError.message };
 
-  // 3. Get all payments for this project
-  const { data: payments, error: paymentsError } = await supabase
+  // 3. Get all payments
+  let paymentsQuery = supabase
     .from('paiements_ouvriers')
     .select('ouvrier_id, montant_paye')
-    .eq('chantier_id', projectId)
     .eq('entreprise_id', entreprise_id);
+
+  if (projectId && projectId !== 'all') {
+    paymentsQuery = paymentsQuery.eq('chantier_id', projectId);
+  }
+
+  const { data: payments, error: paymentsError } = await paymentsQuery;
 
   if (paymentsError) return { workers: [], totalDebt: 0, error: paymentsError.message };
 
@@ -289,7 +305,7 @@ export async function getProjectLaborSummary(projectId: string) {
       remaining,
       daysPresent: workerLogs.length
     };
-  }).filter(w => w.totalDue > 0 || w.totalPaid > 0); // Only workers with some activity
+  }).filter(w => w.totalDue > 0 || w.totalPaid > 0);
 
   const totalDebt = workerSummaries.reduce((sum, w) => sum + w.remaining, 0);
 
