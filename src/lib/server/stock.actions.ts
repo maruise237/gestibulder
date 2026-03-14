@@ -133,7 +133,7 @@ export async function getMaterialHistory(materialId: string) {
     .from('mouvements_stock')
     .select('*')
     .eq('materiau_id', materialId)
-    .order('date', { ascending: false });
+    .order('date_operation', { ascending: false });
 
   if (error) return { error: error.message };
   return { history: data };

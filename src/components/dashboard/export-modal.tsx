@@ -124,7 +124,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
           body: expenses.map((e: any) => [
             e.libelle,
             e.categorie,
-            new Date(e.date).toLocaleDateString(),
+            new Date(e.date_operation).toLocaleDateString(),
             formatCurrency(e.montant, enterprise?.devise)
           ]),
           theme: 'striped',

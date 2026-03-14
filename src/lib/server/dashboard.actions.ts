@@ -11,7 +11,6 @@ export async function getDashboardData() {
   const supabase = await createClient();
 
   // On lance toutes les requêtes en parallèle sur le serveur
-  // C'est beaucoup plus rapide que de faire 6 appels séparés depuis le client
   const [projectsRes, workersRes, expensesRes, alertsRes, movementsRes, enterpriseRes] =
     await Promise.all([
       supabase
@@ -24,37 +23,26 @@ export async function getDashboardData() {
         .select('*', { count: 'exact', head: false })
         .eq('entreprise_id', entreprise_id),
       supabase.from('depenses').select('montant').eq('entreprise_id', entreprise_id),
-      supabase.from('materiaux').select('id, nom, seuil_alerte').eq('entreprise_id', entreprise_id),
+      supabase
+        .from('materiaux_avec_stock')
+        .select('id, nom, statut_stock')
+        .eq('entreprise_id', entreprise_id)
+        .in('statut_stock', ['critique', 'rupture']),
       supabase
         .from('mouvements_stock')
         .select('*, materiaux(nom)')
         .eq('entreprise_id', entreprise_id)
-        .order('date', { ascending: false })
+        .order('date_operation', { ascending: false })
         .limit(5),
       getEnterprise(),
     ]);
-
-  // Calcul des alertes stock sur le serveur
-  // On a besoin des mouvements pour calculer le stock actuel
-  const { data: movementsForAlerts } = await supabase
-    .from('mouvements_stock')
-    .select('materiau_id, type_mouvement, quantite')
-    .eq('entreprise_id', entreprise_id);
-
-  const alerts = (alertsRes.data || []).filter((mat) => {
-    const matMovements = (movementsForAlerts || []).filter((m) => m.materiau_id === mat.id);
-    const stock_actuel = matMovements.reduce((acc, m) => {
-      return m.type_mouvement === 'entree' ? acc + Number(m.quantite) : acc - Number(m.quantite);
-    }, 0);
-    return stock_actuel <= mat.seuil_alerte;
-  });
 
   return {
     projects: projectsRes.data || [],
     workersCount: workersRes.count || 0,
     workers: workersRes.data || [],
     expenses: expensesRes.data || [],
-    alerts: alerts,
+    alerts: alertsRes.data || [],
     movements: movementsRes.data || [],
     enterprise: enterpriseRes.enterprise || null,
     error:
@@ -78,7 +66,7 @@ export async function getBudgetData() {
       .from('depenses')
       .select('*')
       .eq('entreprise_id', entreprise_id)
-      .order('date', { ascending: false }),
+      .order('date_operation', { ascending: false }),
     getEnterprise(),
   ]);
 

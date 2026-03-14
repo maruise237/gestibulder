@@ -6,11 +6,14 @@ import { NewEquipment } from '@/types/equipment';
 import { getAuthenticatedEnterpriseId } from './utils';
 
 export async function getEquipments() {
-  const supabase = await createClient();
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
 
+  const supabase = await createClient();
   const { data: equipments, error } = await supabase
     .from('equipements')
     .select('*')
+    .eq('entreprise_id', entreprise_id) // ← ajout isolation
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -42,12 +45,16 @@ export async function createEquipment(data: NewEquipment) {
 }
 
 export async function updateEquipmentStatus(equipmentId: string, status: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
   const supabase = await createClient();
 
   const { error } = await supabase
     .from('equipements')
     .update({ etat: status })
-    .eq('id', equipmentId);
+    .eq('id', equipmentId)
+    .eq('entreprise_id', entreprise_id);
 
   if (error) {
     console.error('Error updating equipment status:', error);
@@ -87,7 +94,8 @@ export async function deployEquipment(data: {
   const { error: statusError } = await supabase
     .from('equipements')
     .update({ etat: 'en_service' })
-    .eq('id', data.equipement_id);
+    .eq('id', data.equipement_id)
+    .eq('entreprise_id', entreprise_id);
 
   if (statusError) return { error: statusError.message };
 

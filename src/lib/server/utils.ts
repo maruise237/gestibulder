@@ -18,14 +18,14 @@ export const getAuthenticatedEnterpriseId = cache(async () => {
   if (!user) return { error: 'Non autorisé' };
 
   // 1. Essayer de récupérer le profil
-  let { data: profile, error: profileError } = await supabase
+  let { data: profile, error } = await supabase
     .from('profiles')
     .select('entreprise_id')
     .eq('id', user.id)
     .single();
 
-  if (profileError) {
-    console.error('[Auto-Repair] Error fetching profile:', profileError);
+  if (error) {
+    console.error('[Auto-Repair] Error fetching profile:', error);
   }
 
   // 2. Si le profil est absent, tenter une réparation automatique

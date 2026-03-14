@@ -12,6 +12,7 @@ import {
   Package,
   HardHat,
   ArrowDownRight,
+  AlertCircle,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -67,6 +68,22 @@ export default function BudgetPage() {
           <CreateExpenseModal onExpenseCreated={refetch} />
         </div>
       </div>
+
+      {/* Alerte budget dépassé */}
+      {selectedProjectObj && totalExpenses > selectedProjectObj.budget_total && selectedProjectObj.budget_total > 0 && (
+        <div className="flex items-center gap-3 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
+            <AlertCircle size={18} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] font-black uppercase tracking-widest text-destructive">Budget dépassé</p>
+            <p className="text-[10px] font-semibold text-destructive/80">
+              Dépassement de {formatCurrency(totalExpenses - selectedProjectObj.budget_total, enterprise?.devise)}
+              sur le budget alloué de {formatCurrency(selectedProjectObj.budget_total, enterprise?.devise)}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-fluid-md">
@@ -176,7 +193,7 @@ export default function BudgetPage() {
               Grand Livre vide
             </h2>
             <p className="mx-auto mb-10 max-w-sm text-size-sm font-medium text-muted-foreground italic">
-              Aucune transaction n'a été enregistrée pour ce chantier. Saisissez vos premières dépenses pour suivre la rentabilité.
+              Aucune transaction n'a été enregistrée pour ce chantier. Saisissez vos premi\u00e8res dépenses pour suivre la rentabilité.
             </p>
             <CreateExpenseModal onExpenseCreated={refetch}>
                <Button className="h-11 rounded-xl px-8 font-bold uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
@@ -203,7 +220,7 @@ export default function BudgetPage() {
                       {expense.libelle}
                     </div>
                     <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground uppercase">
-                      <span>{new Date(expense.date).toLocaleDateString()}</span>
+                      <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
                       <span>•</span>
                       <span>{expense.categorie.replace(/_/g, ' ')}</span>
                     </div>

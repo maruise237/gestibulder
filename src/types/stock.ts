@@ -18,7 +18,7 @@ export interface StockMovement {
   type_mouvement: 'entree' | 'sortie';
   quantite: number;
   cout_unitaire?: number;
-  date: string;
+  date_operation: string;
   saisi_par: string;
   fournisseur?: string;
   usage?: string;

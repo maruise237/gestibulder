@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { getWorkerSalariesDue, createPayment } from '@/lib/server/payment.actions';
 import {
   Dialog,
@@ -14,8 +14,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Wallet, Coins, Calendar, Loader2, CheckCircle2 } from 'lucide-react';
+import { Wallet, Coins, Loader2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
+import { useApp } from '@/lib/context/app-context';
 
 export function WorkerPaymentModal({
   worker,
@@ -30,7 +31,7 @@ export function WorkerPaymentModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const queryClient = useQueryClient();
+  const { enterprise } = useApp();
   const [amount, setAmount] = useState('');
 
   const { data: dueData, isLoading } = useQuery({
@@ -86,17 +87,17 @@ export function WorkerPaymentModal({
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-muted/30 p-4 rounded-2xl border border-border">
                   <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Dû Total</p>
-                  <p className="text-lg font-black text-foreground">{formatCurrency(dueData?.totalDue || 0, 'DZD')}</p>
+                  <p className="text-lg font-black text-foreground">{formatCurrency(dueData?.totalDue || 0, enterprise?.devise)}</p>
                 </div>
                 <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
                   <p className="text-[9px] font-black text-emerald-600 uppercase mb-1">Déjà Payé</p>
-                  <p className="text-lg font-black text-emerald-700">{formatCurrency(dueData?.totalPaid || 0, 'DZD')}</p>
+                  <p className="text-lg font-black text-emerald-700">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
                 </div>
               </div>
 
               <div className="bg-indigo-50/30 p-6 rounded-2xl border-2 border-dashed border-indigo-100 text-center">
                  <p className="text-[10px] font-black text-indigo-600 uppercase mb-1 tracking-widest">Reste à payer</p>
-                 <p className="text-3xl font-black text-indigo-700">{formatCurrency(dueData?.remaining || 0, 'DZD')}</p>
+                 <p className="text-3xl font-black text-indigo-700">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
                  <p className="mt-2 text-[9px] font-bold text-muted-foreground uppercase italic">{dueData?.daysPresent} jours de présence</p>
               </div>
 
