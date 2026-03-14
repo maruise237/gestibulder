@@ -90,7 +90,7 @@ export function StockHistoryModal({
                         {mov.type_mouvement === 'entree' ? 'Entrée de Stock' : 'Consommation'}
                       </div>
                       <div className="mt-1 text-[9px] font-black tracking-widest text-muted-foreground uppercase">
-                        {formatDate(mov.date)} • {mov.usage || mov.fournisseur || 'Général'}
+                        {formatDate(mov.date_operation)} • {mov.usage || mov.fournisseur || 'Général'}
                       </div>
                     </div>
                   </div>

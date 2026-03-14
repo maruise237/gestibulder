@@ -117,17 +117,17 @@ export async function getProjectActivity(projectId: string, limit: number = 20) 
   const [expensesRes, movementsRes] = await Promise.all([
     supabase
       .from('depenses')
-      .select('id, libelle, montant, date, created_at, categorie')
+      .select('id, libelle, montant, date_operation, created_at, categorie')
       .eq('chantier_id', projectId)
       .eq('entreprise_id', entreprise_id)
-      .order('date', { ascending: false })
+      .order('date_operation', { ascending: false })
       .limit(limit),
     supabase
       .from('mouvements_stock')
-      .select('id, type_mouvement, quantite, date, created_at, materiaux(nom, unite)')
+      .select('id, type_mouvement, quantite, date_operation, created_at, materiaux(nom, unite)')
       .eq('chantier_id', projectId)
       .eq('entreprise_id', entreprise_id)
-      .order('date', { ascending: false })
+      .order('date_operation', { ascending: false })
       .limit(limit)
   ]);
 
@@ -140,7 +140,7 @@ export async function getProjectActivity(projectId: string, limit: number = 20) 
         type: 'expense',
         title: e.libelle,
         amount: e.montant,
-        date: e.date,
+        date: e.date_operation,
         created_at: e.created_at,
         categorie: e.categorie
       });
@@ -155,7 +155,7 @@ export async function getProjectActivity(projectId: string, limit: number = 20) 
         title: `${m.type_mouvement === 'entree' ? 'Réapprovisionnement' : 'Consommation'} ${m.materiaux?.nom}`,
         amount: m.quantite,
         unit: m.materiaux?.unite,
-        date: m.date,
+        date: m.date_operation,
         created_at: m.created_at,
         subType: m.type_mouvement
       });

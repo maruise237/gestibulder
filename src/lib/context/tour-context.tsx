@@ -1,9 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-// @ts-ignore
+// @ts-expect-error
 import Shepherd from 'shepherd.js';
 import { usePathname } from 'next/navigation';
+import { useApp } from './app-context';
+import { getProjects } from '@/lib/server/project.actions';
 
 interface TourContextType {
   startTour: () => void;
@@ -15,6 +17,7 @@ const TourContext = createContext<TourContextType | undefined>(undefined);
 export function TourProvider({ children }: { children: React.ReactNode }) {
   const [isActive, setIsActive] = useState(false);
   const pathname = usePathname();
+  const { userProfile } = useApp();
 
   const startTour = () => {
     if (typeof window === 'undefined') return;
@@ -100,15 +103,21 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const hasCompletedTour = localStorage.getItem('gestibulder_tour_completed');
-    if (!hasCompletedTour && pathname === '/dashboard') {
-      // Small delay to ensure everything is rendered
-      const timer = setTimeout(() => {
-        startTour();
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [pathname]);
+    const checkAndStartTour = async () => {
+      const hasCompletedTour = localStorage.getItem('gestibulder_tour_completed');
+      if (hasCompletedTour || pathname !== '/dashboard' || !userProfile) return;
+
+      const res = await getProjects();
+      if (res.projects && res.projects.length > 0) {
+        const timer = setTimeout(() => {
+          startTour();
+        }, 1500);
+        return () => clearTimeout(timer);
+      }
+    };
+
+    checkAndStartTour();
+  }, [pathname, userProfile]);
 
   return (
     <TourContext.Provider value={{ startTour, isActive }}>

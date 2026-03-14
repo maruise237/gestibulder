@@ -62,7 +62,7 @@ export async function seedDemoData(projectId: string) {
       entreprise_id,
       type_mouvement: 'entree',
       quantite: m.nom.includes('Ciment') ? 50 : 500,
-      date: new Date().toISOString()
+      date_operation: new Date().toISOString()
     }));
     await supabase.from('mouvements_stock').insert(movements);
   }
@@ -73,7 +73,7 @@ export async function seedDemoData(projectId: string) {
       libelle: 'Location pelleteuse',
       montant: 15000,
       categorie: 'divers',
-      date: new Date().toISOString(),
+      date_operation: new Date().toISOString(),
       chantier_id: projectId,
       entreprise_id
     },
@@ -81,7 +81,7 @@ export async function seedDemoData(projectId: string) {
       libelle: 'Achat outillage main',
       montant: 5000,
       categorie: 'divers',
-      date: new Date().toISOString(),
+      date_operation: new Date().toISOString(),
       chantier_id: projectId,
       entreprise_id
     }

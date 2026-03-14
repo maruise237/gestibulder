@@ -78,12 +78,15 @@ export async function createWorker(data: any) {
 }
 
 export async function updateWorker(id: string, data: any) {
-  const supabase = await createClient();
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
 
+  const supabase = await createClient();
   const { data: worker, error } = await supabase
     .from('ouvriers')
     .update(data)
     .eq('id', id)
+    .eq('entreprise_id', entreprise_id)
     .select()
     .single();
 
