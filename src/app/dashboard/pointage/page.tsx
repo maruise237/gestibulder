@@ -1,236 +1,169 @@
-'use client';
+"use client"
 
-import React, { useState } from 'react';
-import { getWorkersByProject } from '@/lib/server/worker.actions';
-import { getAttendance, logAttendance, deleteAttendance } from '@/lib/server/attendance.actions';
+import { useState, useEffect } from 'react';
 import { useApp } from '@/lib/context/app-context';
-import {
-  CheckCircle2,
-  Clock,
-  HardHat,
-  Loader2,
-  Calendar as CalendarIcon
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Calendar as CalendarIcon,
+  QrCode,
+  UserCheck,
+  Printer,
+  Plus,
+  Loader2,
+  AlertCircle, Users
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+import { getWorkersByProject } from '@/lib/server/worker.actions';
+import { getPointagesByChantier, initPointageJour } from '@/lib/server/pointage.actions';
+import { PointageTable } from '@/components/dashboard/pointage/pointage-table';
+import { QRScanner } from '@/components/dashboard/pointage/qr-scanner';
+import { QRGenerator } from '@/components/dashboard/pointage/qr-generator';
+import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function PointagePage() {
   const { selectedProjectId } = useApp();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
-  const { data: workers = [], isLoading: isLoadingWorkers } = useQuery({
+  // Fetch Workers
+  const { data: workersData, isLoading: loadingWorkers } = useQuery({
     queryKey: ['workers', selectedProjectId],
-    queryFn: async () => {
-      if (!selectedProjectId) return [];
-      const res = await getWorkersByProject(selectedProjectId);
-      if (res.error) throw new Error(res.error);
-      return res.workers?.filter((w: any) => w.actif) || [];
-    },
+    queryFn: () => getWorkersByProject(selectedProjectId!),
     enabled: !!selectedProjectId,
   });
 
-  const { data: logs = [], isLoading: isLoadingLogs } = useQuery({
-    queryKey: ['attendance', selectedProjectId, selectedDate],
-    queryFn: async () => {
-      if (!selectedProjectId) return [];
-      const res = await getAttendance(selectedProjectId, selectedDate);
-      if (res.error) throw new Error(res.error);
-      return res.logs || [];
-    },
-    enabled: !!selectedProjectId,
+  // Fetch Pointages
+  const { data: pointagesData, isLoading: loadingPointages } = useQuery({
+    queryKey: ['pointages', selectedProjectId, selectedDate],
+    queryFn: () => getPointagesByChantier(selectedProjectId!, selectedDate),
+    enabled: !!selectedProjectId && !!selectedDate,
   });
 
-  const mutation = useMutation({
-    mutationFn: logAttendance,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance', selectedProjectId, selectedDate] });
-      setIsSubmitting(null);
-    },
-    onError: () => {
-      setIsSubmitting(null);
+  const initMutation = useMutation({
+    mutationFn: () => initPointageJour(selectedProjectId!, selectedDate),
+    onSuccess: (res) => {
+      if (res.success) {
+        toast.success(`${res.count} ouvriers initialisés en absent`);
+        queryClient.invalidateQueries({ queryKey: ['pointages', selectedProjectId, selectedDate] });
+      } else {
+        toast.error(res.error || "Erreur lors de l'initialisation");
+      }
     }
   });
 
-  const deleteMutation = useMutation({
-    mutationFn: deleteAttendance,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance', selectedProjectId, selectedDate] });
-    }
-  });
+  if (!selectedProjectId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
+        <div className="bg-indigo-50 p-6 rounded-full mb-6">
+          <AlertCircle className="h-12 w-12 text-indigo-600" />
+        </div>
+        <h2 className="text-2xl font-black uppercase mb-2">Aucun projet sélectionné</h2>
+        <p className="text-muted-foreground max-w-sm font-medium">
+          Veuillez sélectionner un projet dans le sélecteur en haut pour gérer le pointage.
+        </p>
+      </div>
+    );
+  }
 
-  const handleLog = async (worker: any, status: 'present' | 'absent', existingLog?: any) => {
-    if (!selectedProjectId) return;
-    setIsSubmitting(worker.id);
-
-    mutation.mutate({
-      chantier_id: selectedProjectId,
-      ouvrier_id: worker.id,
-      date: selectedDate,
-      statut: status,
-      heure_arrivee: existingLog?.heure_arrivee || '08:00',
-      heure_depart: existingLog?.heure_depart || '17:00',
-      quantite_produite: existingLog?.quantite_produite || 0,
-    } as any);
-  };
-
-  const getLogForWorker = (workerId: string) => logs.find((l: any) => l.ouvrier_id === workerId);
-
-  const isLoading = isLoadingWorkers || isLoadingLogs;
+  const workers = workersData?.workers || [];
+  const pointages = pointagesData?.pointages || [];
 
   return (
-    <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Pointages</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">Registre quotidien des effectifs.</p>
+    <div className="container max-w-5xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Header section */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground">Gestion du Pointage</h1>
+          <p className="text-muted-foreground font-medium mt-1">
+            Enregistrez la présence de vos ouvriers et suivez les salaires journaliers.
+          </p>
         </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <div className="relative">
-            <CalendarIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+        <div className="flex items-center gap-3 bg-card border p-2 rounded-2xl shadow-sm">
+          <div className="bg-indigo-600 p-2 rounded-xl text-white">
+            <CalendarIcon className="w-5 h-5" />
+          </div>
+          <div className="pr-4">
+            <p className="text-[10px] font-black uppercase text-muted-foreground leading-none mb-1">Date de pointage</p>
             <Input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="h-9 w-full pl-9 sm:w-auto font-medium"
+              className="h-8 border-none p-0 font-black text-sm focus-visible:ring-0"
             />
           </div>
         </div>
       </div>
 
-      {!selectedProjectId ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-            <HardHat size={32} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
-          <p className="text-size-sm text-muted-foreground mt-1">Veuillez choisir un chantier dans le menu supérieur pour gérer les pointages.</p>
-        </Card>
-      ) : isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : workers.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-           <p className="text-muted-foreground font-medium">Aucun ouvrier actif affecté à ce chantier.</p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4">
-          {workers.map((worker: any) => {
-            const log = getLogForWorker(worker.id);
-            const isPending = isSubmitting === worker.id;
+      <Tabs defaultValue="pointage" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 h-14 bg-muted/50 p-1.5 rounded-2xl">
+          <TabsTrigger value="pointage" className="rounded-xl font-black text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <UserCheck className="w-4 h-4 mr-2" />
+            Pointage
+          </TabsTrigger>
+          <TabsTrigger value="scan" className="rounded-xl font-black text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <QrCode className="w-4 h-4 mr-2" />
+            Scan Rapide
+          </TabsTrigger>
+          <TabsTrigger value="qr-codes" className="rounded-xl font-black text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
+            <Printer className="w-4 h-4 mr-2" />
+            Cartes QR
+          </TabsTrigger>
+        </TabsList>
 
-            return (
-              <Card key={worker.id} className={cn(
-                "overflow-hidden transition-all duration-300 border-border",
-                log?.statut === 'present' ? "bg-emerald-500/5 border-emerald-500/20" :
-                log?.statut === 'absent' ? "bg-destructive/5 border-destructive/20" : "bg-card"
-              )} padding="none">
-                <div className="p-4 sm:p-5">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className={cn(
-                        "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-xs font-bold",
-                        log?.statut === 'present' ? "bg-emerald-600 text-white border-emerald-700 shadow-sm" :
-                        log?.statut === 'absent' ? "bg-destructive text-white border-destructive/80 shadow-sm" : "bg-muted text-muted-foreground border-border"
-                      )}>
-                        {worker.nom_complet.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-size-sm font-bold text-foreground uppercase">{worker.nom_complet}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{worker.metier === 'autre' ? worker.metier_custom : worker.metier}</span>
-                          {log && (
-                            <button
-                              onClick={() => deleteMutation.mutate(log.id)}
-                              className="text-[9px] font-bold text-muted-foreground hover:text-destructive uppercase tracking-widest transition-colors ml-2"
-                            >
-                              Réinitialiser
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+        <div className="mt-8">
+          <TabsContent value="pointage" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-lg uppercase">Liste des ouvriers</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => initMutation.mutate()}
+                disabled={initMutation.isPending || workers.length === 0}
+                className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+              >
+                {initMutation.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Plus className="mr-2 h-3 w-3" />}
+                Initialiser la journée
+              </Button>
+            </div>
 
-                    {!log ? (
-                      <div className="flex items-center gap-2 sm:ml-auto">
-                        <Button
-                          size="sm"
-                          onClick={() => handleLog(worker, 'present')}
-                          disabled={isPending}
-                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 sm:flex-none sm:w-28 h-9 text-[10px] uppercase font-bold tracking-widest"
-                        >
-                          {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Présent'}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleLog(worker, 'absent')}
-                          disabled={isPending}
-                          className="flex-1 sm:flex-none sm:w-28 h-9 text-[10px] uppercase font-bold tracking-widest border-border"
-                        >
-                          {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Absent'}
-                        </Button>
-                      </div>
-                    ) : log.statut === 'present' ? (
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:ml-auto">
-                         <div className="flex items-center gap-2">
-                            <div className="space-y-1">
-                              <label className="text-[8px] font-bold text-muted-foreground uppercase">Arrivée</label>
-                              <Input
-                                type="time"
-                                className="h-8 w-24 py-0 text-[11px] font-bold"
-                                defaultValue={log.heure_arrivee || '08:00'}
-                                onBlur={(e) => handleLog(worker, 'present', { ...log, heure_arrivee: e.target.value })}
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[8px] font-bold text-muted-foreground uppercase">Départ</label>
-                              <Input
-                                type="time"
-                                className="h-8 w-24 py-0 text-[11px] font-bold"
-                                defaultValue={log.heure_depart || '17:00'}
-                                onBlur={(e) => handleLog(worker, 'present', { ...log, heure_depart: e.target.value })}
-                              />
-                            </div>
-                         </div>
-                         <div className="space-y-1">
-                            <label className="text-[8px] font-bold text-muted-foreground uppercase">Qte ({worker.unite_production})</label>
-                            <Input
-                              type="number"
-                              className="h-8 w-full sm:w-24 py-0 text-[11px] font-bold"
-                              placeholder="0.00"
-                              defaultValue={log.quantite_produite || ''}
-                              onBlur={(e) => handleLog(worker, 'present', { ...log, quantite_produite: Number(e.target.value) })}
-                            />
-                         </div>
-                         <div className="pt-4 sm:pt-0">
-                            <Badge className="h-6 bg-emerald-500 text-white border-none text-[9px] font-bold uppercase tracking-widest px-2">Confirmé</Badge>
-                         </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between gap-4 bg-destructive/10 px-4 py-2 rounded-xl sm:ml-auto">
-                        <span className="text-[10px] font-bold text-destructive uppercase tracking-widest">Absent aujourd'hui</span>
-                        <Button variant="ghost" size="sm" className="h-7 px-3 text-[10px] font-bold uppercase text-destructive hover:bg-destructive/20" onClick={() => handleLog(worker, 'present')}>
-                          Modifier
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {loadingWorkers || loadingPointages ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
+                <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Chargement des données...</p>
+              </div>
+            ) : workers.length === 0 ? (
+              <Card className="p-12 text-center border-dashed border-2 bg-muted/20 rounded-2xl">
+                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-20" />
+                <p className="text-muted-foreground font-black uppercase text-sm">Aucun ouvrier trouvé pour ce projet</p>
+                <Button variant="link" className="text-indigo-600 font-bold mt-2" onClick={() => window.location.href='/dashboard/ouvriers'}>
+                  Ajouter des ouvriers →
+                </Button>
               </Card>
-            );
-          })}
+            ) : (
+              <PointageTable
+                workers={workers}
+                existingPointages={pointages}
+                chantierId={selectedProjectId}
+                date={selectedDate}
+              />
+            )}
+          </TabsContent>
+
+          <TabsContent value="scan">
+            <QRScanner chantierId={selectedProjectId} />
+          </TabsContent>
+
+          <TabsContent value="qr-codes">
+            <QRGenerator workers={workers} />
+          </TabsContent>
         </div>
-      )}
+      </Tabs>
     </div>
   );
 }
