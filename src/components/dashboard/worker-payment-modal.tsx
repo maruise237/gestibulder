@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { getWorkerSalariesDue, createPayment } from '@/lib/server/payment.actions';
+import { getWorkerSalariesDue, createPayment } from '@/lib/server/paiement.actions';
 import {
   Dialog,
   DialogContent,

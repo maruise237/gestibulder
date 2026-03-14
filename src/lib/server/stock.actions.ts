@@ -78,29 +78,14 @@ export async function getAllStockAlerts() {
 
   const supabase = await createClient();
 
-  const { data: materials, error } = await supabase
-    .from('materiaux')
-    .select('id, nom, seuil_alerte')
-    .eq('entreprise_id', entreprise_id);
+  const { data: alerts, error } = await supabase
+    .from('materiaux_avec_stock')
+    .select('id, nom, seuil_alerte, stock_actuel, statut_stock')
+    .eq('entreprise_id', entreprise_id)
+    .in('statut_stock', ['critique', 'rupture']);
 
   if (error) return { error: error.message };
-
-  const { data: movements, error: movError } = await supabase
-    .from('mouvements_stock')
-    .select('materiau_id, type_mouvement, quantite')
-    .eq('entreprise_id', entreprise_id);
-
-  if (movError) return { error: movError.message };
-
-  const alerts = materials.filter((mat) => {
-    const matMovements = movements.filter((m) => m.materiau_id === mat.id);
-    const stock_actuel = matMovements.reduce((acc, m) => {
-      return m.type_mouvement === 'entree' ? acc + Number(m.quantite) : acc - Number(m.quantite);
-    }, 0);
-    return stock_actuel <= mat.seuil_alerte;
-  });
-
-  return { alerts };
+  return { alerts: alerts || [] };
 }
 
 export async function getRecentStockMovements(limit = 5) {
