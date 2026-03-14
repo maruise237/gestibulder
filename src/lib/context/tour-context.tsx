@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-// @ts-expect-error
 import Shepherd from 'shepherd.js';
 import { usePathname } from 'next/navigation';
 import { useApp } from './app-context';
