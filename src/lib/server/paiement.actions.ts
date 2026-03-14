@@ -86,6 +86,19 @@ export async function createPayment(data: {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
+  // 1. Calculer le dû actuel pour déterminer le statut
+  const dueInfo = await getWorkerSalariesDue(data.ouvrier_id, data.chantier_id);
+  const isAdvance = data.montant < dueInfo.remaining;
+  const statusLabel = isAdvance ? 'Avance' : 'Paie Complète';
+
+  // 2. Récupérer le nom de l'ouvrier pour le libellé de dépense
+  const { data: worker } = await supabase
+    .from('ouvriers')
+    .select('nom_complet')
+    .eq('id', data.ouvrier_id)
+    .single();
+
+  // 3. Créer la fiche paiement
   const { data: payment, error } = await supabase
     .from('paiements_ouvriers')
     .insert([{
@@ -94,9 +107,9 @@ export async function createPayment(data: {
       ouvrier_id: data.ouvrier_id,
       periode_debut: new Date().toISOString().split('T')[0],
       periode_fin: new Date().toISOString().split('T')[0],
-      montant_calcule: data.montant,
+      montant_calcule: dueInfo.remaining,
       montant_paye: data.montant,
-      statut: 'paye',
+      statut: isAdvance ? 'partiel' : 'paye',
       date_paiement: data.date_paiement.split('T')[0],
       mode_paiement: data.mode_paiement,
       saisi_par: user?.id,
@@ -105,7 +118,22 @@ export async function createPayment(data: {
     .single();
 
   if (error) return { error: error.message };
+
+  // 4. Synchroniser avec le tableau Finance (Table 'depenses')
+  await supabase
+    .from('depenses')
+    .insert([{
+      entreprise_id,
+      chantier_id: data.chantier_id,
+      libelle: `${statusLabel} - ${worker?.nom_complet || 'Ouvrier'}`,
+      montant: data.montant,
+      categorie: 'main_doeuvre',
+      date_operation: data.date_paiement,
+      saisi_par: user?.id,
+    }]);
+
   revalidatePath('/dashboard/ouvriers');
+  revalidatePath('/dashboard/budget');
   return { payment };
 }
 
@@ -160,29 +188,31 @@ export async function enregistrerPaiement(
   montantPaye: number,
   modePaiement: string
 ) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId()
+  if (authError) return { error: authError }
+
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser();
 
   const { data: current } = await supabase
     .from('paiements_ouvriers')
-    .select('montant_calcule, montant_paye')
+    .select('*, ouvriers(nom_complet)')
     .eq('id', id)
     .single()
 
   if (!current) return { error: 'Paiement introuvable' }
 
   const totalPaye = (current.montant_paye || 0) + montantPaye
-  const statut = totalPaye >= current.montant_calcule
-    ? 'paye'
-    : totalPaye > 0
-    ? 'partiel'
-    : 'en_attente'
+  const isAdvance = totalPaye < current.montant_calcule;
+  const statusLabel = isAdvance ? 'Avance' : 'Paie Complète';
+  const statut = !isAdvance ? 'paye' : 'partiel';
 
   const { data, error } = await supabase
     .from('paiements_ouvriers')
     .update({
       montant_paye: totalPaye,
       statut,
-      date_paiement: statut === 'paye' ? new Date().toISOString().split('T')[0] : null,
+      date_paiement: statut === 'paye' ? new Date().toISOString().split('T')[0] : current.date_paiement,
       mode_paiement: modePaiement,
     })
     .eq('id', id)
@@ -190,6 +220,21 @@ export async function enregistrerPaiement(
     .single()
 
   if (error) return { error: error.message }
-  revalidatePath('/dashboard/paiements')
+
+  // Synchroniser avec le tableau Finance (Table 'depenses')
+  await supabase
+    .from('depenses')
+    .insert([{
+      entreprise_id,
+      chantier_id: current.chantier_id,
+      libelle: `${statusLabel} - ${(current.ouvriers as any)?.nom_complet || 'Ouvrier'}`,
+      montant: montantPaye,
+      categorie: 'main_doeuvre',
+      date_operation: new Date().toISOString(),
+      saisi_par: user?.id,
+    }]);
+
+  revalidatePath('/dashboard/paiements');
+  revalidatePath('/dashboard/budget');
   return { paiement: data }
 }
