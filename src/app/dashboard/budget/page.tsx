@@ -15,6 +15,8 @@ import {
   AlertCircle,
   Users,
   Banknote,
+  ArrowRight,
+  HandCoins,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -25,6 +27,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { CreateExpenseModal } from '@/components/dashboard/create-expense-modal';
 import { ExportModal } from '@/components/dashboard/export-modal';
+import Link from 'next/link';
 
 export default function BudgetPage() {
   const { enterprise, selectedProjectId } = useApp();
@@ -53,11 +56,13 @@ export default function BudgetPage() {
   const totalFinancialPressure = totalExpenses + totalLaborDebt;
 
   const selectedProjectObj = projects.find((p) => p.id === selectedProjectId);
+  const budgetTotal = selectedProjectObj?.budget_total || 0;
+  const budgetRemaining = Math.max(0, budgetTotal - totalFinancialPressure);
 
   // Margin calculation accounts for both paid expenses and outstanding labor debt
   const margin =
-    selectedProjectObj && selectedProjectObj.budget_total > 0
-      ? (((selectedProjectObj.budget_total - totalFinancialPressure) / selectedProjectObj.budget_total) * 100).toFixed(1)
+    budgetTotal > 0
+      ? (((budgetTotal - totalFinancialPressure) / budgetTotal) * 100).toFixed(1)
       : null;
 
   return (
@@ -71,13 +76,19 @@ export default function BudgetPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <Link href="/dashboard/budget/personnel">
+            <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-black uppercase text-[10px] tracking-widest h-9 px-4 rounded-xl">
+               <Users size={14} className="mr-2" />
+               Paiements Personnel
+            </Button>
+          </Link>
           <ExportModal />
           <CreateExpenseModal onExpenseCreated={refetch} />
         </div>
       </div>
 
       {/* Alerte budget dépassé */}
-      {selectedProjectObj && totalFinancialPressure > selectedProjectObj.budget_total && selectedProjectObj.budget_total > 0 && (
+      {selectedProjectObj && totalFinancialPressure > budgetTotal && budgetTotal > 0 && (
         <div className="flex items-center gap-3 rounded-2xl border-2 border-destructive/20 bg-destructive/5 p-4 animate-in fade-in slide-in-from-top-2">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-white shadow-lg shadow-destructive/20">
             <AlertCircle size={20} />
@@ -85,7 +96,7 @@ export default function BudgetPage() {
           <div className="min-w-0">
             <p className="text-[11px] font-black uppercase tracking-widest text-destructive">Risque budgétaire élevé</p>
             <p className="text-[10px] font-bold text-destructive/80 uppercase">
-              Dépassement de {formatCurrency(totalFinancialPressure - selectedProjectObj.budget_total, enterprise?.devise)}
+              Dépassement de {formatCurrency(totalFinancialPressure - budgetTotal, enterprise?.devise)}
               (Dépenses + Dettes Main d'œuvre)
             </p>
           </div>
@@ -94,32 +105,32 @@ export default function BudgetPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-fluid-md">
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-indigo-600">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600">
               <Wallet size={18} />
             </div>
             <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-              Payé
+              Budget Engagé
             </span>
           </div>
           <p className="text-size-2xl font-black tracking-tight text-foreground">
             {isLoading ? (
               <Skeleton className="h-8 w-32" />
             ) : (
-              formatCurrency(totalExpenses, enterprise?.devise)
+              formatCurrency(totalFinancialPressure, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Sorties de caisse</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Dépenses + Dettes MO</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-rose-600">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-rose-500/10 p-2 text-rose-600">
               <Banknote size={18} />
             </div>
             <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-              Dettes MO
+              Dettes à Payer
             </span>
           </div>
           <p className="text-size-2xl font-black tracking-tight text-rose-600">
@@ -129,10 +140,29 @@ export default function BudgetPage() {
               formatCurrency(totalLaborDebt, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Salaires dus</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Salaires non réglés</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-emerald-600">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
+              <HandCoins size={18} />
+            </div>
+            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+              Budget Restant
+            </span>
+          </div>
+          <p className="text-size-2xl font-black tracking-tight text-emerald-600">
+            {isLoading ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              formatCurrency(budgetRemaining, enterprise?.devise)
+            )}
+          </p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Marge de manoeuvre</p>
+        </Card>
+
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
           <div className="mb-4 flex items-center gap-3">
             <div className={cn(
               "rounded-xl p-2 shadow-sm transition-colors",
@@ -151,21 +181,6 @@ export default function BudgetPage() {
             {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '--'}
           </p>
           <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Marge nette estimée</p>
-        </Card>
-
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-muted p-2 text-foreground">
-              <Calculator size={18} />
-            </div>
-            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
-              Opérations
-            </span>
-          </div>
-          <p className="text-size-2xl font-black tracking-tight text-foreground">
-            {isLoading ? <Skeleton className="h-8 w-12" /> : filteredExpenses.length}
-          </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic text-primary">Transactions</p>
         </Card>
       </div>
 
@@ -265,18 +280,25 @@ export default function BudgetPage() {
         {/* Labor Debt Details */}
         <div className="space-y-6">
           <Card className="shadow-premium border-border rounded-2xl overflow-hidden" padding="none">
-             <div className="border-b border-border bg-rose-500/5 p-4 sm:p-6">
+             <div className="border-b border-border bg-rose-500/5 p-4 sm:p-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="rounded-xl bg-rose-500 text-white p-2 shadow-lg shadow-rose-200">
                     <Users size={18} />
                   </div>
-                  <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
-                    Soldes Ouvriers
-                  </h2>
+                  <div>
+                    <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+                      Soldes Ouvriers
+                    </h2>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Reste à payer
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-1 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Reste à payer par personne
-                </p>
+                <Link href="/dashboard/budget/personnel">
+                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-rose-100 text-rose-600">
+                      <ArrowRight size={16} />
+                   </Button>
+                </Link>
              </div>
 
              <div className="p-2">
@@ -324,11 +346,11 @@ export default function BudgetPage() {
           <Card className="bg-indigo-600 text-white border-none p-6 rounded-2xl shadow-xl shadow-indigo-100">
              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Budget Total</h3>
              <p className="text-2xl font-black mb-4">
-               {selectedProjectObj ? formatCurrency(selectedProjectObj.budget_total, enterprise?.devise) : '--'}
+               {formatCurrency(budgetTotal, enterprise?.devise)}
              </p>
              <div className="space-y-2">
                 <div className="flex justify-between text-[10px] font-bold uppercase">
-                   <span>Consommé</span>
+                   <span>Budget Engagé</span>
                    <span>{margin ? (100 - Number(margin)).toFixed(1) : 0}%</span>
                 </div>
                 <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
