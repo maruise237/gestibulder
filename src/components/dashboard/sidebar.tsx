@@ -81,7 +81,7 @@ export const Sidebar = memo(({
               {enterprise?.nom || 'GestiBulder'}
             </span>
             <span className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">
-              Chantier Pro
+              GESTIBULDER
             </span>
           </div>
         </div>
