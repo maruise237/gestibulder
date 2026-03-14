@@ -24,6 +24,8 @@ export interface PointageWithOuvrier extends Pointage {
 export interface PointageStats {
   ouvrier_id: string;
   nom_complet: string;
+  metier: string;
+  taux_journalier: number;
   jours_present: number;
   jours_absent: number;
   demi_journees: number;

@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Camera, X, CheckCircle2, AlertCircle, ListChecks, UserCheck } from 'lucide-react';
 import { pointageRapideQR } from '@/lib/server/pointage.actions';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface QRScannerProps {
   chantierId: string;
@@ -72,7 +73,7 @@ export function QRScanner({ chantierId }: QRScannerProps) {
         }
       };
     }
-  }, [isOpen, lastScanResult]);
+  }, [isOpen, lastScanResult, isProcessing]);
 
   const handleScan = async (workerId: string) => {
     setIsProcessing(true);
@@ -81,9 +82,10 @@ export function QRScanner({ chantierId }: QRScannerProps) {
 
       if (res.error) {
         toast.error(res.error);
-        if (scannerRef.current?.isScanning) {
+        if (scannerRef.current) {
           scannerRef.current.resume();
         }
+        setIsProcessing(false);
         return;
       }
 
@@ -96,21 +98,20 @@ export function QRScanner({ chantierId }: QRScannerProps) {
           ...prev
         ]);
         setLastScanResult({ name, time, already: !!res.alreadyPointed });
+
+        // Auto-dismiss after 2 seconds for continuous scanning
+        setTimeout(() => {
+          setLastScanResult(null);
+          setIsProcessing(false);
+          // Le scanner redémarrera via useEffect
+        }, 2000);
       }
     } catch (error) {
       toast.error("Erreur lors du scan");
-      if (scannerRef.current?.isScanning) {
+      if (scannerRef.current) {
         scannerRef.current.resume();
       }
-    } finally {
       setIsProcessing(false);
-    }
-  };
-
-  const handleContinue = () => {
-    setLastScanResult(null);
-    if (scannerRef.current) {
-        // Le scanner va redémarrer via le useEffect car lastScanResult devient null
     }
   };
 
@@ -145,11 +146,19 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                   <span className="text-xs font-bold text-muted-foreground">{item.time}</span>
                   <span className="font-bold text-sm uppercase">{item.workerName}</span>
                 </div>
-                {item.status === 'success' ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-amber-500" />
-                )}
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "text-[10px] font-black uppercase tracking-tighter",
+                    item.status === 'success' ? "text-emerald-600" : "text-amber-600"
+                  )}>
+                    {item.status === 'success' ? "Pointé" : "Déjà pointé"}
+                  </span>
+                  {item.status === 'success' ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -211,16 +220,13 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                 </div>
 
                 <h2 className="text-2xl font-black uppercase mb-1">{lastScanResult.name}</h2>
-                <p className="text-muted-foreground font-bold mb-8 uppercase text-xs tracking-widest">
+                <p className="text-muted-foreground font-bold mb-4 uppercase text-xs tracking-widest">
                   {lastScanResult.already ? "DÉJÀ POINTÉ À" : "POINTÉ AVEC SUCCÈS À"} {lastScanResult.time}
                 </p>
 
-                <Button
-                  onClick={handleContinue}
-                  className="w-full h-14 rounded-2xl font-black uppercase text-lg tracking-wider bg-indigo-600 hover:bg-indigo-700 shadow-xl shadow-indigo-200"
-                >
-                  OKAY
-                </Button>
+                <div className="h-1 bg-indigo-100 w-32 rounded-full overflow-hidden">
+                  <div className="h-full bg-indigo-600 animate-progress origin-left"></div>
+                </div>
               </div>
             )}
           </div>
@@ -228,8 +234,4 @@ export function QRScanner({ chantierId }: QRScannerProps) {
       </Dialog>
     </div>
   );
-}
-
-function cn(...inputs: any[]) {
-  return inputs.filter(Boolean).join(' ');
 }

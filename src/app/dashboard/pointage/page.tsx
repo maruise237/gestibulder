@@ -13,15 +13,16 @@ import {
   Printer,
   Plus,
   Loader2,
-  AlertCircle, Users
+  AlertCircle,
+  Users,
+  BarChart3
 } from 'lucide-react';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import { getWorkersByProject } from '@/lib/server/worker.actions';
 import { getPointagesByChantier, initPointageJour } from '@/lib/server/pointage.actions';
 import { PointageTable } from '@/components/dashboard/pointage/pointage-table';
 import { QRScanner } from '@/components/dashboard/pointage/qr-scanner';
 import { QRGenerator } from '@/components/dashboard/pointage/qr-generator';
+import { PointageStats } from '@/components/dashboard/pointage/pointage-stats';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -74,7 +75,7 @@ export default function PointagePage() {
   const pointages = pointagesData?.pointages || [];
 
   return (
-    <div className="container max-w-5xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="container max-w-6xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -101,18 +102,22 @@ export default function PointagePage() {
       </div>
 
       <Tabs defaultValue="pointage" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-14 bg-muted/50 p-1.5 rounded-2xl">
-          <TabsTrigger value="pointage" className="rounded-xl font-black text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <UserCheck className="w-4 h-4 mr-2" />
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:h-14 bg-muted/50 p-1.5 rounded-2xl gap-1">
+          <TabsTrigger value="pointage" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+            <UserCheck className="w-4 h-4 mr-2 hidden sm:inline" />
             Pointage
           </TabsTrigger>
-          <TabsTrigger value="scan" className="rounded-xl font-black text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <QrCode className="w-4 h-4 mr-2" />
+          <TabsTrigger value="scan" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+            <QrCode className="w-4 h-4 mr-2 hidden sm:inline" />
             Scan Rapide
           </TabsTrigger>
-          <TabsTrigger value="qr-codes" className="rounded-xl font-black text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm">
-            <Printer className="w-4 h-4 mr-2" />
+          <TabsTrigger value="qr-codes" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+            <Printer className="w-4 h-4 mr-2 hidden sm:inline" />
             Cartes QR
+          </TabsTrigger>
+          <TabsTrigger value="stats" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+            <BarChart3 className="w-4 h-4 mr-2 hidden sm:inline" />
+            Rapports
           </TabsTrigger>
         </TabsList>
 
@@ -161,6 +166,10 @@ export default function PointagePage() {
 
           <TabsContent value="qr-codes">
             <QRGenerator workers={workers} />
+          </TabsContent>
+
+          <TabsContent value="stats">
+            <PointageStats chantierId={selectedProjectId} />
           </TabsContent>
         </div>
       </Tabs>
