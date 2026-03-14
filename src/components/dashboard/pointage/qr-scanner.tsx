@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from 'react';
-import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,35 +27,44 @@ export function QRScanner({ chantierId }: QRScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
+    let html5QrCode: Html5Qrcode | null = null;
+
     if (isOpen) {
-      const html5QrCode = new Html5Qrcode("reader");
-      scannerRef.current = html5QrCode;
+      // Small delay to ensure the #reader element is in the DOM
+      const timer = setTimeout(() => {
+        const element = document.getElementById("reader");
+        if (!element) return;
 
-      html5QrCode.start(
-        { facingMode: "environment" },
-        {
-          fps: 10,
-          qrbox: { width: 250, height: 250 },
-        },
-        async (decodedText) => {
-          if (isProcessing) return;
+        html5QrCode = new Html5Qrcode("reader");
+        scannerRef.current = html5QrCode;
 
-          if (decodedText.startsWith("gestibulder://worker/")) {
-            const workerId = decodedText.split("/").pop();
-            if (workerId) {
-              handleScan(workerId);
+        html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+          },
+          async (decodedText) => {
+            if (isProcessing) return;
+
+            if (decodedText.startsWith("gestibulder://worker/")) {
+              const workerId = decodedText.split("/").pop();
+              if (workerId) {
+                handleScan(workerId);
+              }
+            } else {
+              toast.error("Format QR Code invalide");
             }
-          } else {
-            toast.error("Format QR Code invalide");
-          }
-        },
-        () => {}
-      ).catch(err => {
-        console.error("Camera error:", err);
-        toast.error("Impossible d'accéder à la caméra");
-      });
+          },
+          () => {}
+        ).catch(err => {
+          console.error("Camera error:", err);
+          // toast.error("Impossible d'accéder à la caméra");
+        });
+      }, 300);
 
       return () => {
+        clearTimeout(timer);
         if (scannerRef.current?.isScanning) {
           scannerRef.current.stop().catch(console.error);
         }
@@ -130,7 +139,7 @@ export function QRScanner({ chantierId }: QRScannerProps) {
       )}
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black border-none h-[80vh] sm:h-auto">
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden bg-black border-none h-[80vh] sm:h-auto" showCloseButton={false}>
           <div className="relative">
             <div id="reader" className="w-full"></div>
 
