@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { getAuthenticatedEnterpriseId } from './utils';
 import { getEnterprise } from './enterprise.actions';
+import { getProjectLaborSummary } from './paiement.actions';
 
 export async function getDashboardData() {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
@@ -50,13 +51,13 @@ export async function getDashboardData() {
   };
 }
 
-export async function getBudgetData() {
+export async function getBudgetData(selectedProjectId?: string) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
-  if (authError) return { projects: [], workers: [], workersCount: 0, expenses: [], alerts: [], movements: [], enterprise: null, error: authError };
+  if (authError) return { projects: [], expenses: [], enterprise: null, laborSummary: null, error: authError };
 
   const supabase = await createClient();
 
-  const [projectsRes, expensesRes, enterpriseRes] = await Promise.all([
+  const [projectsRes, expensesRes, enterpriseRes, laborSummary] = await Promise.all([
     supabase
       .from('chantiers')
       .select('*')
@@ -68,12 +69,14 @@ export async function getBudgetData() {
       .eq('entreprise_id', entreprise_id)
       .order('date_operation', { ascending: false }),
     getEnterprise(),
+    selectedProjectId && selectedProjectId !== 'all' ? getProjectLaborSummary(selectedProjectId) : Promise.resolve(null),
   ]);
 
   return {
     projects: projectsRes.data || [],
     expenses: expensesRes.data || [],
     enterprise: enterpriseRes.enterprise || null,
-    error: projectsRes.error?.message || expensesRes.error?.message || null,
+    laborSummary,
+    error: projectsRes.error?.message || expensesRes.error?.message || (laborSummary as any)?.error || null,
   };
 }

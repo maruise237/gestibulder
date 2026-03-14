@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWorkerSalariesDue, createPayment } from '@/lib/server/paiement.actions';
 import {
   Dialog,
@@ -33,6 +33,7 @@ export function WorkerPaymentModal({
 }) {
   const { enterprise } = useApp();
   const [amount, setAmount] = useState('');
+  const queryClient = useQueryClient();
 
   const { data: dueData, isLoading } = useQuery({
     queryKey: ['worker-due', worker.id, projectId],
@@ -43,6 +44,11 @@ export function WorkerPaymentModal({
   const mutation = useMutation({
     mutationFn: (data: any) => createPayment(data),
     onSuccess: () => {
+      // Invalidate relevant queries to update UI in real-time
+      queryClient.invalidateQueries({ queryKey: ['budget-data', projectId] });
+      queryClient.invalidateQueries({ queryKey: ['worker-due', worker.id, projectId] });
+      queryClient.invalidateQueries({ queryKey: ['workers-by-project', projectId] });
+
       onPaymentCreated();
       onOpenChange(false);
       setAmount('');
