@@ -168,7 +168,7 @@ export async function getPointagesStats(chantier_id: string, mois: number, annee
       statut,
       salaire_jour,
       ouvrier_id,
-      ouvrier:ouvriers(nom_complet)
+      ouvrier:ouvriers(nom_complet, metier, taux_journalier)
     `)
     .eq('entreprise_id', entreprise_id)
     .eq('chantier_id', chantier_id)
@@ -185,6 +185,8 @@ export async function getPointagesStats(chantier_id: string, mois: number, annee
       statsMap.set(oid, {
         ouvrier_id: oid,
         nom_complet: p.ouvrier.nom_complet,
+        metier: p.ouvrier.metier,
+        taux_journalier: p.ouvrier.taux_journalier,
         jours_present: 0,
         jours_absent: 0,
         demi_journees: 0,
