@@ -49,13 +49,13 @@ export default function PersonnelPaymentPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl">
-           <div className="bg-rose-500 text-white p-2 rounded-xl shadow-lg shadow-rose-200">
+        <div className="flex items-center gap-3 bg-destructive/10 border border-destructive/20 p-4 rounded-2xl">
+           <div className="bg-destructive text-destructive-foreground p-2 rounded-xl shadow-lg shadow-destructive/20">
              <Banknote size={20} />
            </div>
            <div>
-             <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Total Dettes</p>
-             <p className="text-xl font-black text-rose-700">{formatCurrency(totalDebt, enterprise?.devise)}</p>
+             <p className="text-[10px] font-black text-destructive uppercase tracking-widest">Total Dettes</p>
+             <p className="text-xl font-black text-destructive">{formatCurrency(totalDebt, enterprise?.devise)}</p>
            </div>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function PersonnelPaymentPage() {
                     <div key={worker.id} className="p-6 transition-colors hover:bg-muted/30 group">
                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                           <div className="flex items-center gap-4">
-                             <div className="h-12 w-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-indigo-100">
+                             <div className="h-12 w-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center font-black text-lg shadow-lg shadow-primary/20">
                                {worker.nom_complet.charAt(0)}
                              </div>
                              <div>
@@ -115,15 +115,15 @@ export default function PersonnelPaymentPage() {
                                 <p className="text-size-sm font-black text-foreground">{formatCurrency(worker.totalDue, enterprise?.devise)}</p>
                              </div>
                              <div className="text-right">
-                                <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Déjà Payé</p>
-                                <p className="text-size-sm font-black text-emerald-700">{formatCurrency(worker.totalPaid, enterprise?.devise)}</p>
+                                <p className="text-[10px] font-black text-success uppercase tracking-widest mb-1">Déjà Payé</p>
+                                <p className="text-size-sm font-black text-success">{formatCurrency(worker.totalPaid, enterprise?.devise)}</p>
                              </div>
-                             <div className="text-right bg-rose-500/5 p-3 rounded-xl border border-rose-100 min-w-[120px]">
-                                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest mb-1">Reste à payer</p>
-                                <p className="text-lg font-black text-rose-700">{formatCurrency(worker.remaining, enterprise?.devise)}</p>
+                             <div className="text-right bg-destructive/5 p-3 rounded-xl border border-destructive min-w-[120px]">
+                                <p className="text-[10px] font-black text-destructive uppercase tracking-widest mb-1">Reste à payer</p>
+                                <p className="text-lg font-black text-destructive">{formatCurrency(worker.remaining, enterprise?.devise)}</p>
                              </div>
                              <Link href="/dashboard/ouvriers">
-                                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-indigo-50 hover:text-indigo-600">
+                                <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary hover:text-primary">
                                    <ArrowRight size={20} />
                                 </Button>
                              </Link>
@@ -138,7 +138,7 @@ export default function PersonnelPaymentPage() {
 
         {/* Sidebar Info */}
         <div className="space-y-6">
-           <Card className="bg-indigo-600 text-white border-none p-8 rounded-2xl shadow-xl shadow-indigo-100 relative overflow-hidden">
+           <Card className="bg-primary text-primary-foreground border-none p-8 rounded-2xl shadow-xl shadow-primary/20 relative overflow-hidden">
               <div className="relative z-10">
                  <div className="flex items-center gap-3 mb-6">
                     <div className="bg-white/20 p-2 rounded-xl">
@@ -175,7 +175,7 @@ export default function PersonnelPaymentPage() {
 
            <Card className="p-6 rounded-2xl border-border bg-muted/30 border-2 border-dashed">
               <div className="flex items-start gap-4">
-                 <div className="bg-amber-500/10 p-2 rounded-xl text-amber-600 mt-1">
+                 <div className="bg-warning/10 p-2 rounded-xl text-warning mt-1">
                     <AlertCircle size={20} />
                  </div>
                  <div>

@@ -194,7 +194,7 @@ export default function TeamPage() {
 
           {inviteSuccess ? (
             <div className="p-8 text-center space-y-4">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success/10 text-success">
                 <CheckCircle2 size={24} />
               </div>
               <h3 className="text-size-lg font-semibold">Invitation envoyée !</h3>

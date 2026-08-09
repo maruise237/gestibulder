@@ -9,8 +9,11 @@
   --color-primary: #6366f1; /* Indigo SaaS standard */
   --color-secondary: #0f172a; /* Slate 900 for text/nav */
   --color-accent: #10b981; /* Success Emerald */
+  --color-success: #10b981; /* Success Emerald */
+  --color-success-foreground: #ffffff;
   --color-danger: #ef4444; /* Alert Red */
   --color-warning: #f59e0b; /* Warning Amber */
+  --color-warning-foreground: #ffffff;
   --color-zinc-50: #fafafa;
   --color-zinc-100: #f4f4f5;
   --color-zinc-200: #e4e4e7;

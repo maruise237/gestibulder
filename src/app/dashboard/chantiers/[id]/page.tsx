@@ -43,6 +43,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -151,7 +153,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       {/* Header Profile */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-start gap-5">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-indigo-600 text-white shadow-premium">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-premium">
             <HardHat size={32} />
           </div>
           <div className="space-y-1">
@@ -219,7 +221,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       {/* Activity Modal */}
       <Dialog open={activityModalOpen} onOpenChange={setActivityModalOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-none">
-          <DialogHeader className="bg-indigo-600 p-6 text-white">
+          <DialogHeader className="bg-primary p-6 text-primary-foreground">
             <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
               <History size={20} /> Journal d'Activité
             </DialogTitle>
@@ -235,8 +237,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   <div key={act.id} className="relative pl-10">
                     <div className={cn(
                       "absolute left-0 top-0 h-8 w-8 rounded-full flex items-center justify-center border-2 border-background shadow-sm",
-                      act.type === 'expense' ? "bg-rose-500 text-white" :
-                      act.subType === 'entree' ? "bg-emerald-500 text-white" : "bg-amber-500 text-white"
+                      act.type === 'expense' ? "bg-destructive text-destructive-foreground" :
+                      act.subType === 'entree' ? "bg-success text-success-foreground" : "bg-warning text-success-foreground"
                     )}>
                       {act.type === 'expense' ? <Wallet size={14} /> : <Package size={14} />}
                     </div>
@@ -245,8 +247,8 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                       <div className="mt-1 flex items-center gap-2">
                         <span className={cn(
                           "text-size-sm font-black",
-                          act.type === 'expense' ? "text-rose-600" :
-                          act.subType === 'entree' ? "text-emerald-600" : "text-amber-600"
+                          act.type === 'expense' ? "text-destructive" :
+                          act.subType === 'entree' ? "text-success" : "text-warning"
                         )}>
                           {act.type === 'expense' ? `- ${formatCurrency(act.amount, enterprise?.devise)}` :
                            `${act.subType === 'entree' ? '+' : '-'}${act.amount} ${act.unit}`}
@@ -265,27 +267,24 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       </Dialog>
 
       {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto rounded-xl bg-muted/30 p-1">
-        {[
-          { id: 'overview', label: 'Vue d\'ensemble' },
-          { id: 'workforce', label: 'Main d\'œuvre' },
-          { id: 'inventory', label: 'Stocks' },
-          { id: 'finances', label: 'Finances' }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={cn(
-              "whitespace-nowrap rounded-lg px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all",
-              activeTab === tab.id
-                ? "bg-white text-indigo-600 shadow-sm border border-border"
-                : "text-muted-foreground hover:bg-white/50"
-            )}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)}>
+        <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto p-1 sm:w-fit">
+          {[
+            { id: 'overview', label: 'Vue d\'ensemble' },
+            { id: 'workforce', label: 'Main d\'œuvre' },
+            { id: 'inventory', label: 'Stocks' },
+            { id: 'finances', label: 'Finances' }
+          ].map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="whitespace-nowrap px-4 py-2 text-[10px] font-black uppercase tracking-widest"
+            >
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
 
       {/* Tab Content */}
       <div className="mt-6">
@@ -295,11 +294,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
               <Card className="shadow-premium border-border rounded-2xl p-6">
                 <div className="mb-6 flex items-center justify-between">
                    <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">Statut d'Avancement</h2>
-                   <span className="text-size-2xl font-black text-indigo-600">{project.avancement_pct || 0}%</span>
+                   <span className="text-size-2xl font-black text-primary">{project.avancement_pct || 0}%</span>
                 </div>
                 <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
                    <div
-                     className="h-full bg-indigo-600 transition-all duration-1000 ease-out"
+                     className="h-full bg-primary transition-all duration-1000 ease-out"
                      style={{ width: `${project.avancement_pct || 0}%` }}
                    />
                 </div>
@@ -310,13 +309,13 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   </div>
                   <div className="space-y-1">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Présents (jour)</p>
-                    <p className="text-size-xl font-black text-emerald-600">
+                    <p className="text-size-xl font-black text-success">
                       {todayAttendance.filter(a => a.statut === 'present').length}
                     </p>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Alertes stock</p>
-                    <p className="text-size-xl font-black text-amber-600">
+                    <p className="text-size-xl font-black text-warning">
                       {materials.filter(m => (m.stock_actuel || 0) <= m.seuil_alerte).length}
                     </p>
                   </div>
@@ -332,10 +331,10 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                  <Card className="border-border p-6 rounded-2xl">
                    <div className="mb-4 flex items-center justify-between">
-                      <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
+                      <div className="rounded-xl bg-success/10 p-2 text-success">
                         <Users size={20} />
                       </div>
-                      <Link href="/dashboard/pointage" className="text-[9px] font-black uppercase tracking-widest text-indigo-600">Pointage</Link>
+                      <Link href="/dashboard/pointage" className="text-[9px] font-black uppercase tracking-widest text-primary">Pointage</Link>
                    </div>
                    <h3 className="text-size-sm font-black text-muted-foreground uppercase tracking-widest">Main d'œuvre</h3>
                    <p className="mt-1 text-size-xl font-black text-foreground">{workers.length} ouvriers</p>
@@ -343,10 +342,10 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
                  <Card className="border-border p-6 rounded-2xl">
                     <div className="mb-4 flex items-center justify-between">
-                       <div className="rounded-xl bg-amber-500/10 p-2 text-amber-600">
+                       <div className="rounded-xl bg-warning/10 p-2 text-warning">
                          <Package size={20} />
                        </div>
-                       <Link href="/dashboard/stocks" className="text-[9px] font-black uppercase tracking-widest text-indigo-600">Stocks</Link>
+                       <Link href="/dashboard/stocks" className="text-[9px] font-black uppercase tracking-widest text-primary">Stocks</Link>
                     </div>
                     <h3 className="text-size-sm font-black text-muted-foreground uppercase tracking-widest">Matériaux</h3>
                     <p className="mt-1 text-size-xl font-black text-foreground">{materials.length} références</p>
@@ -355,9 +354,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             </div>
 
             <div className="space-y-6">
-               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-indigo-600">
+               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-primary">
                  <div className="mb-4 flex items-center gap-3">
-                    <div className="rounded-lg bg-indigo-600/10 p-2 text-indigo-600">
+                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
                       <Wallet size={18} />
                     </div>
                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Budget Total</span>
@@ -365,9 +364,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                  <p className="text-size-2xl font-black text-foreground">{formatCurrency(project.budget_total, enterprise?.devise)}</p>
                </Card>
 
-               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-rose-500">
+               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-destructive">
                   <div className="mb-4 flex items-center gap-3">
-                     <div className="rounded-lg bg-rose-500/10 p-2 text-rose-600">
+                     <div className="rounded-lg bg-destructive/10 p-2 text-destructive">
                        <TrendingDown size={18} />
                      </div>
                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dépenses réelles</span>
@@ -377,12 +376,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
                <Card className={cn(
                  "border-border p-6 rounded-2xl border-l-8",
-                 marginValue > 0 ? "border-l-emerald-500" : "border-l-rose-500"
+                 marginValue > 0 ? "border-l-success" : "border-l-destructive"
                )}>
                   <div className="mb-4 flex items-center gap-3">
                      <div className={cn(
                        "rounded-lg p-2",
-                       marginValue > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-rose-500/10 text-rose-600"
+                       marginValue > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                      )}>
                        {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                      </div>
@@ -390,7 +389,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   </div>
                   <p className={cn(
                     "text-size-2xl font-black",
-                    marginValue > 0 ? "text-emerald-600" : "text-rose-600"
+                    marginValue > 0 ? "text-success" : "text-destructive"
                   )}>{formatCurrency(marginValue, enterprise?.devise)}</p>
                </Card>
             </div>
@@ -402,7 +401,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
               <div className="flex items-center gap-3">
                 <div className="rounded-md border border-border bg-background p-2">
-                  <Users size={18} className="text-indigo-600" />
+                  <Users size={18} className="text-primary" />
                 </div>
                 <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
                   Ouvriers affectés
@@ -410,72 +409,70 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
               </div>
               <div className="group relative">
                 <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
-                <input
+                <Input
                   type="text"
                   placeholder="Rechercher..."
-                  className="h-9 w-full rounded-md border border-border bg-background pl-9 text-xs font-medium outline-none focus:border-indigo-600 sm:w-64"
+                  className="h-9 w-full pl-9 text-xs font-medium sm:w-64"
                 />
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left">
-                <thead>
-                  <tr className="border-b border-border bg-muted/20">
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nom complet</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Métier</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paiement</th>
-                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Taux</th>
-                    <th className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">Statut</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border bg-background">
-                  {workers.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="py-12 text-center text-muted-foreground italic uppercase text-[10px] font-black">
-                         Aucun ouvrier affecté.
-                      </td>
-                    </tr>
-                  ) : (
-                    workers.map((worker) => (
-                      <tr key={worker.id} className="group transition-colors hover:bg-muted/30">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
-                              {worker.nom_complet.charAt(0).toUpperCase()}
-                            </div>
-                            <span className="text-size-sm font-black text-foreground uppercase truncate max-w-[150px]">{worker.nom_complet}</span>
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/20">
+                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nom complet</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Métier</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paiement</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Taux</TableHead>
+                  <TableHead className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">Statut</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {workers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground italic uppercase text-[10px] font-black">
+                       Aucun ouvrier affecté.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  workers.map((worker) => (
+                    <TableRow key={worker.id} className="group">
+                      <TableCell className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
+                            {worker.nom_complet.charAt(0).toUpperCase()}
                           </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-size-sm font-semibold text-muted-foreground uppercase">{formatMetier(worker)}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-size-sm font-black text-indigo-600 uppercase">{worker.type_paiement}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-size-sm font-black text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex justify-center">
-                            <span
-                              className={cn(
-                                'rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest',
-                                worker.actif
-                                  ? 'bg-emerald-500/10 text-emerald-700'
-                                  : 'bg-rose-500/10 text-rose-700'
-                              )}
-                            >
-                              {worker.actif ? 'Actif' : 'Inactif'}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                          <span className="text-size-sm font-black text-foreground uppercase truncate max-w-[150px]">{worker.nom_complet}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <span className="text-size-sm font-semibold text-muted-foreground uppercase">{formatMetier(worker)}</span>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <span className="text-size-sm font-black text-primary uppercase">{worker.type_paiement}</span>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <span className="text-size-sm font-black text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
+                      </TableCell>
+                      <TableCell className="px-6 py-4">
+                        <div className="flex justify-center">
+                          <span
+                            className={cn(
+                              'rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest',
+                              worker.actif
+                                ? 'bg-success/10 text-success'
+                                : 'bg-destructive/10 text-destructive'
+                            )}
+                          >
+                            {worker.actif ? 'Actif' : 'Inactif'}
+                          </span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Card>
         )}
 
@@ -509,7 +506,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                       <div className="mb-4 flex items-start justify-between">
                         <div className={cn(
                           "rounded-md p-2",
-                          isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-amber-500/10 text-amber-600" : "bg-indigo-600/10 text-indigo-600"
+                          isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
                         )}>
                           <Package size={18} />
                         </div>
@@ -517,12 +514,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                            {isOut ? (
                              <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-destructive uppercase">Rupture</span>
                            ) : isLow ? (
-                             <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-amber-600 uppercase">Critique</span>
+                             <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-warning uppercase">Critique</span>
                            ) : null}
                         </div>
                       </div>
 
-                      <h3 className="truncate text-size-lg font-black tracking-tight text-foreground group-hover:text-indigo-600 uppercase">
+                      <h3 className="truncate text-size-lg font-black tracking-tight text-foreground group-hover:text-primary uppercase">
                         {mat.nom}
                       </h3>
                       <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground uppercase">
@@ -533,7 +530,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                         <div className="flex flex-col">
                           <span className={cn(
                             "text-size-3xl font-black tracking-tight",
-                            isOut ? "text-destructive" : isLow ? "text-amber-600" : "text-foreground"
+                            isOut ? "text-destructive" : isLow ? "text-warning" : "text-foreground"
                           )}>
                             {stock}
                           </span>
@@ -557,9 +554,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         {activeTab === 'finances' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-indigo-600">
+              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
                 <div className="mb-4 flex items-center gap-3">
-                  <div className="rounded-md bg-indigo-600/10 p-2 text-indigo-600">
+                  <div className="rounded-md bg-primary/10 p-2 text-primary">
                     <Wallet size={18} />
                   </div>
                   <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
@@ -569,7 +566,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 <p className="text-size-2xl font-black tracking-tight text-foreground">
                   {formatCurrency(totalExpenses, enterprise?.devise)}
                 </p>
-                <div className="mt-2 flex items-center gap-1 text-emerald-600">
+                <div className="mt-2 flex items-center gap-1 text-success">
                   <ArrowDownRight size={14} />
                   <span className="text-[9px] font-black tracking-widest uppercase">
                     Actualisé
@@ -577,11 +574,11 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 </div>
               </Card>
 
-              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-indigo-600">
+              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
                 <div className="mb-4 flex items-center gap-3">
                   <div className={cn(
                     "rounded-md p-2",
-                    marginValue > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"
+                    marginValue > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
                   )}>
                     {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                   </div>
@@ -591,7 +588,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 </div>
                 <p className={cn(
                   "text-size-2xl font-black tracking-tight",
-                  marginValue > 0 ? "text-emerald-600" : "text-destructive"
+                  marginValue > 0 ? "text-success" : "text-destructive"
                 )}>
                   {formatCurrency(marginValue, enterprise?.devise)}
                 </p>
@@ -605,7 +602,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
               <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
                 <div className="flex items-center gap-3">
                   <div className="rounded-md border border-border bg-background p-2">
-                    <Calculator size={18} className="text-indigo-600" />
+                    <Calculator size={18} className="text-primary" />
                   </div>
                   <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
                     Grand Livre
@@ -628,12 +625,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                       <div className="flex items-center gap-3 sm:gap-4">
                         <div className={cn(
                           'flex h-10 w-10 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110',
-                          expense.categorie === 'materiaux' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-indigo-600/10 text-indigo-600 border-indigo-600/20'
+                          expense.categorie === 'materiaux' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-primary/10 text-primary border-primary/20'
                         )}>
                           {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate text-size-sm font-black text-foreground group-hover:text-indigo-600 uppercase">
+                          <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary uppercase">
                             {expense.libelle}
                           </div>
                           <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground uppercase">

@@ -69,14 +69,14 @@ export function WorkerPaymentModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-3xl overflow-hidden p-0 border-none shadow-2xl">
-        <DialogHeader className="bg-indigo-600 p-8 text-white">
+        <DialogHeader className="bg-primary p-8 text-primary-foreground">
           <div className="flex items-center gap-4">
             <div className="bg-white/20 rounded-2xl p-3">
               <Wallet size={24} />
             </div>
             <div>
               <DialogTitle className="text-xl font-black uppercase tracking-tight">Régler Salaire</DialogTitle>
-              <DialogDescription className="text-indigo-100 text-[10px] font-bold uppercase tracking-widest opacity-80">
+              <DialogDescription className="text-primary text-[10px] font-bold uppercase tracking-widest opacity-80">
                 {worker.nom_complet}
               </DialogDescription>
             </div>
@@ -86,7 +86,7 @@ export function WorkerPaymentModal({
         <div className="p-8 space-y-6">
           {isLoading ? (
             <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin text-indigo-600" />
+              <Loader2 className="animate-spin text-primary" />
             </div>
           ) : (
             <>
@@ -95,15 +95,15 @@ export function WorkerPaymentModal({
                   <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Dû Total</p>
                   <p className="text-lg font-black text-foreground">{formatCurrency(dueData?.totalDue || 0, enterprise?.devise)}</p>
                 </div>
-                <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100">
-                  <p className="text-[9px] font-black text-emerald-600 uppercase mb-1">Déjà Payé</p>
-                  <p className="text-lg font-black text-emerald-700">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
+                <div className="bg-success/50 p-4 rounded-2xl border border-success">
+                  <p className="text-[9px] font-black text-success uppercase mb-1">Déjà Payé</p>
+                  <p className="text-lg font-black text-success">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
                 </div>
               </div>
 
-              <div className="bg-indigo-50/30 p-6 rounded-2xl border-2 border-dashed border-indigo-100 text-center">
-                 <p className="text-[10px] font-black text-indigo-600 uppercase mb-1 tracking-widest">Reste à payer</p>
-                 <p className="text-3xl font-black text-indigo-700">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
+              <div className="bg-primary/30 p-6 rounded-2xl border-2 border-dashed border-primary text-center">
+                 <p className="text-[10px] font-black text-primary uppercase mb-1 tracking-widest">Reste à payer</p>
+                 <p className="text-3xl font-black text-primary">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
                  <p className="mt-2 text-[9px] font-bold text-muted-foreground uppercase italic">{dueData?.daysPresent} jours de présence</p>
               </div>
 
@@ -117,7 +117,7 @@ export function WorkerPaymentModal({
                       required
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="h-12 pl-12 text-lg font-black rounded-xl border-2 focus:border-indigo-600"
+                      className="h-12 pl-12 text-lg font-black rounded-xl border-2 focus:border-primary"
                     />
                     <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                   </div>
@@ -127,7 +127,7 @@ export function WorkerPaymentModal({
                    <Button
                      type="submit"
                      disabled={mutation.isPending || !amount}
-                     className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg"
+                     className="w-full h-12 bg-primary hover:bg-primary rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg"
                    >
                      {mutation.isPending ? <Loader2 className="animate-spin" /> : 'Confirmer le paiement'}
                    </Button>

@@ -52,9 +52,9 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'pdf'>('xlsx');
 
   const categories = [
-    { id: 'finances', label: 'Finances & Dépenses', icon: TrendingUp, color: 'text-amber-600 bg-amber-50' },
-    { id: 'workers', label: 'Main d\'œuvre', icon: Users, color: 'text-emerald-600 bg-emerald-50' },
-    { id: 'projects', label: 'Liste des Chantiers', icon: HardHat, color: 'text-indigo-600 bg-indigo-50' },
+    { id: 'finances', label: 'Finances & Dépenses', icon: TrendingUp, color: 'text-warning bg-warning' },
+    { id: 'workers', label: 'Main d\'œuvre', icon: Users, color: 'text-success bg-success' },
+    { id: 'projects', label: 'Liste des Chantiers', icon: HardHat, color: 'text-primary bg-primary' },
     { id: 'inventory', label: 'Stocks & Matériaux', icon: Package, color: 'text-zinc-600 bg-zinc-50' },
   ];
 
@@ -245,14 +245,16 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
         <div className="space-y-8 p-8 pt-6">
           <div className="grid grid-cols-2 gap-4">
             {categories.map((cat) => (
-              <button
+              <Button
                 key={cat.id}
+                type="button"
+                variant="outline"
                 onClick={() => toggleCategory(cat.id as ExportCategory)}
                 className={cn(
-                  'group relative flex flex-col items-start gap-3 rounded-2xl border p-5 transition-all duration-300',
+                  'group relative flex h-auto flex-col items-start gap-3 rounded-2xl border p-5',
                   selectedCategories.includes(cat.id as ExportCategory)
-                    ? 'border-indigo-600 bg-indigo-50/30 ring-4 ring-indigo-600/5'
-                    : 'border-zinc-100 bg-white hover:border-zinc-200'
+                    ? 'border-primary bg-primary/30 ring-4 ring-primary/5'
+                    : 'border-zinc-100 bg-card hover:border-zinc-200'
                 )}
               >
                 <div className={cn('rounded-xl p-2 shadow-sm transition-transform group-hover:scale-110', cat.color)}>
@@ -260,11 +262,11 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                 </div>
                 <span className="text-xs font-black tracking-tight text-zinc-900 uppercase">{cat.label}</span>
                 {selectedCategories.includes(cat.id as ExportCategory) && (
-                  <div className="bg-indigo-600 text-white absolute top-3 right-3 rounded-full p-0.5">
+                  <div className="bg-primary text-primary-foreground absolute top-3 right-3 rounded-full p-0.5">
                     <CheckCircle2 size={14} strokeWidth={3} />
                   </div>
                 )}
-              </button>
+              </Button>
             ))}
           </div>
 
@@ -276,18 +278,20 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                 { id: 'csv', label: 'CSV', icon: FileText },
                 { id: 'pdf', label: 'PDF', icon: FileText }
               ].map(f => (
-                <button
+                <Button
                   key={f.id}
+                  type="button"
+                  variant="outline"
                   onClick={() => setFormat(f.id as any)}
                   className={cn(
-                    'flex flex-1 items-center justify-center gap-2 rounded-xl border p-3 text-[10px] font-black uppercase tracking-widest transition-all',
+                    'h-auto flex-1 gap-2 rounded-xl border p-3 text-[10px] font-black uppercase tracking-widest',
                     format === f.id
-                      ? 'border-indigo-600 bg-indigo-50/50 text-indigo-600 shadow-sm'
-                      : 'border-zinc-100 bg-white text-zinc-400 hover:border-zinc-200'
+                      ? 'border-primary bg-primary/50 text-primary shadow-sm'
+                      : 'border-zinc-100 bg-card text-zinc-400 hover:border-zinc-200'
                   )}
                 >
                   <f.icon size={16} /> {f.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

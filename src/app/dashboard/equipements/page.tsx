@@ -17,6 +17,7 @@ import { DeployEquipmentModal } from '@/components/dashboard/deploy-equipment-mo
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 
 export default function EquipementsPage() {
   const [equipments, setEquipments] = useState<Equipment[]>([]);
@@ -49,7 +50,7 @@ export default function EquipementsPage() {
       case 'disponible':
         return {
           label: 'Disponible',
-          color: 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20',
+          color: 'bg-success/10 text-success border-success/20',
         };
       case 'en_service':
         return {
@@ -59,12 +60,12 @@ export default function EquipementsPage() {
       case 'en_transit':
         return {
           label: 'En Transit',
-          color: 'bg-amber-500/10 text-amber-700 border-amber-500/20',
+          color: 'bg-warning/10 text-warning border-warning/20',
         };
       case 'en_maintenance':
         return {
           label: 'Maintenance',
-          color: 'bg-yellow-500/10 text-yellow-700 border-yellow-500/20',
+          color: 'bg-warning/10 text-warning border-warning/20',
         };
       case 'hors_service':
         return {
@@ -102,12 +103,12 @@ export default function EquipementsPage() {
               className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
               size={14}
             />
-            <input
+            <Input
               type="text"
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
+              className="h-9 w-full pr-4 pl-9 text-xs font-medium focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
           <CreateEquipmentModal onEquipmentCreated={fetchEquipments} />

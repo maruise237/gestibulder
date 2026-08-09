@@ -62,9 +62,9 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
 
   return (
     <Card className="mx-auto max-w-lg border-none bg-card shadow-elevated rounded-3xl overflow-hidden">
-      <div className="bg-indigo-600 p-8 text-white">
+      <div className="bg-primary p-8 text-primary-foreground">
         <h2 className="text-xl font-black uppercase tracking-tight">Configuration Initiale</h2>
-        <p className="text-indigo-100 text-xs font-semibold uppercase mt-1 tracking-widest opacity-80">
+        <p className="text-primary text-xs font-semibold uppercase mt-1 tracking-widest opacity-80">
           Étape {step} sur 3
         </p>
         <div className="mt-6 flex gap-1.5">
@@ -139,12 +139,12 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   onClick={() => setUseDemoData(!useDemoData)}
                   className={cn(
                     "cursor-pointer rounded-2xl border-2 p-4 transition-all flex items-center gap-4",
-                    useDemoData ? "border-indigo-600 bg-indigo-50/50" : "border-border hover:bg-muted/50"
+                    useDemoData ? "border-primary bg-primary/50" : "border-border hover:bg-muted/50"
                   )}
                 >
                   <div className={cn(
                     "h-10 w-10 shrink-0 flex items-center justify-center rounded-xl",
-                    useDemoData ? "bg-indigo-600 text-white" : "bg-muted text-muted-foreground"
+                    useDemoData ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
                   )}>
                     <Sparkles size={20} />
                   </div>
@@ -165,8 +165,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
               >
                 <div className="flex justify-center">
                   <div className="relative">
-                    <div className="absolute inset-0 animate-ping rounded-full bg-emerald-500/20" />
-                    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600">
+                    <div className="absolute inset-0 animate-ping rounded-full bg-success/20" />
+                    <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-success/10 text-success">
                       <CheckCircle2 size={40} />
                     </div>
                   </div>

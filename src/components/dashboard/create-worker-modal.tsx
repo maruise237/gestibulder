@@ -255,19 +255,15 @@ export function CreateWorkerModal({
                 </Label>
                 <div className="bg-muted/30 grid grid-cols-3 gap-2 rounded-md border p-1">
                   {(['journalier', 'hebdomadaire', 'mensuel'] as const).map((type) => (
-                    <button
+                    <Button
                       key={type}
                       type="button"
+                      variant={paymentType === type ? 'default' : 'ghost'}
                       onClick={() => setPaymentType(type)}
-                      className={cn(
-                        'h-8 rounded-md text-[10px] font-semibold tracking-widest uppercase transition-all active:scale-95',
-                        paymentType === type
-                          ? 'bg-primary text-primary-foreground'
-                          : 'text-muted-foreground hover:bg-muted/50'
-                      )}
+                      className="h-8 text-[10px] font-semibold tracking-widest uppercase"
                     >
                       {type}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

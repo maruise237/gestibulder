@@ -60,8 +60,8 @@ export default function PointagePage() {
   if (!selectedProjectId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-        <div className="bg-indigo-50 p-6 rounded-full mb-6">
-          <AlertCircle className="h-12 w-12 text-indigo-600" />
+        <div className="bg-primary p-6 rounded-full mb-6">
+          <AlertCircle className="h-12 w-12 text-primary" />
         </div>
         <h2 className="text-2xl font-black uppercase mb-2">Aucun projet sélectionné</h2>
         <p className="text-muted-foreground max-w-sm font-medium">
@@ -86,7 +86,7 @@ export default function PointagePage() {
         </div>
 
         <div className="flex items-center gap-3 bg-card border p-2 rounded-2xl shadow-sm">
-          <div className="bg-indigo-600 p-2 rounded-xl text-white">
+          <div className="bg-primary p-2 rounded-xl text-primary-foreground">
             <CalendarIcon className="w-5 h-5" />
           </div>
           <div className="pr-4">
@@ -130,7 +130,7 @@ export default function PointagePage() {
                 size="sm"
                 onClick={() => initMutation.mutate()}
                 disabled={initMutation.isPending || workers.length === 0}
-                className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-indigo-200 text-indigo-700 hover:bg-indigo-50"
+                className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-primary text-primary hover:bg-primary"
               >
                 {initMutation.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Plus className="mr-2 h-3 w-3" />}
                 Initialiser la journée
@@ -139,14 +139,14 @@ export default function PointagePage() {
 
             {loadingWorkers || loadingPointages ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
+                <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
                 <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Chargement des données...</p>
               </div>
             ) : workers.length === 0 ? (
               <Card className="p-12 text-center border-dashed border-2 bg-muted/20 rounded-2xl">
                 <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-20" />
                 <p className="text-muted-foreground font-black uppercase text-sm">Aucun ouvrier trouvé pour ce projet</p>
-                <Button variant="link" className="text-indigo-600 font-bold mt-2" onClick={() => window.location.href='/dashboard/ouvriers'}>
+                <Button variant="link" className="text-primary font-bold mt-2" onClick={() => window.location.href='/dashboard/ouvriers'}>
                   Ajouter des ouvriers →
                 </Button>
               </Card>

@@ -118,8 +118,8 @@ export function QRScanner({ chantierId }: QRScannerProps) {
   return (
     <div className="space-y-6">
       <Card className="p-8 border-dashed border-2 flex flex-col items-center justify-center text-center bg-muted/30 rounded-2xl">
-        <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center mb-4">
-          <Camera className="h-10 w-10 text-indigo-600" />
+        <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center mb-4">
+          <Camera className="h-10 w-10 text-primary" />
         </div>
         <h3 className="font-black text-xl uppercase mb-2">Scan QR Rapide</h3>
         <p className="text-muted-foreground text-sm max-w-xs mb-6 font-medium">
@@ -149,14 +149,14 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                 <div className="flex items-center gap-2">
                   <span className={cn(
                     "text-[10px] font-black uppercase tracking-tighter",
-                    item.status === 'success' ? "text-emerald-600" : "text-amber-600"
+                    item.status === 'success' ? "text-success" : "text-warning"
                   )}>
                     {item.status === 'success' ? "Pointé" : "Déjà pointé"}
                   </span>
                   {item.status === 'success' ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-success" />
                   ) : (
-                    <AlertCircle className="w-4 h-4 text-amber-500" />
+                    <AlertCircle className="w-4 h-4 text-warning" />
                   )}
                 </div>
               </div>
@@ -186,10 +186,10 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                 </div>
 
                 <div className="relative w-64 h-64">
-                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-500 rounded-tl-lg"></div>
-                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 rounded-tr-lg"></div>
-                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 rounded-bl-lg"></div>
-                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 rounded-br-lg"></div>
+                  <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
+                  <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
+                  <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+                  <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   {isProcessing && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 animate-pulse rounded-lg">
                       <span className="text-white font-black text-sm uppercase">Traitement...</span>
@@ -210,12 +210,12 @@ export function QRScanner({ chantierId }: QRScannerProps) {
               <div className="absolute inset-0 bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className={cn(
                   "h-24 w-24 rounded-full flex items-center justify-center mb-6",
-                  lastScanResult.already ? "bg-amber-100" : "bg-emerald-100"
+                  lastScanResult.already ? "bg-warning" : "bg-success"
                 )}>
                   {lastScanResult.already ? (
-                    <AlertCircle className="h-12 w-12 text-amber-600" />
+                    <AlertCircle className="h-12 w-12 text-warning" />
                   ) : (
-                    <UserCheck className="h-12 w-12 text-emerald-600" />
+                    <UserCheck className="h-12 w-12 text-success" />
                   )}
                 </div>
 
@@ -224,8 +224,8 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                   {lastScanResult.already ? "DÉJÀ POINTÉ À" : "POINTÉ AVEC SUCCÈS À"} {lastScanResult.time}
                 </p>
 
-                <div className="h-1 bg-indigo-100 w-32 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 animate-progress origin-left"></div>
+                <div className="h-1 bg-primary w-32 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary animate-progress origin-left"></div>
                 </div>
               </div>
             )}

@@ -20,6 +20,8 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Material } from '@/types/stock';
 import { CreateMaterialModal } from '@/components/dashboard/create-material-modal';
@@ -103,12 +105,12 @@ export default function StocksPage() {
               className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
               size={14}
             />
-            <input
+            <Input
               type="text"
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
+              className="h-9 w-full pr-4 pl-9 text-xs font-medium focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
           {selectedProjectId && (
@@ -165,7 +167,7 @@ export default function StocksPage() {
                   <div className="mb-4 flex items-start justify-between">
                     <div className={cn(
                       "rounded-md p-2",
-                      isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-amber-500/10 text-amber-600" : "bg-primary/10 text-primary"
+                      isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
                     )}>
                       <Package size={18} />
                     </div>
@@ -173,11 +175,11 @@ export default function StocksPage() {
                        {isOut ? (
                          <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-destructive uppercase">Rupture</span>
                        ) : isLow ? (
-                         <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-amber-600 uppercase">Critique</span>
+                         <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-warning uppercase">Critique</span>
                        ) : null}
-                       <button className="text-muted-foreground hover:text-foreground transition-colors">
+                       <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
                          <MoreVertical size={16} />
-                       </button>
+                       </Button>
                     </div>
                   </div>
 
@@ -192,7 +194,7 @@ export default function StocksPage() {
                     <div className="flex flex-col">
                       <span className={cn(
                         "text-size-3xl font-semibold tracking-tight",
-                        isOut ? "text-destructive" : isLow ? "text-amber-600" : "text-foreground"
+                        isOut ? "text-destructive" : isLow ? "text-warning" : "text-foreground"
                       )}>
                         {stock}
                       </span>
@@ -212,7 +214,7 @@ export default function StocksPage() {
                         variant="outline"
                         size="icon-sm"
                         onClick={() => setMovementModal({ open: true, material: mat, type: 'entree' })}
-                        className="h-9 w-9 rounded-md border-border bg-background hover:bg-emerald-500/5 hover:text-emerald-600"
+                        className="h-9 w-9 rounded-md border-border bg-background hover:bg-success/5 hover:text-success"
                         title="Réapprovisionner"
                       >
                         <PlusCircle size={18} />
@@ -256,12 +258,12 @@ export default function StocksPage() {
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader className={cn(
             "bg-muted/30 border-b p-6",
-            movementModal.type === 'entree' ? "text-emerald-600" : "text-destructive"
+            movementModal.type === 'entree' ? "text-success" : "text-destructive"
           )}>
             <div className="flex items-center gap-4">
               <div className={cn(
                 "rounded-md p-2",
-                movementModal.type === 'entree' ? "bg-emerald-500/10" : "bg-destructive/10"
+                movementModal.type === 'entree' ? "bg-success/10" : "bg-destructive/10"
               )}>
                 {movementModal.type === 'entree' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
               </div>
@@ -283,46 +285,46 @@ export default function StocksPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Quantité ({movementModal.material.unite})</label>
-                    <input
+                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Quantité ({movementModal.material.unite})</Label>
+                    <Input
                       name="quantite"
                       type="number"
                       required
                       step="0.01"
                       placeholder="0.00"
                       autoFocus
-                      className="h-12 w-full rounded-md border border-border bg-background text-center text-size-2xl font-semibold outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+                      className="h-12 w-full text-center text-size-2xl font-semibold focus:ring-4 focus:ring-primary/10"
                     />
                   </div>
 
                   {movementModal.type === 'entree' ? (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Prix Unit.</label>
-                        <input
+                        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Prix Unit.</Label>
+                        <Input
                           name="cout_unitaire"
                           type="number"
                           step="0.01"
                           placeholder="0.00"
-                          className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none focus:border-primary"
+                          className="h-9 w-full px-3 text-xs font-medium"
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Fournisseur</label>
-                        <input
+                        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Fournisseur</Label>
+                        <Input
                           name="fournisseur"
                           placeholder="Nom..."
-                          className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none focus:border-primary"
+                          className="h-9 w-full px-3 text-xs font-medium"
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Destination</label>
-                      <input
+                      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Destination</Label>
+                      <Input
                         name="usage"
                         placeholder="Ex: Dalle 2ème étage..."
-                        className="h-9 w-full rounded-md border border-border bg-background px-3 text-xs font-medium outline-none focus:border-primary"
+                        className="h-9 w-full px-3 text-xs font-medium"
                       />
                     </div>
                   )}
@@ -343,7 +345,7 @@ export default function StocksPage() {
                   disabled={movementMutation.isPending}
                   className={cn(
                     "flex-1 text-[10px] font-semibold uppercase tracking-widest",
-                    movementModal.type === 'entree' ? "bg-emerald-600 hover:bg-emerald-700" : "bg-destructive hover:bg-destructive/90"
+                    movementModal.type === 'entree' ? "bg-success hover:bg-success" : "bg-destructive hover:bg-destructive/90"
                   )}
                 >
                   {movementMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmer'}

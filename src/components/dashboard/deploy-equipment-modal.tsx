@@ -91,12 +91,12 @@ export function DeployEquipmentModal({
         <Button
           variant="outline"
           size="sm"
-          className="group/btn h-10 rounded-xl border-zinc-200 px-4 hover:border-indigo-500"
+          className="group/btn h-10 rounded-xl border-zinc-200 px-4 hover:border-primary"
           disabled={equipment.etat !== 'disponible'}
         >
           <ArrowRightLeft
             size={14}
-            className="text-zinc-400 transition-colors group-hover/btn:text-indigo-600"
+            className="text-zinc-400 transition-colors group-hover/btn:text-primary"
           />
           <span className="ml-2 text-[10px] font-black tracking-widest uppercase">
             {equipment.etat === 'disponible' ? 'Déployer' : 'Occupé'}

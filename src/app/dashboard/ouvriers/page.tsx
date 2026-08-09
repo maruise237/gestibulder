@@ -7,6 +7,8 @@ import { useApp } from '@/lib/context/app-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Search, Plus, Trash2, Edit, Users, HardHat, Loader2, Wallet } from 'lucide-react';
 import { CreateWorkerModal } from '@/components/dashboard/create-worker-modal';
 import { ExportModal } from '@/components/dashboard/export-modal';
@@ -82,12 +84,12 @@ export default function WorkersPage() {
               className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary"
               size={14}
             />
-            <input
+            <Input
               type="text"
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-md border border-border bg-background pr-4 pl-9 text-xs font-medium transition-all outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 sm:w-64"
+              className="h-9 w-full pr-4 pl-9 text-xs font-medium focus:ring-4 focus:ring-primary/10 sm:w-64"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -133,33 +135,33 @@ export default function WorkersPage() {
       ) : (
         <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
           <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                     Ouvrier
-                  </th>
-                  <th className="hidden px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase sm:table-cell">
+                  </TableHead>
+                  <TableHead className="hidden px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase sm:table-cell">
                     Métier
-                  </th>
-                  <th className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                     Rémunération
-                  </th>
-                  <th className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                     Statut
-                  </th>
-                  <th className="px-4 py-3 text-right text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  </TableHead>
+                  <TableHead className="px-4 py-3 text-right text-[10px] font-black tracking-widest text-muted-foreground uppercase">
                     Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border bg-background">
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredWorkers.map((worker) => (
-                  <tr
+                  <TableRow
                     key={worker.id}
-                    className="group transition-all duration-200 hover:bg-muted/30"
+                    className="group"
                   >
-                    <td className="px-4 py-3">
+                    <TableCell className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
                           {worker.nom_complet.charAt(0).toUpperCase()}
@@ -173,8 +175,8 @@ export default function WorkersPage() {
                           </span>
                         </div>
                       </div>
-                    </td>
-                    <td className="hidden px-4 py-3 sm:table-cell">
+                    </TableCell>
+                    <TableCell className="hidden px-4 py-3 sm:table-cell">
                       <div className="flex flex-col">
                         <span className="text-size-xs font-bold text-foreground uppercase">
                           {formatMetier(worker)}
@@ -183,8 +185,8 @@ export default function WorkersPage() {
                           {worker.unite_production}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
                       <div className="flex flex-col">
                         <span className="text-size-xs font-black text-foreground sm:text-size-sm uppercase">
                           {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
@@ -193,27 +195,27 @@ export default function WorkersPage() {
                           {worker.type_paiement}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
+                    </TableCell>
+                    <TableCell className="px-4 py-3">
                       <div className="flex justify-center">
                         <span
                           className={cn(
                             'rounded-full px-2 py-0.5 text-[8px] font-black tracking-widest uppercase sm:text-[9px]',
                             worker.actif
-                              ? 'bg-emerald-500/10 text-emerald-700'
-                              : 'bg-rose-500/10 text-rose-700'
+                              ? 'bg-success/10 text-success'
+                              : 'bg-destructive/10 text-destructive'
                           )}
                         >
                           {worker.actif ? 'Actif' : 'Inactif'}
                         </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-right">
+                    </TableCell>
+                    <TableCell className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          className="h-7 w-7 text-indigo-600 hover:bg-indigo-50"
+                          className="h-7 w-7 text-primary hover:bg-primary"
                           onClick={() => setPaymentModal({ open: true, worker })}
                           title="Régler Salaire"
                         >
@@ -237,11 +239,11 @@ export default function WorkersPage() {
                           <Trash2 size={14} />
                         </Button>
                       </div>
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
         </Card>
       )}

@@ -79,10 +79,10 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
           const salaire = state.statut === 'present' ? taux : state.statut === 'demi_journee' ? taux / 2 : 0;
 
           return (
-            <Card key={worker.id} className="p-4 border-l-8 border-l-indigo-600 rounded-2xl">
+            <Card key={worker.id} className="p-4 border-l-8 border-l-primary rounded-2xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">
+                  <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary font-bold">
                     {worker.nom_complet.charAt(0)}
                   </div>
                   <div>
@@ -94,20 +94,22 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex bg-muted p-1 rounded-lg">
                     {[
-                      { val: 'present', label: 'P', color: 'bg-emerald-500 text-white' },
-                      { val: 'demi_journee', label: 'D', color: 'bg-orange-500 text-white' },
-                      { val: 'absent', label: 'A', color: 'bg-destructive text-white' }
+                      { val: 'present', label: 'P', color: 'bg-success text-success-foreground' },
+                      { val: 'demi_journee', label: 'D', color: 'bg-warning text-warning-foreground' },
+                      { val: 'absent', label: 'A', color: 'bg-destructive text-destructive-foreground' }
                     ].map((btn) => (
-                      <button
+                      <Button
                         key={btn.val}
+                        type="button"
+                        variant="ghost"
                         onClick={() => updateLocal(worker.id, { statut: btn.val as PointageStatut })}
                         className={cn(
-                          "w-10 h-8 rounded-md text-xs font-bold transition-all",
+                          "w-10 h-8 text-xs font-bold",
                           state.statut === btn.val ? btn.color : "text-muted-foreground hover:bg-background"
                         )}
                       >
                         {btn.label}
-                      </button>
+                      </Button>
                     ))}
                   </div>
 
@@ -125,7 +127,7 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
 
                   <div className="min-w-[80px] text-right">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase">Salaire</p>
-                    <p className="font-black text-indigo-600 text-sm">
+                    <p className="font-black text-primary text-sm">
                       {salaire.toLocaleString('fr-FR')} <span className="text-[10px]">FCFA</span>
                     </p>
                   </div>

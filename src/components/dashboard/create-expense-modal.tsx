@@ -116,7 +116,7 @@ export function CreateExpenseModal({
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6">
             {!selectedProjectId && (
-              <div className="bg-amber-50 border-amber-200 text-amber-700 mb-6 rounded-md border p-3 text-xs font-medium">
+              <div className="bg-warning border-warning text-warning mb-6 rounded-md border p-3 text-xs font-medium">
                 Veuillez sélectionner un chantier dans le sélecteur principal avant de créer une dépense.
               </div>
             )}
@@ -163,19 +163,15 @@ export function CreateExpenseModal({
                 <Label>Catégorie</Label>
                 <div className="bg-muted/30 grid grid-cols-2 gap-2 rounded-md border p-1">
                   {CATEGORIES.map((cat) => (
-                    <button
+                    <Button
                       key={cat.value}
                       type="button"
+                      variant={selectedCategory === cat.value ? 'default' : 'ghost'}
                       onClick={() => setSelectedCategory(cat.value)}
-                      className={cn(
-                        'h-9 rounded-sm text-xs font-medium transition-all active:scale-95',
-                        selectedCategory === cat.value
-                          ? 'bg-primary text-primary-foreground shadow-sm'
-                          : 'text-muted-foreground hover:bg-muted/50'
-                      )}
+                      className="h-9 text-xs font-medium"
                     >
                       {cat.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>

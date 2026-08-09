@@ -17,6 +17,7 @@ import {
   Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/server/auth.actions';
 import { useQueryClient } from '@tanstack/react-query';
 import { getProjects } from '@/lib/server/project.actions';
@@ -67,7 +68,7 @@ export const Sidebar = memo(({
       {/* Brand Header */}
       <div className="flex h-16 items-center border-b border-border px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-white p-1 shadow-sm border border-border">
+          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-card p-1 shadow-sm border border-border">
             <Image
               src="/logo.png"
               alt="Logo"
@@ -140,13 +141,14 @@ export const Sidebar = memo(({
           <Settings size={18} />
           <span>Paramètres</span>
         </Link>
-        <button
-          className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium text-destructive transition-all duration-200 hover:border-destructive/10 hover:bg-destructive/5 active:scale-95"
+        <Button
+          variant="ghost"
           onClick={handleLogout}
+          className="w-full justify-start gap-3 px-3 py-2 text-[13px] font-medium text-destructive hover:bg-destructive/5 hover:text-destructive active:scale-95"
         >
           <LogOut size={18} />
           <span>Déconnexion</span>
-        </button>
+        </Button>
       </div>
     </aside>
   );

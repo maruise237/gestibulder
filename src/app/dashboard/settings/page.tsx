@@ -120,7 +120,7 @@ export default function SettingsPage() {
               >
                 <div className="flex items-center justify-between p-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-indigo-500/10 text-indigo-600">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
                       <HardHat size={18} />
                     </div>
                     <div>

@@ -66,7 +66,7 @@ export function ProjectSelector() {
             <div className="flex items-center gap-2 overflow-hidden">
               <div className={cn(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
-                selectedProjectId ? "bg-indigo-600 text-white" : "bg-zinc-100 text-zinc-500"
+                selectedProjectId ? "bg-primary text-primary-foreground" : "bg-zinc-100 text-zinc-500"
               )}>
                 {selectedProjectId ? <HardHat size={12} /> : <LayoutGrid size={12} />}
               </div>

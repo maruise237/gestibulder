@@ -75,8 +75,8 @@ export function StockHistoryModal({
                       className={cn(
                         'flex h-10 w-10 items-center justify-center rounded-xl border shadow-sm',
                         mov.type_mouvement === 'entree'
-                          ? 'border-emerald-100 bg-emerald-50 text-emerald-600'
-                          : 'border-red-100 bg-red-50 text-red-600'
+                          ? 'border-success bg-success text-success'
+                          : 'border-destructive bg-destructive text-destructive'
                       )}
                     >
                       {mov.type_mouvement === 'entree' ? (
@@ -98,7 +98,7 @@ export function StockHistoryModal({
                     <div
                       className={cn(
                         'text-lg font-black tracking-tighter',
-                        mov.type_mouvement === 'entree' ? 'text-emerald-600' : 'text-red-600'
+                        mov.type_mouvement === 'entree' ? 'text-success' : 'text-destructive'
                       )}
                     >
                       {mov.type_mouvement === 'entree' ? '+' : '-'}

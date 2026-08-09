@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import {
   Dialog, DialogContent, DialogHeader,
@@ -106,11 +107,11 @@ export default function PlanningPage() {
               </div>
               <Progress value={avgProgress} className="mt-3" />
             </Card>
-            <Card className="p-4 border-l-4 border-l-emerald-500">
+            <Card className="p-4 border-l-4 border-l-success">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Phases Terminées</p>
               <p className="mt-2 text-2xl font-bold">{terminees} / {phases.length}</p>
             </Card>
-            <Card className="p-4 border-l-4 border-l-amber-500">
+            <Card className="p-4 border-l-4 border-l-warning">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Phase En Cours</p>
               <p className="mt-2 text-sm font-bold truncate">{(enCours as any)?.nom || 'Aucune'}</p>
             </Card>
@@ -130,7 +131,7 @@ export default function PlanningPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-6">
                     <div className={cn(
                       "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2",
-                      phase.statut === 'termine' ? "bg-emerald-50 border-emerald-200 text-emerald-600" :
+                      phase.statut === 'termine' ? "bg-success border-success text-success" :
                       phase.statut === 'en_cours' ? "bg-primary/5 border-primary/20 text-primary animate-pulse" :
                       phase.statut === 'bloque' ? "bg-destructive/10 border-destructive/20 text-destructive" :
                       "bg-muted border-transparent text-muted-foreground"
@@ -208,16 +209,16 @@ export default function PlanningPage() {
           </DialogHeader>
           <form onSubmit={handleCreatePhase} className="p-6 space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Nom de la phase</label>
+              <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Nom de la phase</Label>
               <Input name="nom" required placeholder="Ex: Fondations" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Date début</label>
+                <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Date début</Label>
                 <Input name="date_debut" type="date" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Date fin prévue</label>
+                <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Date fin prévue</Label>
                 <Input name="date_fin_prevue" type="date" />
               </div>
             </div>

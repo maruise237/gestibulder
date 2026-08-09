@@ -134,30 +134,30 @@ export default function DashboardPage() {
                 key={i}
                 className={cn(
                   'group relative overflow-hidden border-border p-3 transition-all duration-300 hover:border-primary/20 hover:shadow-premium sm:p-fluid-md rounded-2xl',
-                  stat.color === 'rose' && 'border-l-8 border-l-rose-500',
-                  stat.color === 'indigo' && 'border-l-8 border-l-indigo-600',
-                  stat.color === 'emerald' && 'border-l-8 border-l-emerald-500',
-                  stat.color === 'amber' && 'border-l-8 border-l-amber-500'
+                  stat.color === 'rose' && 'border-l-8 border-l-destructive',
+                  stat.color === 'indigo' && 'border-l-8 border-l-primary',
+                  stat.color === 'emerald' && 'border-l-8 border-l-success',
+                  stat.color === 'amber' && 'border-l-8 border-l-warning'
                 )}
               >
                 <div className="mb-2 flex items-center justify-between sm:mb-4">
                   <div
                     className={cn(
                       'rounded-md p-1.5 transition-transform group-hover:scale-110 sm:p-2',
-                      stat.color === 'rose' && 'bg-rose-500/10 text-rose-600',
-                      stat.color === 'indigo' && 'bg-indigo-600/10 text-indigo-600',
-                      stat.color === 'emerald' && 'bg-emerald-500/10 text-emerald-600',
-                      stat.color === 'amber' && 'bg-amber-500/10 text-amber-600'
+                      stat.color === 'rose' && 'bg-destructive/10 text-destructive',
+                      stat.color === 'indigo' && 'bg-primary/10 text-primary',
+                      stat.color === 'emerald' && 'bg-success/10 text-success',
+                      stat.color === 'amber' && 'bg-warning/10 text-warning'
                     )}
                   >
                     <stat.icon size={16} className="sm:size-5" />
                   </div>
                   {stat.color === 'rose' ? (
-                    <div className="flex items-center gap-0.5 text-rose-600">
+                    <div className="flex items-center gap-0.5 text-destructive">
                       <ArrowDownRight size={10} strokeWidth={3} className="sm:size-12" />
                     </div>
                   ) : (
-                    <div className="flex items-center gap-0.5 text-emerald-600">
+                    <div className="flex items-center gap-0.5 text-success">
                       <ArrowUpRight size={10} strokeWidth={3} className="sm:size-12" />
                     </div>
                   )}
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                           className={cn(
                             'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110 sm:h-11 sm:w-11',
                             mov.type_mouvement === 'entree'
-                              ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-600'
+                              ? 'border-success/20 bg-success/10 text-success'
                               : 'border-destructive/20 bg-destructive/10 text-destructive'
                           )}
                         >
@@ -241,7 +241,7 @@ export default function DashboardPage() {
                               className={cn(
                                 'rounded-md border px-1 py-0.5 sm:px-2',
                                 mov.type_mouvement === 'entree'
-                                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-700'
+                                  ? 'border-success/20 bg-success/10 text-success'
                                   : 'border-destructive/20 bg-destructive/10 text-destructive'
                               )}
                             >
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
                   <div className="flex items-center gap-2">
                     <div className="rounded-md border border-border bg-card p-1.5">
-                      <Users size={14} className="text-emerald-600 sm:size-5" />
+                      <Users size={14} className="text-success sm:size-5" />
                     </div>
                     <h2 className="text-size-base font-semibold tracking-tight text-foreground uppercase">Équipes</h2>
                   </div>
@@ -290,13 +290,13 @@ export default function DashboardPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between items-center text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
                       <span>Activité</span>
-                      <span className="text-emerald-600">
+                      <span className="text-success">
                         {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
                       </span>
                     </div>
                     <div className="h-1 w-full rounded-full bg-muted overflow-hidden sm:h-1.5">
                       <div
-                        className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
+                        className="h-full bg-success rounded-full transition-all duration-1000"
                         style={{ width: isLoading ? '0%' : `${(stats.activeWorkers / (stats.workersCount || 1)) * 100}%` }}
                       />
                     </div>

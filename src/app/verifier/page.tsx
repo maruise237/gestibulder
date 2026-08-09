@@ -25,7 +25,7 @@ function VerifierContent() {
 
         <Card className="p-8 border-2 border-zinc-200 shadow-2xl rounded-3xl overflow-hidden relative">
           <div className="absolute top-0 right-0 p-4">
-             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success text-success border border-success">
                 <CheckCircle2 size={12} strokeWidth={3} />
                 <span className="text-[10px] font-black uppercase tracking-widest">Authentique</span>
              </div>

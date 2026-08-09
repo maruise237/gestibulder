@@ -90,7 +90,7 @@ export default function BudgetPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/dashboard/budget/personnel">
-            <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 font-black uppercase text-[10px] tracking-widest h-9 px-4 rounded-xl">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary font-black uppercase text-[10px] tracking-widest h-9 px-4 rounded-xl">
                <Users size={14} className="mr-2" />
                Paiements Personnel
             </Button>
@@ -103,7 +103,7 @@ export default function BudgetPage() {
       {/* Alerte budget dépassé */}
       {selectedProjectObj && totalEngaged > budgetTotal && budgetTotal > 0 && (
         <div className="flex items-center gap-3 rounded-2xl border-2 border-destructive/20 bg-destructive/5 p-4 animate-in fade-in slide-in-from-top-2">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-white shadow-lg shadow-destructive/20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-destructive-foreground shadow-lg shadow-destructive/20">
             <AlertCircle size={20} />
           </div>
           <div className="min-w-0">
@@ -118,9 +118,9 @@ export default function BudgetPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-fluid-md">
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-indigo-600">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
           <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-500/10 p-2 text-indigo-600">
+            <div className="rounded-xl bg-primary/10 p-2 text-primary">
               <Wallet size={18} />
             </div>
             <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
@@ -134,19 +134,19 @@ export default function BudgetPage() {
               formatCurrency(totalEngaged, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic text-rose-600">Total Personnel + Matériaux</p>
+          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic text-destructive">Total Personnel + Matériaux</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-rose-600">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-destructive">
           <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-rose-500/10 p-2 text-rose-600">
+            <div className="rounded-xl bg-destructive/10 p-2 text-destructive">
               <Banknote size={18} />
             </div>
             <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
               Impayés (Dettes)
             </span>
           </div>
-          <p className="text-size-2xl font-black tracking-tight text-rose-600">
+          <p className="text-size-2xl font-black tracking-tight text-destructive">
             {isLoading ? (
               <Skeleton className="h-8 w-32" />
             ) : (
@@ -156,16 +156,16 @@ export default function BudgetPage() {
           <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Salaires dus à ce jour</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-emerald-600">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-success">
           <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-emerald-500/10 p-2 text-emerald-600">
+            <div className="rounded-xl bg-success/10 p-2 text-success">
               <HandCoins size={18} />
             </div>
             <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
               Budget Restant
             </span>
           </div>
-          <p className="text-size-2xl font-black tracking-tight text-emerald-600">
+          <p className="text-size-2xl font-black tracking-tight text-success">
             {isLoading ? (
               <Skeleton className="h-8 w-32" />
             ) : (
@@ -179,7 +179,7 @@ export default function BudgetPage() {
           <div className="mb-4 flex items-center gap-3">
             <div className={cn(
               "rounded-xl p-2 shadow-sm transition-colors",
-              margin && Number(margin) > 0 ? "bg-emerald-500/10 text-emerald-600" : "bg-destructive/10 text-destructive"
+              margin && Number(margin) > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
             )}>
               {margin && Number(margin) > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
             </div>
@@ -189,7 +189,7 @@ export default function BudgetPage() {
           </div>
           <p className={cn(
             "text-size-2xl font-black tracking-tight",
-            margin && Number(margin) > 0 ? "text-emerald-600" : "text-destructive"
+            margin && Number(margin) > 0 ? "text-success" : "text-destructive"
           )}>
             {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '--'}
           </p>
@@ -243,7 +243,7 @@ export default function BudgetPage() {
                   Aucune transaction n'a été enregistrée.
                 </p>
                 <CreateExpenseModal onExpenseCreated={refetch}>
-                  <Button className="h-11 rounded-xl px-8 font-black uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95 bg-indigo-600">
+                  <Button className="h-11 rounded-xl px-8 font-black uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95 bg-primary">
                     Saisir une dépense
                   </Button>
                 </CreateExpenseModal>
@@ -258,7 +258,7 @@ export default function BudgetPage() {
                     <div className="flex items-center gap-3 sm:gap-4">
                       <div className={cn(
                         'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-transform group-hover:scale-110 shadow-sm',
-                        expense.categorie === 'materiaux' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20'
+                        expense.categorie === 'materiaux' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-primary/10 text-primary border-primary/20'
                       )}>
                         {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
                       </div>
@@ -275,13 +275,13 @@ export default function BudgetPage() {
                     </div>
                     <div className="flex items-center gap-4 sm:gap-6">
                       <div className="text-right">
-                        <div className="text-size-sm font-black text-rose-600 sm:text-size-base">
+                        <div className="text-size-sm font-black text-destructive sm:text-size-base">
                           - {formatCurrency(expense.montant, enterprise?.devise)}
                         </div>
                       </div>
-                      <button className="text-muted-foreground hover:text-foreground transition-colors p-1">
+                      <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
                         <MoreVertical size={16} />
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ))}
@@ -293,9 +293,9 @@ export default function BudgetPage() {
         {/* Labor Debt Details */}
         <div className="space-y-6">
           <Card className="shadow-premium border-border rounded-2xl overflow-hidden" padding="none">
-             <div className="border-b border-border bg-rose-500/5 p-4 sm:p-6 flex items-center justify-between">
+             <div className="border-b border-border bg-destructive/5 p-4 sm:p-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-rose-500 text-white p-2 shadow-lg shadow-rose-200">
+                  <div className="rounded-xl bg-destructive text-destructive-foreground p-2 shadow-lg shadow-destructive/20">
                     <Users size={18} />
                   </div>
                   <div>
@@ -308,7 +308,7 @@ export default function BudgetPage() {
                   </div>
                 </div>
                 <Link href="/dashboard/budget/personnel">
-                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-rose-100 text-rose-600">
+                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-destructive text-destructive">
                       <ArrowRight size={16} />
                    </Button>
                 </Link>
@@ -334,7 +334,7 @@ export default function BudgetPage() {
                             <p className="text-[9px] font-bold text-muted-foreground uppercase">{worker.daysPresent} jours présents</p>
                          </div>
                          <div className="text-right">
-                            <p className="text-xs font-black text-rose-600">
+                            <p className="text-xs font-black text-destructive">
                               {formatCurrency(worker.remaining, enterprise?.devise)}
                             </p>
                             <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Solde restant</p>
@@ -348,12 +348,12 @@ export default function BudgetPage() {
              <div className="border-t border-border bg-muted/20 p-4">
                 <div className="flex justify-between items-center">
                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Dette Totale Personnel</span>
-                   <span className="text-sm font-black text-rose-600">{formatCurrency(totalLaborDebt, enterprise?.devise)}</span>
+                   <span className="text-sm font-black text-destructive">{formatCurrency(totalLaborDebt, enterprise?.devise)}</span>
                 </div>
              </div>
           </Card>
 
-          <Card className="bg-indigo-600 text-white border-none p-6 rounded-2xl shadow-xl shadow-indigo-100">
+          <Card className="bg-primary text-primary-foreground border-none p-6 rounded-2xl shadow-xl shadow-primary/20">
              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Enveloppe Budgétaire</h3>
              <p className="text-2xl font-black mb-4">
                {formatCurrency(budgetTotal, enterprise?.devise)}
