@@ -4,7 +4,7 @@ export interface Expense {
   libelle: string;
   montant: number;
   categorie: 'materiaux' | 'main_d_oeuvre' | 'transport' | 'divers';
-  date: string;
+  date_operation: string;
   chantier_id: string;
   entreprise_id: string;
 }

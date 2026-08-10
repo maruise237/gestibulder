@@ -634,7 +634,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                             {expense.libelle}
                           </div>
                           <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground uppercase">
-                            <span>{new Date(expense.date).toLocaleDateString()}</span>
+                            <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
                             <span>•</span>
                             <span>{expense.categorie.replace(/_/g, ' ')}</span>
                           </div>

@@ -76,7 +76,7 @@ export function CreateExpenseModal({
       libelle: formData.get('libelle') as string,
       montant: Number(formData.get('montant')),
       categorie: selectedCategory as any,
-      date: formData.get('date') as string,
+      date_operation: formData.get('date') as string,
       chantier_id: selectedProjectId,
       entreprise_id: enterprise?.id || '',
     };

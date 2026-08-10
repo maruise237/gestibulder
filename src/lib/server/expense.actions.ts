@@ -14,7 +14,7 @@ export async function getExpenses(chantierId?: string) {
     .from('depenses')
     .select('*')
     .eq('entreprise_id', entreprise_id)
-    .order('date', { ascending: false });
+    .order('date_operation', { ascending: false });
   if (chantierId && chantierId !== 'all') query = query.eq('chantier_id', chantierId);
 
   const { data: expenses, error } = await query;
