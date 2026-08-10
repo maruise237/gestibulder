@@ -83,16 +83,16 @@ export default function BudgetPage() {
       {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl uppercase font-black">Finances</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block uppercase tracking-wider">
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl font-black">Finances</h1>
+          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block tracking-wider">
             Suivi des dépenses et rentabilité des chantiers.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/dashboard/budget/personnel">
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary font-black uppercase text-[10px] tracking-widest h-9 px-4 rounded-xl">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 px-4 rounded-xl">
                <Users size={14} className="mr-2" />
-               Paiements Personnel
+               Paiements personnel
             </Button>
           </Link>
           <ExportModal />
@@ -107,8 +107,8 @@ export default function BudgetPage() {
             <AlertCircle size={20} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-black uppercase tracking-widest text-destructive">Risque budgétaire élevé</p>
-            <p className="text-[10px] font-bold text-destructive/80 uppercase">
+            <p className="text-[11px] font-black text-destructive">Risque budgétaire élevé</p>
+            <p className="text-[10px] font-bold text-destructive/80">
               Dépassement de {formatCurrency(totalEngaged - budgetTotal, enterprise?.devise)}
               (Matériaux + Tout le Personnel pointé)
             </p>
@@ -118,12 +118,12 @@ export default function BudgetPage() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-fluid-md">
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-primary/10 p-2 text-primary">
               <Wallet size={18} />
             </div>
-            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+            <span className="text-[10px] font-black text-muted-foreground">
               Budget Engagé
             </span>
           </div>
@@ -134,15 +134,15 @@ export default function BudgetPage() {
               formatCurrency(totalEngaged, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic text-destructive">Total Personnel + Matériaux</p>
+          <p className="mt-2 text-[9px] font-black text-muted-foreground italic text-destructive">Total Personnel + Matériaux</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-destructive">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-destructive/10 p-2 text-destructive">
               <Banknote size={18} />
             </div>
-            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+            <span className="text-[10px] font-black text-muted-foreground">
               Impayés (Dettes)
             </span>
           </div>
@@ -153,15 +153,15 @@ export default function BudgetPage() {
               formatCurrency(totalLaborDebt, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Salaires dus à ce jour</p>
+          <p className="mt-2 text-[9px] font-black text-muted-foreground italic">Salaires dus à ce jour</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-success">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-success/10 p-2 text-success">
               <HandCoins size={18} />
             </div>
-            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+            <span className="text-[10px] font-black text-muted-foreground">
               Budget Restant
             </span>
           </div>
@@ -172,10 +172,10 @@ export default function BudgetPage() {
               formatCurrency(budgetRemaining, enterprise?.devise)
             )}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Trésorerie théorique</p>
+          <p className="mt-2 text-[9px] font-black text-muted-foreground italic">Trésorerie théorique</p>
         </Card>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
+        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
           <div className="mb-4 flex items-center gap-3">
             <div className={cn(
               "rounded-xl p-2 shadow-sm transition-colors",
@@ -183,7 +183,7 @@ export default function BudgetPage() {
             )}>
               {margin && Number(margin) > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
             </div>
-            <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+            <span className="text-[10px] font-black text-muted-foreground">
               Rentabilité
             </span>
           </div>
@@ -193,7 +193,7 @@ export default function BudgetPage() {
           )}>
             {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '--'}
           </p>
-          <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase italic">Santé financière globale</p>
+          <p className="mt-2 text-[9px] font-black text-muted-foreground italic">Santé financière globale</p>
         </Card>
       </div>
 
@@ -206,11 +206,11 @@ export default function BudgetPage() {
                 <div className="rounded-xl border border-border bg-card p-2 shadow-sm">
                   <Calendar size={18} className="text-primary" />
                 </div>
-                <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+                <h2 className="text-size-lg font-black tracking-tight text-foreground">
                   Grand Livre
                 </h2>
               </div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <div className="text-[10px] font-black text-muted-foreground">
                 Historique des sorties
               </div>
             </div>
@@ -236,14 +236,14 @@ export default function BudgetPage() {
                     <Plus size={16} />
                   </div>
                 </div>
-                <h2 className="mb-2 text-size-xl font-black tracking-tight text-foreground uppercase">
+                <h2 className="mb-2 text-size-xl font-black tracking-tight text-foreground">
                   Historique vide
                 </h2>
-                <p className="mx-auto mb-10 max-w-sm text-size-sm font-bold text-muted-foreground italic uppercase">
+                <p className="mx-auto mb-10 max-w-sm text-size-sm font-bold text-muted-foreground italic">
                   Aucune transaction n'a été enregistrée.
                 </p>
                 <CreateExpenseModal onExpenseCreated={refetch}>
-                  <Button className="h-11 rounded-xl px-8 font-black uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95 bg-primary">
+                  <Button className="h-11 rounded-xl px-8 font-black shadow-premium transition-all hover:scale-105 active:scale-95 bg-primary">
                     Saisir une dépense
                   </Button>
                 </CreateExpenseModal>
@@ -263,10 +263,10 @@ export default function BudgetPage() {
                         {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
                       </div>
                       <div className="min-w-0">
-                        <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary uppercase tracking-tight">
+                        <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary tracking-tight">
                           {expense.libelle}
                         </div>
-                        <div className="mt-1 flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        <div className="mt-1 flex items-center gap-2 text-[9px] font-black text-muted-foreground">
                           <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
                           <span className="text-muted-foreground/30">•</span>
                           <span className="text-primary">{expense.categorie.replace(/_/g, ' ')}</span>
@@ -299,16 +299,16 @@ export default function BudgetPage() {
                     <Users size={18} />
                   </div>
                   <div>
-                    <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+                    <h2 className="text-size-lg font-black tracking-tight text-foreground">
                       Impayés
                     </h2>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <p className="text-[10px] font-bold text-muted-foreground">
                       Soldes par ouvrier
                     </p>
                   </div>
                 </div>
                 <Link href="/dashboard/budget/personnel">
-                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-destructive text-destructive">
+                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive hover:text-destructive-foreground">
                       <ArrowRight size={16} />
                    </Button>
                 </Link>
@@ -323,21 +323,21 @@ export default function BudgetPage() {
                 ) : !laborSummary || laborSummary.workers.length === 0 ? (
                   <div className="py-12 text-center">
                     <HardHat size={32} className="mx-auto mb-2 text-muted-foreground/20" />
-                    <p className="text-[10px] font-black text-muted-foreground uppercase italic">Tout est réglé</p>
+                    <p className="text-[10px] font-black text-muted-foreground italic">Tout est réglé</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     {laborSummary.workers.filter((w: any) => w.remaining > 0).map((worker: any) => (
                       <div key={worker.id} className="flex items-center justify-between p-3 rounded-xl transition-colors hover:bg-muted/50 border border-transparent hover:border-border">
                          <div className="min-w-0">
-                            <p className="text-[11px] font-black text-foreground uppercase truncate">{worker.nom_complet}</p>
-                            <p className="text-[9px] font-bold text-muted-foreground uppercase">{worker.daysPresent} jours présents</p>
+                            <p className="text-[11px] font-black text-foreground truncate">{worker.nom_complet}</p>
+                            <p className="text-[9px] font-bold text-muted-foreground">{worker.daysPresent} jours présents</p>
                          </div>
                          <div className="text-right">
                             <p className="text-xs font-black text-destructive">
                               {formatCurrency(worker.remaining, enterprise?.devise)}
                             </p>
-                            <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Solde restant</p>
+                            <p className="text-[8px] font-bold text-muted-foreground tracking-tighter">Solde restant</p>
                          </div>
                       </div>
                     ))}
@@ -347,19 +347,19 @@ export default function BudgetPage() {
 
              <div className="border-t border-border bg-muted/20 p-4">
                 <div className="flex justify-between items-center">
-                   <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Dette Totale Personnel</span>
+                   <span className="text-[10px] font-black text-muted-foreground">Dette Totale Personnel</span>
                    <span className="text-sm font-black text-destructive">{formatCurrency(totalLaborDebt, enterprise?.devise)}</span>
                 </div>
              </div>
           </Card>
 
           <Card className="bg-primary text-primary-foreground border-none p-6 rounded-2xl shadow-xl shadow-primary/20">
-             <h3 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mb-1">Enveloppe Budgétaire</h3>
+             <h3 className="text-[10px] font-black tracking-[0.2em] opacity-80 mb-1">Enveloppe Budgétaire</h3>
              <p className="text-2xl font-black mb-4">
                {formatCurrency(budgetTotal, enterprise?.devise)}
              </p>
              <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-bold uppercase">
+                <div className="flex justify-between text-[10px] font-bold">
                    <span>Consommation Réelle</span>
                    <span>{margin ? (100 - Number(margin)).toFixed(1) : 0}%</span>
                 </div>

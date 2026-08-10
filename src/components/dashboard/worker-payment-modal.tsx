@@ -75,8 +75,8 @@ export function WorkerPaymentModal({
               <Wallet size={24} />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black uppercase tracking-tight">Régler Salaire</DialogTitle>
-              <DialogDescription className="text-primary text-[10px] font-bold uppercase tracking-widest opacity-80">
+              <DialogTitle className="text-xl font-black tracking-tight">Régler Salaire</DialogTitle>
+              <DialogDescription className="text-primary text-[10px] font-bold opacity-80">
                 {worker.nom_complet}
               </DialogDescription>
             </div>
@@ -92,24 +92,24 @@ export function WorkerPaymentModal({
             <>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-muted/30 p-4 rounded-2xl border border-border">
-                  <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Dû Total</p>
-                  <p className="text-lg font-black text-foreground">{formatCurrency(dueData?.totalDue || 0, enterprise?.devise)}</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Dû total</p>
+                  <p className="text-lg font-semibold text-foreground">{formatCurrency(dueData?.totalDue || 0, enterprise?.devise)}</p>
                 </div>
-                <div className="bg-success/50 p-4 rounded-2xl border border-success">
-                  <p className="text-[9px] font-black text-success uppercase mb-1">Déjà Payé</p>
-                  <p className="text-lg font-black text-success">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
+                <div className="bg-success/10 p-4 rounded-2xl border border-success/20">
+                  <p className="text-xs font-medium text-success mb-1">Déjà payé</p>
+                  <p className="text-lg font-semibold text-success">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
                 </div>
               </div>
 
-              <div className="bg-primary/30 p-6 rounded-2xl border-2 border-dashed border-primary text-center">
-                 <p className="text-[10px] font-black text-primary uppercase mb-1 tracking-widest">Reste à payer</p>
-                 <p className="text-3xl font-black text-primary">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
-                 <p className="mt-2 text-[9px] font-bold text-muted-foreground uppercase italic">{dueData?.daysPresent} jours de présence</p>
+              <div className="bg-primary/5 p-6 rounded-2xl border border-primary/20 text-center">
+                 <p className="text-xs font-medium text-primary mb-1">Reste à payer</p>
+                 <p className="text-3xl font-semibold text-primary">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
+                 <p className="mt-2 text-xs text-muted-foreground">{dueData?.daysPresent} jours de présence</p>
               </div>
 
               <form onSubmit={handlePay} className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Montant du versement</Label>
+                  <Label className="text-xs font-medium text-muted-foreground">Montant du versement</Label>
                   <div className="relative">
                     <Input
                       type="number"
@@ -117,7 +117,7 @@ export function WorkerPaymentModal({
                       required
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="h-12 pl-12 text-lg font-black rounded-xl border-2 focus:border-primary"
+                      className="h-12 pl-12 text-lg font-semibold rounded-xl focus:border-primary"
                     />
                     <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                   </div>
@@ -127,7 +127,7 @@ export function WorkerPaymentModal({
                    <Button
                      type="submit"
                      disabled={mutation.isPending || !amount}
-                     className="w-full h-12 bg-primary hover:bg-primary rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg"
+                     className="w-full h-12 rounded-xl"
                    >
                      {mutation.isPending ? <Loader2 className="animate-spin" /> : 'Confirmer le paiement'}
                    </Button>

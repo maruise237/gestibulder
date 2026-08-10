@@ -45,7 +45,7 @@ export function StockHistoryModal({
               <DialogTitle className="text-2xl font-black tracking-tight">
                 Historique des Mouvements
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-black tracking-widest uppercase">
+              <DialogDescription className="text-muted-foreground/70 text-xs font-black">
                 {material.nom}
               </DialogDescription>
             </div>
@@ -56,7 +56,7 @@ export function StockHistoryModal({
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Loader2 className="mb-4 animate-spin text-primary" size={32} />
-              <p className="text-[10px] font-black tracking-widest uppercase">Récupération du registre...</p>
+              <p className="text-[10px] font-black">Récupération du registre...</p>
             </div>
           ) : history.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
@@ -75,8 +75,8 @@ export function StockHistoryModal({
                       className={cn(
                         'flex h-10 w-10 items-center justify-center rounded-xl border shadow-sm',
                         mov.type_mouvement === 'entree'
-                          ? 'border-success bg-success text-success'
-                          : 'border-destructive bg-destructive text-destructive'
+                          ? 'border-success/20 bg-success/10 text-success'
+                          : 'border-destructive/20 bg-destructive/10 text-destructive'
                       )}
                     >
                       {mov.type_mouvement === 'entree' ? (
@@ -89,7 +89,7 @@ export function StockHistoryModal({
                       <div className="text-sm font-black tracking-tight text-foreground">
                         {mov.type_mouvement === 'entree' ? 'Entrée de Stock' : 'Consommation'}
                       </div>
-                      <div className="mt-1 text-[9px] font-black tracking-widest text-muted-foreground uppercase">
+                      <div className="mt-1 text-[9px] font-black text-muted-foreground">
                         {formatDate(mov.date_operation)} • {mov.usage || mov.fournisseur || 'Général'}
                       </div>
                     </div>
@@ -104,7 +104,7 @@ export function StockHistoryModal({
                       {mov.type_mouvement === 'entree' ? '+' : '-'}
                       {mov.quantite} {material.unite}
                     </div>
-                    <div className="mt-0.5 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                    <div className="mt-0.5 text-[8px] font-black text-muted-foreground">
                       Traité
                     </div>
                   </div>

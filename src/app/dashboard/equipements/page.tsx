@@ -14,6 +14,7 @@ import { getEquipments, deleteEquipment } from '@/lib/server/equipment.actions';
 import { Equipment } from '@/types/equipment';
 import { CreateEquipmentModal } from '@/components/dashboard/create-equipment-modal';
 import { DeployEquipmentModal } from '@/components/dashboard/deploy-equipment-modal';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -118,29 +119,27 @@ export default function EquipementsPage() {
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <Loader2 className="mb-2 animate-spin text-primary" size={32} />
-          <p className="text-xs font-medium uppercase tracking-widest">Chargement...</p>
+          <p className="text-xs font-medium">Chargement...</p>
         </div>
       ) : filteredEquipments.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-20 text-center">
-          <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium">
-            <Truck size={40} className="text-primary/20" />
-            <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-premium animate-bounce">
-              <Plus size={16} />
-            </div>
-          </div>
-          <h2 className="mb-2 text-size-xl font-semibold tracking-tight text-foreground uppercase">
-            {searchQuery && hasEquipments ? 'Aucun résultat' : 'Parc matériel vide'}
-          </h2>
-          <p className="mx-auto mb-10 max-w-sm text-size-sm font-medium text-muted-foreground italic">
-            {searchQuery && hasEquipments
-              ? 'Aucun équipement ne correspond à votre recherche.'
-              : 'Enregistrez vos premiers engins et outils pour suivre leur déploiement sur les chantiers.'}
-          </p>
-          <CreateEquipmentModal onEquipmentCreated={fetchEquipments}>
-             <Button className="h-11 rounded-xl px-8 font-bold uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
-               Ajouter un équipement
-             </Button>
-          </CreateEquipmentModal>
+        <Card className="border-border">
+          <EmptyState
+            icon={Truck}
+            title={searchQuery && hasEquipments ? 'Aucun résultat' : 'Parc matériel vide'}
+            description={
+              searchQuery && hasEquipments
+                ? 'Aucun équipement ne correspond à votre recherche.'
+                : 'Enregistrez vos premiers engins et outils pour suivre leur déploiement sur les chantiers.'
+            }
+            action={
+              <CreateEquipmentModal onEquipmentCreated={fetchEquipments}>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Ajouter un équipement
+                </Button>
+              </CreateEquipmentModal>
+            }
+          />
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -160,7 +159,7 @@ export default function EquipementsPage() {
                     </div>
                     <span
                       className={cn(
-                        'rounded-full border px-2 py-0.5 text-[8px] font-semibold tracking-widest uppercase sm:text-[9px]',
+                        'rounded-full border px-2 py-0.5 text-[8px] font-semibold sm:text-[9px]',
                         status.color
                       )}
                     >
@@ -177,7 +176,7 @@ export default function EquipementsPage() {
                       <Tag size={12} className="text-primary" />
                       <span className="truncate">{equipment.categorie}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[9px] font-semibold text-muted-foreground uppercase">
+                    <div className="flex items-center gap-2 text-[9px] font-semibold text-muted-foreground">
                       <Hash size={10} />
                       <span className="truncate font-mono">
                         {equipment.numero_serie || 'SN NON RENSEIGNÉ'}

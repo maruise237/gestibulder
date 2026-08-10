@@ -133,7 +133,7 @@ export function CreateWorkerModal({
               <DialogTitle className="text-2xl font-semibold tracking-tight">
                 {isEdit ? 'Modifier le Profil' : 'Ajouter un Ouvrier'}
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-medium tracking-widest uppercase">
+              <DialogDescription className="text-muted-foreground/70 text-xs font-medium">
                 {isEdit ? `Édition de ${worker?.nom_complet}` : 'Nouvelle fiche personnel'}
               </DialogDescription>
             </div>
@@ -143,13 +143,13 @@ export function CreateWorkerModal({
         <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
+              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em]">
                 <ShieldCheck size={14} className="text-primary" /> Détails Personnels
               </h3>
               <div className="space-y-2.5">
                 <Label
                   htmlFor="nom_complet"
-                  className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
+                  className="text-muted-foreground text-[10px] font-semibold"
                 >
                   Nom Complet
                 </Label>
@@ -165,7 +165,7 @@ export function CreateWorkerModal({
               <div className="space-y-2.5">
                 <Label
                   htmlFor="telephone"
-                  className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
+                  className="text-muted-foreground text-[10px] font-semibold"
                 >
                   Numéro de Téléphone
                 </Label>
@@ -186,11 +186,11 @@ export function CreateWorkerModal({
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
+              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em]">
                 <Target size={14} className="text-primary" /> Profil Professionnel
               </h3>
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+                <Label className="text-muted-foreground text-[10px] font-semibold">
                   Métier / Spécialité
                 </Label>
                 <Select value={selectedMetier} onValueChange={(val) => val && setSelectedMetier(val)}>
@@ -214,7 +214,7 @@ export function CreateWorkerModal({
                 <div className="animate-in slide-in-from-top-2 space-y-2.5 duration-200">
                   <Label
                     htmlFor="metier_custom"
-                    className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
+                    className="text-muted-foreground text-[10px] font-semibold"
                   >
                     Nom du métier personnalisé
                   </Label>
@@ -233,7 +233,7 @@ export function CreateWorkerModal({
                   <Ruler size={14} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-primary/60 mb-1.1 text-[9px] leading-none font-semibold tracking-widest uppercase">
+                  <p className="text-primary/60 mb-1.1 text-[9px] leading-none font-semibold">
                     Unité de Production
                   </p>
                   <p className="text-foreground text-sm font-semibold">
@@ -245,12 +245,12 @@ export function CreateWorkerModal({
           </div>
 
           <div className="space-y-6 border-t pt-8">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em] uppercase">
+            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em]">
               <Banknote size={14} className="text-primary" /> Modèle de Rémunération
             </h3>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
+                <Label className="text-muted-foreground text-[10px] font-semibold">
                   Cycle de paie
                 </Label>
                 <div className="bg-muted/30 grid grid-cols-3 gap-2 rounded-md border p-1">
@@ -260,7 +260,7 @@ export function CreateWorkerModal({
                       type="button"
                       variant={paymentType === type ? 'default' : 'ghost'}
                       onClick={() => setPaymentType(type)}
-                      className="h-8 text-[10px] font-semibold tracking-widest uppercase"
+                      className="h-8 text-[10px] font-semibold"
                     >
                       {type}
                     </Button>
@@ -270,7 +270,7 @@ export function CreateWorkerModal({
               <div className="space-y-2.5">
                 <Label
                   htmlFor="taux"
-                  className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase"
+                  className="text-muted-foreground text-[10px] font-semibold"
                 >
                   Taux ({paymentType})
                 </Label>
@@ -288,7 +288,7 @@ export function CreateWorkerModal({
                     placeholder="0.00"
                     className="h-9 pr-12 pl-12 font-medium"
                   />
-                  <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-[10px] font-semibold tracking-widest uppercase">
+                  <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-[10px] font-semibold">
                     DA
                   </span>
                 </div>
@@ -299,7 +299,7 @@ export function CreateWorkerModal({
           {error && (
             <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-md border p-4">
               <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-semibold tracking-widest uppercase">
+              <p className="text-destructive text-xs font-semibold">
                 {error}
               </p>
             </div>

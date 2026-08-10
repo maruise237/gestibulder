@@ -13,6 +13,7 @@ import { Search, Plus, Trash2, Edit, Users, HardHat, Loader2, Wallet } from 'luc
 import { CreateWorkerModal } from '@/components/dashboard/create-worker-modal';
 import { ExportModal } from '@/components/dashboard/export-modal';
 import { WorkerPaymentModal } from '@/components/dashboard/worker-payment-modal';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Worker } from '@/types/worker';
 
@@ -73,7 +74,7 @@ export default function WorkersPage() {
       {/* Page Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl uppercase">Ouvriers</h1>
+          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Ouvriers</h1>
           <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
             Gestion de vos effectifs par chantier.
           </p>
@@ -100,37 +101,33 @@ export default function WorkersPage() {
       </div>
 
       {!selectedProjectId || selectedProjectId === 'all' ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-            <HardHat size={32} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-size-xl font-semibold tracking-tight text-foreground uppercase">Sélectionnez un chantier</h2>
-          <p className="text-size-sm text-muted-foreground mt-1 uppercase font-bold">Veuillez choisir un chantier dans le menu supérieur pour voir les ouvriers affectés.</p>
+        <Card className="border-border">
+          <EmptyState
+            icon={HardHat}
+            title="Sélectionnez un chantier"
+            description="Choisissez un chantier dans le menu supérieur pour voir les ouvriers affectés."
+          />
         </Card>
       ) : isLoading ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <Loader2 className="mb-2 animate-spin text-primary" size={32} />
-          <p className="text-xs font-medium uppercase tracking-widest">Chargement des effectifs...</p>
+          <p className="text-xs font-medium">Chargement des effectifs...</p>
         </div>
       ) : workers.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-20 text-center rounded-2xl">
-          <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium">
-            <Users size={40} className="text-primary/20" />
-            <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-premium animate-bounce">
-              <Plus size={16} />
-            </div>
-          </div>
-          <h2 className="mb-2 text-size-xl font-semibold tracking-tight text-foreground uppercase">
-            Effectif vide
-          </h2>
-          <p className="mx-auto mb-10 max-w-sm text-size-sm font-medium text-muted-foreground italic uppercase">
-            Il semble que personne n'ait encore été affecté à ce chantier. Ajoutez vos premiers ouvriers pour commencer le pointage.
-          </p>
-          <CreateWorkerModal onWorkerCreated={refetch}>
-             <Button className="h-11 rounded-xl px-8 font-bold uppercase tracking-widest shadow-premium transition-all hover:scale-105 active:scale-95">
-               Ajouter un ouvrier
-             </Button>
-          </CreateWorkerModal>
+        <Card className="border-border">
+          <EmptyState
+            icon={Users}
+            title="Effectif vide"
+            description="Personne n'a encore été affecté à ce chantier. Ajoutez vos premiers ouvriers pour commencer le pointage."
+            action={
+              <CreateWorkerModal onWorkerCreated={refetch}>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Ajouter un ouvrier
+                </Button>
+              </CreateWorkerModal>
+            }
+          />
         </Card>
       ) : (
         <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
@@ -138,19 +135,19 @@ export default function WorkersPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  <TableHead className="px-4 py-3 text-[10px] font-black text-muted-foreground">
                     Ouvrier
                   </TableHead>
-                  <TableHead className="hidden px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase sm:table-cell">
+                  <TableHead className="hidden px-4 py-3 text-[10px] font-black text-muted-foreground sm:table-cell">
                     Métier
                   </TableHead>
-                  <TableHead className="px-4 py-3 text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  <TableHead className="px-4 py-3 text-[10px] font-black text-muted-foreground">
                     Rémunération
                   </TableHead>
-                  <TableHead className="px-4 py-3 text-center text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  <TableHead className="px-4 py-3 text-center text-[10px] font-black text-muted-foreground">
                     Statut
                   </TableHead>
-                  <TableHead className="px-4 py-3 text-right text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  <TableHead className="px-4 py-3 text-right text-[10px] font-black text-muted-foreground">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -167,10 +164,10 @@ export default function WorkersPage() {
                           {worker.nom_complet.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="truncate text-size-xs font-black text-foreground sm:text-size-sm uppercase">
+                          <span className="truncate text-size-xs font-black text-foreground sm:text-size-sm">
                             {worker.nom_complet}
                           </span>
-                          <span className="truncate text-[10px] font-bold text-muted-foreground sm:hidden uppercase">
+                          <span className="truncate text-[10px] font-bold text-muted-foreground sm:hidden">
                             {formatMetier(worker)}
                           </span>
                         </div>
@@ -178,20 +175,20 @@ export default function WorkersPage() {
                     </TableCell>
                     <TableCell className="hidden px-4 py-3 sm:table-cell">
                       <div className="flex flex-col">
-                        <span className="text-size-xs font-bold text-foreground uppercase">
+                        <span className="text-size-xs font-bold text-foreground">
                           {formatMetier(worker)}
                         </span>
-                        <span className="text-[9px] font-black text-muted-foreground uppercase">
+                        <span className="text-[9px] font-black text-muted-foreground">
                           {worker.unite_production}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="text-size-xs font-black text-foreground sm:text-size-sm uppercase">
+                        <span className="text-size-xs font-black text-foreground sm:text-size-sm">
                           {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
                         </span>
-                        <span className="text-[9px] font-black text-primary uppercase">
+                        <span className="text-[9px] font-black text-primary">
                           {worker.type_paiement}
                         </span>
                       </div>
@@ -200,7 +197,7 @@ export default function WorkersPage() {
                       <div className="flex justify-center">
                         <span
                           className={cn(
-                            'rounded-full px-2 py-0.5 text-[8px] font-black tracking-widest uppercase sm:text-[9px]',
+                            'rounded-full px-2 py-0.5 text-[8px] font-black sm:text-[9px]',
                             worker.actif
                               ? 'bg-success/10 text-success'
                               : 'bg-destructive/10 text-destructive'
@@ -215,7 +212,7 @@ export default function WorkersPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          className="h-7 w-7 text-primary hover:bg-primary"
+                          className="h-7 w-7 text-primary hover:bg-primary hover:text-primary-foreground"
                           onClick={() => setPaymentModal({ open: true, worker })}
                           title="Régler Salaire"
                         >

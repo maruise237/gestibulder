@@ -79,15 +79,15 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
           const salaire = state.statut === 'present' ? taux : state.statut === 'demi_journee' ? taux / 2 : 0;
 
           return (
-            <Card key={worker.id} className="p-4 border-l-8 border-l-primary rounded-2xl">
+            <Card key={worker.id} className="p-4 border-border rounded-2xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary font-bold">
+                  <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
                     {worker.nom_complet.charAt(0)}
                   </div>
                   <div>
-                    <p className="font-black text-foreground uppercase text-sm">{worker.nom_complet}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">{worker.metier}</p>
+                    <p className="font-semibold text-foreground text-sm">{worker.nom_complet}</p>
+                    <p className="text-xs text-muted-foreground">{worker.metier}</p>
                   </div>
                 </div>
 
@@ -126,7 +126,7 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
                   )}
 
                   <div className="min-w-[80px] text-right">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Salaire</p>
+                    <p className="text-[10px] font-bold text-muted-foreground">Salaire</p>
                     <p className="font-black text-primary text-sm">
                       {salaire.toLocaleString('fr-FR')} <span className="text-[10px]">FCFA</span>
                     </p>

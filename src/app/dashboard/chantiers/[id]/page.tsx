@@ -28,6 +28,7 @@ import {
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { useApp } from '@/lib/context/app-context';
 import Link from 'next/link';
 import { Worker } from '@/types/worker';
@@ -134,7 +135,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
     );
   }
 
-  if (!project) return <div className="p-8 text-center uppercase font-black">Projet non trouvé</div>;
+  if (!project) return <div className="p-8 text-center font-black">Projet non trouvé</div>;
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.montant, 0);
   const marginValue = project.budget_total - totalExpenses;
@@ -144,7 +145,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       {/* Back Button */}
       <Link
         href="/dashboard/chantiers"
-        className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground transition-colors hover:text-primary"
+        className="inline-flex items-center gap-2 text-[10px] font-black text-muted-foreground transition-colors hover:text-primary"
       >
         <ChevronLeft size={14} />
         Retour aux chantiers
@@ -157,10 +158,10 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <HardHat size={32} />
           </div>
           <div className="space-y-1">
-            <h1 className="text-size-3xl font-black tracking-tight text-foreground uppercase">
+            <h1 className="text-size-3xl font-black tracking-tight text-foreground">
               {project.nom}
             </h1>
-            <div className="flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-3 text-[10px] font-black text-muted-foreground">
               <span className="flex items-center gap-1">
                 <MapPin size={12} /> {project.adresse || 'Non spécifié'}
               </span>
@@ -179,7 +180,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                onValueChange={handleUpdateStatus}
                disabled={isUpdating}
              >
-               <SelectTrigger className="h-8 w-[140px] border-none bg-transparent text-[10px] font-black uppercase tracking-widest shadow-none">
+               <SelectTrigger className="h-8 w-[140px] border-none bg-transparent text-[10px] font-black shadow-none">
                  <SelectValue />
                </SelectTrigger>
                <SelectContent>
@@ -193,7 +194,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
              <div className="h-4 w-[1px] bg-border mx-1" />
 
              <div className="flex items-center gap-2 px-2">
-               <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Progrès:</span>
+               <span className="text-[10px] font-black text-muted-foreground">Progrès:</span>
                <div className="flex items-center gap-1">
                  <Input
                    type="number"
@@ -209,10 +210,10 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
              </div>
            </div>
 
-           <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold" onClick={() => setActivityModalOpen(true)}>
+           <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] font-semibold" onClick={() => setActivityModalOpen(true)}>
              <History size={14} className="mr-1.5" /> Historique
            </Button>
-           <Button size="sm" className="h-8 px-2 text-[10px] uppercase font-semibold" onClick={() => setActivityModalOpen(true)}>
+           <Button size="sm" className="h-8 px-2 text-[10px] font-semibold" onClick={() => setActivityModalOpen(true)}>
              <ActivityIcon size={14} className="mr-1.5" /> Activité
            </Button>
         </div>
@@ -222,13 +223,13 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       <Dialog open={activityModalOpen} onOpenChange={setActivityModalOpen}>
         <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-none">
           <DialogHeader className="bg-primary p-6 text-primary-foreground">
-            <DialogTitle className="text-xl font-black uppercase tracking-tight flex items-center gap-2">
+            <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2">
               <History size={20} /> Journal d'Activité
             </DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto p-6">
             {activities.length === 0 ? (
-              <div className="py-12 text-center text-muted-foreground italic uppercase text-[10px] font-black">
+              <div className="py-12 text-center text-muted-foreground italic text-[10px] font-black">
                 Aucune activité enregistrée.
               </div>
             ) : (
@@ -243,7 +244,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                       {act.type === 'expense' ? <Wallet size={14} /> : <Package size={14} />}
                     </div>
                     <div>
-                      <p className="text-[11px] font-black uppercase text-foreground leading-tight">{act.title}</p>
+                      <p className="text-[11px] font-black text-foreground leading-tight">{act.title}</p>
                       <div className="mt-1 flex items-center gap-2">
                         <span className={cn(
                           "text-size-sm font-black",
@@ -253,7 +254,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                           {act.type === 'expense' ? `- ${formatCurrency(act.amount, enterprise?.devise)}` :
                            `${act.subType === 'entree' ? '+' : '-'}${act.amount} ${act.unit}`}
                         </span>
-                        <span className="text-[9px] font-bold text-muted-foreground uppercase">
+                        <span className="text-[9px] font-bold text-muted-foreground">
                           • {new Date(act.date).toLocaleDateString()}
                         </span>
                       </div>
@@ -278,7 +279,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="whitespace-nowrap px-4 py-2 text-[10px] font-black uppercase tracking-widest"
+              className="whitespace-nowrap px-4 py-2 text-[10px] font-black"
             >
               {tab.label}
             </TabsTrigger>
@@ -293,7 +294,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <div className="space-y-6 lg:col-span-2">
               <Card className="shadow-premium border-border rounded-2xl p-6">
                 <div className="mb-6 flex items-center justify-between">
-                   <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">Statut d'Avancement</h2>
+                   <h2 className="text-size-lg font-black tracking-tight text-foreground">Statut d'Avancement</h2>
                    <span className="text-size-2xl font-black text-primary">{project.avancement_pct || 0}%</span>
                 </div>
                 <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
@@ -304,23 +305,23 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 </div>
                 <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Effectif total</p>
+                    <p className="text-[9px] font-black text-muted-foreground">Effectif total</p>
                     <p className="text-size-xl font-black text-foreground">{workers.length}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Présents (jour)</p>
+                    <p className="text-[9px] font-black text-muted-foreground">Présents (jour)</p>
                     <p className="text-size-xl font-black text-success">
                       {todayAttendance.filter(a => a.statut === 'present').length}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Alertes stock</p>
+                    <p className="text-[9px] font-black text-muted-foreground">Alertes stock</p>
                     <p className="text-size-xl font-black text-warning">
                       {materials.filter(m => (m.stock_actuel || 0) <= m.seuil_alerte).length}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">Budget consommé</p>
+                    <p className="text-[9px] font-black text-muted-foreground">Budget consommé</p>
                     <p className="text-size-xl font-black text-foreground">
                        {project.budget_total > 0 ? Math.round((totalExpenses / project.budget_total) * 100) : 0}%
                     </p>
@@ -334,9 +335,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                       <div className="rounded-xl bg-success/10 p-2 text-success">
                         <Users size={20} />
                       </div>
-                      <Link href="/dashboard/pointage" className="text-[9px] font-black uppercase tracking-widest text-primary">Pointage</Link>
+                      <Link href="/dashboard/pointage" className="text-[9px] font-black text-primary">Pointage</Link>
                    </div>
-                   <h3 className="text-size-sm font-black text-muted-foreground uppercase tracking-widest">Main d'œuvre</h3>
+                   <h3 className="text-size-sm font-black text-muted-foreground">Main d'œuvre</h3>
                    <p className="mt-1 text-size-xl font-black text-foreground">{workers.length} ouvriers</p>
                  </Card>
 
@@ -345,39 +346,36 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                        <div className="rounded-xl bg-warning/10 p-2 text-warning">
                          <Package size={20} />
                        </div>
-                       <Link href="/dashboard/stocks" className="text-[9px] font-black uppercase tracking-widest text-primary">Stocks</Link>
+                       <Link href="/dashboard/stocks" className="text-[9px] font-black text-primary">Stocks</Link>
                     </div>
-                    <h3 className="text-size-sm font-black text-muted-foreground uppercase tracking-widest">Matériaux</h3>
+                    <h3 className="text-size-sm font-black text-muted-foreground">Matériaux</h3>
                     <p className="mt-1 text-size-xl font-black text-foreground">{materials.length} références</p>
                  </Card>
               </div>
             </div>
 
             <div className="space-y-6">
-               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-primary">
+               <Card className="border-border p-6 rounded-2xl">
                  <div className="mb-4 flex items-center gap-3">
                     <div className="rounded-lg bg-primary/10 p-2 text-primary">
                       <Wallet size={18} />
                     </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Budget Total</span>
+                    <span className="text-[10px] font-black text-muted-foreground">Budget Total</span>
                  </div>
                  <p className="text-size-2xl font-black text-foreground">{formatCurrency(project.budget_total, enterprise?.devise)}</p>
                </Card>
 
-               <Card className="border-border p-6 rounded-2xl border-l-8 border-l-destructive">
+               <Card className="border-border p-6 rounded-2xl">
                   <div className="mb-4 flex items-center gap-3">
                      <div className="rounded-lg bg-destructive/10 p-2 text-destructive">
                        <TrendingDown size={18} />
                      </div>
-                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Dépenses réelles</span>
+                     <span className="text-[10px] font-black text-muted-foreground">Dépenses réelles</span>
                   </div>
                   <p className="text-size-2xl font-black text-foreground">{formatCurrency(totalExpenses, enterprise?.devise)}</p>
                </Card>
 
-               <Card className={cn(
-                 "border-border p-6 rounded-2xl border-l-8",
-                 marginValue > 0 ? "border-l-success" : "border-l-destructive"
-               )}>
+               <Card className="border-border p-6 rounded-2xl">
                   <div className="mb-4 flex items-center gap-3">
                      <div className={cn(
                        "rounded-lg p-2",
@@ -385,7 +383,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                      )}>
                        {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                      </div>
-                     <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Marge actuelle</span>
+                     <span className="text-[10px] font-black text-muted-foreground">Marge actuelle</span>
                   </div>
                   <p className={cn(
                     "text-size-2xl font-black",
@@ -403,7 +401,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 <div className="rounded-md border border-border bg-background p-2">
                   <Users size={18} className="text-primary" />
                 </div>
-                <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+                <h2 className="text-size-lg font-black tracking-tight text-foreground">
                   Ouvriers affectés
                 </h2>
               </div>
@@ -420,17 +418,17 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20">
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nom complet</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Métier</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paiement</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Taux</TableHead>
-                  <TableHead className="px-6 py-4 text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">Statut</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Nom complet</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Métier</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Paiement</TableHead>
+                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Taux</TableHead>
+                  <TableHead className="px-6 py-4 text-center text-[10px] font-black text-muted-foreground">Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {workers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground italic uppercase text-[10px] font-black">
+                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground italic text-[10px] font-black">
                        Aucun ouvrier affecté.
                     </TableCell>
                   </TableRow>
@@ -442,14 +440,14 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                           <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
                             {worker.nom_complet.charAt(0).toUpperCase()}
                           </div>
-                          <span className="text-size-sm font-black text-foreground uppercase truncate max-w-[150px]">{worker.nom_complet}</span>
+                          <span className="text-size-sm font-black text-foreground truncate max-w-[150px]">{worker.nom_complet}</span>
                         </div>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="text-size-sm font-semibold text-muted-foreground uppercase">{formatMetier(worker)}</span>
+                        <span className="text-size-sm font-semibold text-muted-foreground">{formatMetier(worker)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="text-size-sm font-black text-primary uppercase">{worker.type_paiement}</span>
+                        <span className="text-size-sm font-black text-primary">{worker.type_paiement}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <span className="text-size-sm font-black text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
@@ -458,7 +456,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                         <div className="flex justify-center">
                           <span
                             className={cn(
-                              'rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-widest',
+                              'rounded-full px-2 py-0.5 text-[8px] font-black',
                               worker.actif
                                 ? 'bg-success/10 text-success'
                                 : 'bg-destructive/10 text-destructive'
@@ -479,16 +477,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         {activeTab === 'inventory' && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {materials.length === 0 ? (
-              <Card className="col-span-full border-2 border-dashed border-border bg-muted/30 py-12 text-center rounded-2xl">
-                <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-                  <Package size={32} strokeWidth={1.5} />
-                </div>
-                <h2 className="mb-1 text-size-lg font-black tracking-tight text-foreground uppercase">
-                  Aucun matériau
-                </h2>
-                <p className="mx-auto text-[10px] font-medium text-muted-foreground uppercase">
-                  Aucun matériau enregistré pour ce chantier.
-                </p>
+              <Card className="col-span-full border-border">
+                <EmptyState
+                  icon={Package}
+                  title="Aucun matériau"
+                  description="Aucun matériau enregistré pour ce chantier."
+                />
               </Card>
             ) : (
               materials.map((mat) => {
@@ -512,17 +506,17 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                         </div>
                         <div className="flex items-center gap-2">
                            {isOut ? (
-                             <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-destructive uppercase">Rupture</span>
+                             <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-black text-destructive">Rupture</span>
                            ) : isLow ? (
-                             <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-black tracking-widest text-warning uppercase">Critique</span>
+                             <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-black text-warning">Critique</span>
                            ) : null}
                         </div>
                       </div>
 
-                      <h3 className="truncate text-size-lg font-black tracking-tight text-foreground group-hover:text-primary uppercase">
+                      <h3 className="truncate text-size-lg font-black tracking-tight text-foreground group-hover:text-primary">
                         {mat.nom}
                       </h3>
-                      <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground uppercase">
+                      <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground">
                         Seuil: {mat.seuil_alerte} {mat.unite}
                       </p>
 
@@ -534,12 +528,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                           )}>
                             {stock}
                           </span>
-                          <span className="text-[9px] font-black text-muted-foreground uppercase">{mat.unite}</span>
+                          <span className="text-[9px] font-black text-muted-foreground">{mat.unite}</span>
                         </div>
                       </div>
 
                       <div className="mt-auto flex items-center justify-between">
-                         <span className="text-[8px] font-semibold text-muted-foreground uppercase">
+                         <span className="text-[8px] font-semibold text-muted-foreground">
                            Maj {new Date(mat.created_at).toLocaleDateString()}
                          </span>
                       </div>
@@ -554,12 +548,12 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         {activeTab === 'finances' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
+              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
                 <div className="mb-4 flex items-center gap-3">
                   <div className="rounded-md bg-primary/10 p-2 text-primary">
                     <Wallet size={18} />
                   </div>
-                  <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  <span className="text-[10px] font-black text-muted-foreground">
                     Total Dépenses
                   </span>
                 </div>
@@ -568,13 +562,13 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 </p>
                 <div className="mt-2 flex items-center gap-1 text-success">
                   <ArrowDownRight size={14} />
-                  <span className="text-[9px] font-black tracking-widest uppercase">
+                  <span className="text-[9px] font-black">
                     Actualisé
                   </span>
                 </div>
               </Card>
 
-              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl border-l-8 border-l-primary">
+              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
                 <div className="mb-4 flex items-center gap-3">
                   <div className={cn(
                     "rounded-md p-2",
@@ -582,7 +576,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   )}>
                     {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
                   </div>
-                  <span className="text-[10px] font-black tracking-widest text-muted-foreground uppercase">
+                  <span className="text-[10px] font-black text-muted-foreground">
                     Marge (Currency)
                   </span>
                 </div>
@@ -592,7 +586,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 )}>
                   {formatCurrency(marginValue, enterprise?.devise)}
                 </p>
-                <p className="mt-2 text-[9px] font-black tracking-widest text-muted-foreground uppercase">
+                <p className="mt-2 text-[9px] font-black text-muted-foreground">
                    Reste à dépenser
                 </p>
               </Card>
@@ -604,7 +598,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                   <div className="rounded-md border border-border bg-background p-2">
                     <Calculator size={18} className="text-primary" />
                   </div>
-                  <h2 className="text-size-lg font-black tracking-tight text-foreground uppercase">
+                  <h2 className="text-size-lg font-black tracking-tight text-foreground">
                     Grand Livre
                   </h2>
                 </div>
@@ -613,7 +607,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
               {expenses.length === 0 ? (
                 <div className="p-12 text-center text-muted-foreground">
                   <Calculator size={32} className="mx-auto mb-2 opacity-10" />
-                  <p className="text-[10px] font-black uppercase italic">Aucune transaction enregistrée.</p>
+                  <p className="text-[10px] font-black italic">Aucune transaction enregistrée.</p>
                 </div>
               ) : (
                 <div className="divide-y divide-border">
@@ -630,10 +624,10 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                           {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary uppercase">
+                          <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary">
                             {expense.libelle}
                           </div>
-                          <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground uppercase">
+                          <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground">
                             <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
                             <span>•</span>
                             <span>{expense.categorie.replace(/_/g, ' ')}</span>
@@ -642,7 +636,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                       </div>
                       <div className="flex items-center gap-4 sm:gap-6">
                         <div className="text-right">
-                          <div className="text-size-sm font-black text-destructive sm:text-size-base uppercase">
+                          <div className="text-size-sm font-black text-destructive sm:text-size-base">
                             - {formatCurrency(expense.montant, enterprise?.devise)}
                           </div>
                         </div>

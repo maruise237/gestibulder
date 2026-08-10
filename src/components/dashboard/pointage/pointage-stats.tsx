@@ -132,7 +132,7 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
       <div className="flex flex-col md:flex-row gap-4 items-end justify-between bg-card p-6 rounded-2xl border shadow-sm">
         <div className="flex flex-wrap gap-4">
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Mois</Label>
+            <Label className="text-[10px] font-black text-muted-foreground ml-1">Mois</Label>
             <Select value={mois} onValueChange={(val) => val && setMois(val)}>
               <SelectTrigger className="w-[180px] h-10 rounded-xl font-bold">
                 <SelectValue placeholder="Mois" />
@@ -146,7 +146,7 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest ml-1">Année</Label>
+            <Label className="text-[10px] font-black text-muted-foreground ml-1">Année</Label>
             <Select value={annee} onValueChange={(val) => val && setAnnee(val)}>
               <SelectTrigger className="w-[120px] h-10 rounded-xl font-bold">
                 <SelectValue placeholder="Année" />
@@ -164,14 +164,14 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
           <Button
             variant="outline"
             onClick={exportExcel}
-            className="flex-1 md:flex-none h-10 rounded-xl font-black text-[10px] uppercase tracking-widest border-primary text-primary"
+            className="flex-1 md:flex-none h-10 rounded-xl font-black text-[10px] border-primary text-primary"
           >
             <FileSpreadsheet className="w-3.5 h-3.5 mr-2" /> Excel
           </Button>
           <Button
             variant="outline"
             onClick={exportPDF}
-            className="flex-1 md:flex-none h-10 rounded-xl font-black text-[10px] uppercase tracking-widest border-primary text-primary"
+            className="flex-1 md:flex-none h-10 rounded-xl font-black text-[10px] border-primary text-primary"
           >
             <FileText className="w-3.5 h-3.5 mr-2" /> PDF
           </Button>
@@ -179,22 +179,28 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-6 rounded-2xl border-l-8 border-primary bg-primary/20">
-          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Total Salaire Mensuel</p>
-          <p className="text-2xl font-black text-primary">{totalMonth.toLocaleString()} <span className="text-xs">FCFA</span></p>
-          <TrendingUp className="w-8 h-8 text-primary absolute right-6 bottom-6" />
+        <Card className="p-6 rounded-2xl border-border">
+          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
+            <TrendingUp size={18} />
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">Total salaire mensuel</p>
+          <p className="text-2xl font-semibold text-foreground">{totalMonth.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">FCFA</span></p>
         </Card>
 
-        <Card className="p-6 rounded-2xl border-l-8 border-success bg-success/20">
-          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Effectif Concerné</p>
-          <p className="text-2xl font-black text-success">{stats.length} <span className="text-xs">Ouvriers</span></p>
-          <Users className="w-8 h-8 text-success absolute right-6 bottom-6" />
+        <Card className="p-6 rounded-2xl border-border">
+          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-success/10 text-success">
+            <Users size={18} />
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">Effectif concerné</p>
+          <p className="text-2xl font-semibold text-foreground">{stats.length} <span className="text-xs font-normal text-muted-foreground">ouvriers</span></p>
         </Card>
 
-        <Card className="p-6 rounded-2xl border-l-8 border-warning bg-warning/20">
-          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-1">Période</p>
-          <p className="text-2xl font-black text-warning">{MONTHS.find(m => m.value === mois)?.label} {annee}</p>
-          <Calendar className="w-8 h-8 text-warning absolute right-6 bottom-6" />
+        <Card className="p-6 rounded-2xl border-border">
+          <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md bg-warning/10 text-warning">
+            <Calendar size={18} />
+          </div>
+          <p className="text-xs font-medium text-muted-foreground mb-1">Période</p>
+          <p className="text-2xl font-semibold text-foreground">{MONTHS.find(m => m.value === mois)?.label} {annee}</p>
         </Card>
       </div>
 
@@ -203,11 +209,11 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
           <Table>
             <TableHeader className="bg-muted/50">
               <TableRow>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest">Ouvrier</TableHead>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Présent (P)</TableHead>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Demi (D)</TableHead>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest text-center">Absent (A)</TableHead>
-                <TableHead className="font-black uppercase text-[10px] tracking-widest text-right">Total Salaire</TableHead>
+                <TableHead className="font-black text-[10px]">Ouvrier</TableHead>
+                <TableHead className="font-black text-[10px] text-center">Présent (P)</TableHead>
+                <TableHead className="font-black text-[10px] text-center">Demi (D)</TableHead>
+                <TableHead className="font-black text-[10px] text-center">Absent (A)</TableHead>
+                <TableHead className="font-black text-[10px] text-right">Total Salaire</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -215,12 +221,12 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
                 <TableRow>
                   <TableCell colSpan={5} className="h-40 text-center">
                     <Loader2 className="w-8 h-8 animate-spin mx-auto text-primary mb-2" />
-                    <span className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Chargement...</span>
+                    <span className="font-black text-[10px] text-muted-foreground">Chargement...</span>
                   </TableCell>
                 </TableRow>
               ) : stats.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-40 text-center text-muted-foreground font-bold uppercase text-xs">
+                  <TableCell colSpan={5} className="h-40 text-center text-muted-foreground font-bold text-xs">
                     Aucune donnée pour cette période
                   </TableCell>
                 </TableRow>
@@ -228,17 +234,17 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
                 stats.map((s) => (
                   <TableRow key={s.ouvrier_id} className="hover:bg-muted/30">
                     <TableCell>
-                      <p className="font-black text-sm uppercase">{s.nom_complet}</p>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase">{s.metier}</p>
+                      <p className="font-semibold text-sm">{s.nom_complet}</p>
+                      <p className="text-xs text-muted-foreground">{s.metier}</p>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="secondary" className="bg-success text-success font-black h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.jours_present}</Badge>
+                      <Badge variant="secondary" className="bg-success/10 text-success font-semibold h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.jours_present}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="secondary" className="bg-warning text-warning font-black h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.demi_journees}</Badge>
+                      <Badge variant="secondary" className="bg-warning/10 text-warning font-semibold h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.demi_journees}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="secondary" className="bg-destructive text-destructive font-black h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.jours_absent}</Badge>
+                      <Badge variant="secondary" className="bg-destructive/10 text-destructive font-semibold h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.jours_absent}</Badge>
                     </TableCell>
                     <TableCell className="text-right font-black text-primary">
                       {s.total_salaire.toLocaleString()} <span className="text-[10px]">FCFA</span>

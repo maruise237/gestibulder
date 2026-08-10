@@ -238,9 +238,7 @@ body {
 .shepherd-title {
   color: var(--foreground);
   font-size: var(--font-size-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-weight: 600;
 }
 
 .shepherd-text {
@@ -262,11 +260,9 @@ body {
   color: var(--primary-foreground);
   border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 13px;
+  font-weight: 600;
   padding: 0.5rem 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   transition: all 0.2s;
 }
 

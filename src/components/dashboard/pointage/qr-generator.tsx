@@ -86,7 +86,7 @@ export function QRGenerator({ workers }: QRGeneratorProps) {
             variant="outline"
             size="sm"
             onClick={toggleAll}
-            className="rounded-xl h-10 font-black text-[10px] uppercase tracking-widest border-primary"
+            className="rounded-xl h-10 font-black text-[10px] border-primary"
           >
             {selectedIds.length === workers.length ? (
               <><Square className="w-3.5 h-3.5 mr-2" /> Désélectionner</>
@@ -94,7 +94,7 @@ export function QRGenerator({ workers }: QRGeneratorProps) {
               <><CheckSquare className="w-3.5 h-3.5 mr-2" /> Tout sélectionner</>
             )}
           </Button>
-          <Badge variant="secondary" className="font-black text-[10px] uppercase py-1.5 px-3 bg-primary text-primary border border-primary rounded-lg">
+          <Badge variant="secondary" className="py-1.5 px-3 bg-primary text-primary-foreground rounded-lg">
             {selectedIds.length} sélectionné(s)
           </Badge>
         </div>
@@ -105,7 +105,7 @@ export function QRGenerator({ workers }: QRGeneratorProps) {
             size="sm"
             disabled={isGenerating || workers.length === 0}
             onClick={() => handleDownload(workers.map(w => w.id))}
-            className="rounded-xl h-10 font-black text-[10px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+            className="rounded-xl h-10 font-black text-[10px] text-muted-foreground hover:text-foreground"
           >
             Tout exporter
           </Button>
@@ -113,7 +113,7 @@ export function QRGenerator({ workers }: QRGeneratorProps) {
             size="sm"
             disabled={isGenerating || selectedIds.length === 0}
             onClick={() => handleDownload(selectedIds)}
-            className="rounded-xl h-10 px-5 font-black text-[10px] uppercase tracking-widest bg-primary hover:bg-primary shadow-lg shadow-primary/20"
+            className="rounded-xl h-10 px-5 font-black text-[10px] bg-primary hover:bg-primary shadow-lg shadow-primary/20"
           >
             {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <Printer className="w-3.5 h-3.5 mr-2" />}
             Imprimer sélection
@@ -140,8 +140,8 @@ export function QRGenerator({ workers }: QRGeneratorProps) {
                 className="rounded-md h-5 w-5 border-primary data-[state=checked]:bg-primary"
               />
               <div className="flex-1 min-w-0">
-                <p className="font-black text-sm uppercase text-foreground truncate">{worker.nom_complet}</p>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">{worker.metier}</p>
+                <p className="font-black text-sm text-foreground truncate">{worker.nom_complet}</p>
+                <p className="text-[10px] font-bold text-muted-foreground tracking-wider truncate">{worker.metier}</p>
               </div>
 
               <div className="h-14 w-14 bg-white border border-primary rounded-xl p-1 shadow-inner flex items-center justify-center overflow-hidden">

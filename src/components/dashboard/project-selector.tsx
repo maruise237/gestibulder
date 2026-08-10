@@ -52,25 +52,25 @@ export function ProjectSelector() {
         trigger={null}
       />
 
-      <div className="flex items-center gap-2" data-tour="project-selector">
+      <div className="flex min-w-0 items-center gap-2" data-tour="project-selector">
         <Select
           value={selectedProjectId || ''}
           onValueChange={(val) => setSelectedProjectId(val || null)}
         >
           <SelectTrigger
             className={cn(
-              "h-9 min-w-[160px] max-w-[240px] gap-2 rounded-lg border-zinc-200 bg-white px-3 shadow-sm transition-all hover:bg-zinc-50",
+              "h-9 w-auto min-w-0 max-w-[240px] gap-2 rounded-lg border-border bg-card px-3 shadow-sm transition-all hover:bg-muted",
               !selectedProjectId && "text-muted-foreground"
             )}
           >
-            <div className="flex items-center gap-2 overflow-hidden">
+            <div className="flex min-w-0 items-center gap-2 overflow-hidden">
               <div className={cn(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded-md",
-                selectedProjectId ? "bg-primary text-primary-foreground" : "bg-zinc-100 text-zinc-500"
+                selectedProjectId ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
               )}>
                 {selectedProjectId ? <HardHat size={12} /> : <LayoutGrid size={12} />}
               </div>
-              <span className="truncate text-xs font-semibold uppercase tracking-widest">
+              <span className="truncate text-xs font-medium">
                 {selectedProject ? selectedProject.nom : 'Choisir un chantier'}
               </span>
             </div>
@@ -91,12 +91,12 @@ export function ProjectSelector() {
                 projects.map((project) => (
                   <SelectItem key={project.id} value={project.id} className="py-2.5">
                     <div className="flex items-center gap-2" data-tour="project-selector">
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                         <Building2 size={16} />
                       </div>
                       <div className="flex flex-col overflow-hidden">
                         <span className="truncate font-medium">{project.nom}</span>
-                        <span className="truncate text-[10px] text-zinc-500">{project.adresse || 'Sans adresse'}</span>
+                        <span className="truncate text-[10px] text-muted-foreground">{project.adresse || 'Sans adresse'}</span>
                       </div>
                     </div>
                   </SelectItem>

@@ -81,7 +81,7 @@ export const Sidebar = memo(({
             <span className="text-size-sm font-semibold tracking-tight text-foreground">
               {enterprise?.nom || 'GestiBulder'}
             </span>
-            <span className="text-[9px] font-semibold tracking-widest text-muted-foreground uppercase">
+            <span className="text-[9px] font-semibold text-muted-foreground">
               GESTIBULDER
             </span>
           </div>

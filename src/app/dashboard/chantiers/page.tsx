@@ -7,6 +7,7 @@ import {
   HardHat,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { useApp } from '@/lib/context/app-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
@@ -58,16 +59,12 @@ export default function ChantiersPage() {
         </div>
       </div>
 
-      <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center sm:py-20">
-        <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-          <HardHat size={32} strokeWidth={1.5} />
-        </div>
-        <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
-          Sélecteur de chantier requis
-        </h2>
-        <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-          Utilisez le sélecteur en haut de la page pour choisir un chantier ou en créer un nouveau.
-        </p>
+      <Card className="border-border">
+        <EmptyState
+          icon={HardHat}
+          title="Sélecteur de chantier requis"
+          description="Utilisez le sélecteur en haut de la page pour choisir un chantier ou en créer un nouveau."
+        />
       </Card>
     </div>
   );

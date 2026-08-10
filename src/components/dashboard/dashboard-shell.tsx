@@ -74,14 +74,14 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
             )}
           >
             <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-              <span className="text-center text-[9px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-left">
+              <span className="text-center text-[9px] font-semibold text-muted-foreground sm:text-left">
                 © {new Date().getFullYear()} {mounted && enterprise?.nom ? enterprise.nom : 'GestiBulder'}
               </span>
               <div className="flex items-center gap-4">
-                <span className="cursor-pointer text-[9px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-primary">
+                <span className="cursor-pointer text-[9px] font-semibold text-muted-foreground transition-colors hover:text-primary">
                   Support
                 </span>
-                <span className="cursor-pointer text-[9px] font-semibold tracking-widest text-muted-foreground uppercase transition-colors hover:text-primary">
+                <span className="cursor-pointer text-[9px] font-semibold text-muted-foreground transition-colors hover:text-primary">
                   Terms
                 </span>
               </div>

@@ -89,7 +89,7 @@ export function CreateEquipmentModal({
               <DialogTitle className="text-2xl font-black tracking-tight">
                 Nouvel Équipement
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-bold tracking-widest uppercase">
+              <DialogDescription className="text-muted-foreground/70 text-xs font-bold">
                 Inventaire du parc matériel
               </DialogDescription>
             </div>
@@ -101,7 +101,7 @@ export function CreateEquipmentModal({
             <div className="space-y-2.5">
               <Label
                 htmlFor="nom"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
               >
                 <ShieldCheck size={14} className="text-primary" /> Désignation du matériel
               </Label>
@@ -116,7 +116,7 @@ export function CreateEquipmentModal({
 
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
                   <Tag size={14} className="text-primary" /> Catégorie
                 </Label>
                 <Select name="categorie" required>
@@ -136,7 +136,7 @@ export function CreateEquipmentModal({
               <div className="space-y-2.5">
                 <Label
                   htmlFor="numero_serie"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
                 >
                   <Hash size={14} className="text-primary" /> N° de série
                 </Label>
@@ -153,7 +153,7 @@ export function CreateEquipmentModal({
           {error && (
             <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
               <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black tracking-widest uppercase">
+              <p className="text-destructive text-xs font-black">
                 {error}
               </p>
             </div>

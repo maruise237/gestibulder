@@ -98,7 +98,7 @@ export function DeployEquipmentModal({
             size={14}
             className="text-zinc-400 transition-colors group-hover/btn:text-primary"
           />
-          <span className="ml-2 text-[10px] font-black tracking-widest uppercase">
+          <span className="ml-2 text-[10px] font-black">
             {equipment.etat === 'disponible' ? 'Déployer' : 'Occupé'}
           </span>
         </Button>
@@ -113,7 +113,7 @@ export function DeployEquipmentModal({
               <DialogTitle className="text-2xl font-black tracking-tight">
                 Déploiement Matériel
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-black tracking-widest uppercase">
+              <DialogDescription className="text-muted-foreground/70 text-xs font-black">
                 Affectation sur chantier
               </DialogDescription>
             </div>
@@ -122,18 +122,18 @@ export function DeployEquipmentModal({
 
         <form onSubmit={handleSubmit} className="space-y-8 p-6 sm:p-8">
           <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6 text-center">
-            <p className="mb-2 text-[10px] font-black tracking-[0.2em] text-primary/60 uppercase">
+            <p className="mb-2 text-[10px] font-black tracking-[0.2em] text-primary/60">
               Équipement identifié
             </p>
             <p className="text-3xl font-black tracking-tight text-foreground">{equipment.nom}</p>
-            <p className="mt-1 text-[11px] font-black tracking-widest text-muted-foreground uppercase">
+            <p className="mt-1 text-[11px] font-black text-muted-foreground">
               Catégorie: {equipment.categorie}
             </p>
           </div>
 
           <div className="space-y-6">
             <div className="space-y-2.5">
-              <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+              <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
                 <HardHat size={14} className="text-primary" /> Chantier de destination
               </Label>
               <Select value={selectedProject} onValueChange={(val) => val && setSelectedProject(val)}>
@@ -152,7 +152,7 @@ export function DeployEquipmentModal({
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
                   <Calendar size={14} className="text-primary" /> Date de début
                 </Label>
                 <Input
@@ -164,7 +164,7 @@ export function DeployEquipmentModal({
                 />
               </div>
               <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase">
+                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
                   <Calendar size={14} className="text-primary" /> Fin prévue
                 </Label>
                 <Input
@@ -180,7 +180,7 @@ export function DeployEquipmentModal({
           {error && (
             <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 rounded-xl border p-4">
               <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black tracking-widest uppercase">{error}</p>
+              <p className="text-destructive text-xs font-black">{error}</p>
             </div>
           )}
 

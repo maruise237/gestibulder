@@ -92,7 +92,7 @@ export default function SettingsPage() {
       {activeSection === 'index' ? (
         <div className="grid gap-4 sm:gap-6">
           <div className="space-y-3">
-            <h2 className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Organisation</h2>
+            <h2 className="text-[10px] font-semibold text-muted-foreground">Organisation</h2>
             <div className="grid gap-3">
               <Card
                 className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
@@ -151,7 +151,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-3">
-            <h2 className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Sécurité</h2>
+            <h2 className="text-[10px] font-semibold text-muted-foreground">Sécurité</h2>
             <Card
               className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
               onClick={() => setActiveSection('profile')}

@@ -8,8 +8,6 @@ import {
   Package,
   AlertCircle,
   TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight,
   Clock,
   Plus,
 } from 'lucide-react';
@@ -83,8 +81,8 @@ export default function DashboardPage() {
         <>
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div className="space-y-1">
-              <h1 className="text-size-2xl font-black tracking-tight text-foreground sm:text-size-3xl uppercase">Tableau de bord</h1>
-              <p className="text-size-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              <h1 className="text-size-2xl font-black tracking-tight text-foreground sm:text-size-3xl">Tableau de bord</h1>
+              <p className="text-size-xs font-semibold tracking-wider text-muted-foreground">
                 {isLoading ? (
                   <Skeleton className="h-3 w-48" />
                 ) : (
@@ -132,15 +130,9 @@ export default function DashboardPage() {
             ].map((stat, i) => (
               <Card
                 key={i}
-                className={cn(
-                  'group relative overflow-hidden border-border p-3 transition-all duration-300 hover:border-primary/20 hover:shadow-premium sm:p-fluid-md rounded-2xl',
-                  stat.color === 'rose' && 'border-l-8 border-l-destructive',
-                  stat.color === 'indigo' && 'border-l-8 border-l-primary',
-                  stat.color === 'emerald' && 'border-l-8 border-l-success',
-                  stat.color === 'amber' && 'border-l-8 border-l-warning'
-                )}
+                className="group border-border p-3 transition-all duration-300 hover:border-primary/30 sm:p-fluid-md rounded-2xl"
               >
-                <div className="mb-2 flex items-center justify-between sm:mb-4">
+                <div className="mb-2 flex items-center sm:mb-4">
                   <div
                     className={cn(
                       'rounded-md p-1.5 transition-transform group-hover:scale-110 sm:p-2',
@@ -152,24 +144,15 @@ export default function DashboardPage() {
                   >
                     <stat.icon size={16} className="sm:size-5" />
                   </div>
-                  {stat.color === 'rose' ? (
-                    <div className="flex items-center gap-0.5 text-destructive">
-                      <ArrowDownRight size={10} strokeWidth={3} className="sm:size-12" />
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-0.5 text-success">
-                      <ArrowUpRight size={10} strokeWidth={3} className="sm:size-12" />
-                    </div>
-                  )}
                 </div>
                 <div className="space-y-0.5 sm:space-y-1">
-                  <p className="text-[8px] font-black tracking-widest text-muted-foreground uppercase sm:text-[10px]">
+                  <p className="text-[11px] font-medium text-muted-foreground sm:text-size-xs">
                     {stat.label}
                   </p>
-                  <p className="text-size-base font-black tracking-tight text-foreground sm:text-size-2xl">
+                  <p className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-2xl">
                     {isLoading ? <Skeleton className="h-6 w-16 sm:h-8 sm:w-24" /> : stat.value}
                   </p>
-                  <p className="text-[7px] font-semibold text-muted-foreground uppercase sm:text-[9px]">
+                  <p className="text-[10px] font-medium text-muted-foreground sm:text-[11px]">
                     {stat.sub}
                   </p>
                 </div>
@@ -180,7 +163,7 @@ export default function DashboardPage() {
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12 lg:gap-fluid-md">
             {/* Recent Activity */}
             <Card
-              className="shadow-premium overflow-hidden border-border lg:col-span-8 rounded-2xl"
+              className="overflow-hidden border-border lg:col-span-8 rounded-2xl"
               padding="none"
             >
               <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
@@ -188,9 +171,9 @@ export default function DashboardPage() {
                   <div className="rounded-md border border-border bg-card p-1.5">
                     <Clock size={14} className="text-primary sm:size-5" />
                   </div>
-                  <h2 className="text-size-base font-bold tracking-tight text-foreground sm:text-size-xl uppercase">Mouvements</h2>
+                  <h2 className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-xl">Mouvements récents</h2>
                 </div>
-                <Button variant="ghost" size="sm" asChild className="h-7 px-2 text-[9px] font-semibold tracking-widest uppercase sm:h-9 sm:px-3 sm:text-[10px]">
+                <Button variant="ghost" size="sm" asChild className="h-7 px-2 text-[11px] font-medium sm:h-9 sm:px-3 sm:text-xs">
                   <Link href="/dashboard/stocks">Tout voir</Link>
                 </Button>
               </div>
@@ -209,7 +192,7 @@ export default function DashboardPage() {
                 ) : recentMovements.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-6 text-muted-foreground sm:p-12">
                     <Package size={24} className="mb-1 opacity-10 sm:size-32 sm:mb-2" />
-                    <p className="text-[10px] font-medium italic sm:text-sm uppercase">Aucun mouvement récent.</p>
+                    <p className="text-[10px] font-medium italic sm:text-sm">Aucun mouvement récent.</p>
                   </div>
                 ) : (
                   recentMovements.slice(0, 4).map((mov, i) => (
@@ -233,10 +216,10 @@ export default function DashboardPage() {
                           )}
                         </div>
                         <div>
-                          <div className="text-size-xs leading-none font-semibold text-foreground transition-colors group-hover:text-primary sm:text-size-base uppercase">
+                          <div className="text-size-xs leading-none font-semibold text-foreground transition-colors group-hover:text-primary sm:text-size-base">
                             {mov.materiaux?.nom}
                           </div>
-                          <div className="mt-1 flex items-center gap-1.5 text-[7px] font-semibold tracking-wider text-muted-foreground uppercase sm:mt-2 sm:text-[10px]">
+                          <div className="mt-1 flex items-center gap-1.5 text-[7px] font-semibold tracking-wider text-muted-foreground sm:mt-2 sm:text-[10px]">
                             <span
                               className={cn(
                                 'rounded-md border px-1 py-0.5 sm:px-2',
@@ -271,24 +254,24 @@ export default function DashboardPage() {
                     <div className="rounded-md border border-border bg-card p-1.5">
                       <Users size={14} className="text-success sm:size-5" />
                     </div>
-                    <h2 className="text-size-base font-semibold tracking-tight text-foreground uppercase">Équipes</h2>
+                    <h2 className="text-size-base font-semibold tracking-tight text-foreground">Équipes</h2>
                   </div>
                 </div>
                 <div className="p-3 space-y-4 sm:p-fluid-md sm:space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <p className="text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">Actifs</p>
+                      <p className="text-[8px] font-semibold text-muted-foreground sm:text-[10px]">Actifs</p>
                       <p className="text-size-base font-semibold text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8" /> : stats.activeWorkers}</p>
                     </div>
                     <div className="h-6 w-[1px] bg-border sm:h-8" />
                     <div className="space-y-0.5 text-right">
-                      <p className="text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">Total</p>
+                      <p className="text-[8px] font-semibold text-muted-foreground sm:text-[10px]">Total</p>
                       <p className="text-size-base font-semibold text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8 ml-auto" /> : stats.workersCount}</p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center text-[8px] font-semibold tracking-widest text-muted-foreground uppercase sm:text-[10px]">
+                    <div className="flex justify-between items-center text-[8px] font-semibold text-muted-foreground sm:text-[10px]">
                       <span>Activité</span>
                       <span className="text-success">
                         {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
@@ -306,7 +289,7 @@ export default function DashboardPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-8 w-full text-[9px] font-semibold uppercase sm:h-10 sm:text-size-xs"
+                    className="h-8 w-full text-[9px] font-semibold sm:h-10 sm:text-size-xs"
                   >
                     <Link href="/dashboard/ouvriers">Effectifs</Link>
                   </Button>
@@ -320,7 +303,7 @@ export default function DashboardPage() {
                     <div className="rounded-md border border-border bg-card p-1.5">
                       <AlertCircle size={14} className="text-primary sm:size-5" />
                     </div>
-                    <h2 className="text-size-base font-semibold tracking-tight text-foreground uppercase">
+                    <h2 className="text-size-base font-semibold tracking-tight text-foreground">
                       Échéances
                     </h2>
                   </div>
@@ -333,7 +316,7 @@ export default function DashboardPage() {
                       </div>
                     ))
                   ) : recentProjects.length === 0 ? (
-                    <p className="py-4 text-center text-[10px] font-semibold text-muted-foreground italic sm:py-6 sm:text-xs uppercase">
+                    <p className="py-4 text-center text-[10px] font-semibold text-muted-foreground italic sm:py-6 sm:text-xs">
                       Aucune échéance.
                     </p>
                   ) : (
@@ -343,14 +326,14 @@ export default function DashboardPage() {
                         className="group rounded-md border border-border bg-muted/30 p-2 transition-all hover:border-primary/20 hover:bg-card sm:p-3"
                       >
                         <div className="mb-1 flex items-center justify-between">
-                          <span className="rounded-md bg-primary/10 px-1 py-0.5 text-[7px] font-semibold tracking-widest text-primary uppercase sm:text-[8px]">
+                          <span className="rounded-md bg-primary/10 px-1 py-0.5 text-[7px] font-semibold text-primary sm:text-[8px]">
                             PROJET
                           </span>
-                          <span className="text-[8px] font-semibold text-muted-foreground uppercase sm:text-[9px]">
+                          <span className="text-[8px] font-semibold text-muted-foreground sm:text-[9px]">
                             {formatDate(proj.date_fin_prevue)}
                           </span>
                         </div>
-                        <p className="truncate text-[10px] font-semibold text-foreground sm:text-size-sm uppercase">
+                        <p className="truncate text-[10px] font-semibold text-foreground sm:text-size-sm">
                           {proj.nom}
                         </p>
                       </div>

@@ -19,21 +19,21 @@ function VerifierContent() {
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-zinc-950 text-white shadow-xl mb-4">
             <ShieldCheck size={32} />
           </div>
-          <h1 className="text-3xl font-black tracking-tight uppercase">Vérification GestiBulder</h1>
-          <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Service d'authentification de documents</p>
+          <h1 className="text-3xl font-black tracking-tight">Vérification GestiBulder</h1>
+          <p className="text-zinc-500 text-xs font-bold">Service d'authentification de documents</p>
         </div>
 
         <Card className="p-8 border-2 border-zinc-200 shadow-2xl rounded-3xl overflow-hidden relative">
           <div className="absolute top-0 right-0 p-4">
-             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success text-success border border-success">
+             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-success/10 text-success border border-success/20">
                 <CheckCircle2 size={12} strokeWidth={3} />
-                <span className="text-[10px] font-black uppercase tracking-widest">Authentique</span>
+                <span className="text-xs font-medium">Authentique</span>
              </div>
           </div>
 
           <div className="space-y-8">
             <div className="space-y-1">
-              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Identifiant du rapport</p>
+              <p className="text-[10px] font-black text-zinc-400">Identifiant du rapport</p>
               <p className="text-xl font-black font-mono text-zinc-900">{reportId || 'ID MANQUANT'}</p>
             </div>
 
@@ -43,7 +43,7 @@ function VerifierContent() {
                   <Clock size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Date de génération</p>
+                  <p className="text-[10px] font-black text-zinc-400">Date de génération</p>
                   <p className="text-sm font-bold text-zinc-900">Document généré avec succès</p>
                 </div>
               </div>
@@ -53,7 +53,7 @@ function VerifierContent() {
                   <Globe size={20} />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Source officielle</p>
+                  <p className="text-[10px] font-black text-zinc-400">Source officielle</p>
                   <p className="text-sm font-bold text-zinc-900">GestiBulder — gestibulder.com</p>
                 </div>
               </div>
@@ -67,7 +67,7 @@ function VerifierContent() {
           </div>
         </Card>
 
-        <p className="text-center text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+        <p className="text-center text-[10px] font-black text-zinc-400">
           © {new Date().getFullYear()} GestiBulder Software
         </p>
       </div>
@@ -77,7 +77,7 @@ function VerifierContent() {
 
 export default function VerifierPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-black uppercase tracking-widest text-zinc-400">Vérification en cours...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center font-black text-zinc-400">Vérification en cours...</div>}>
       <VerifierContent />
     </Suspense>
   );

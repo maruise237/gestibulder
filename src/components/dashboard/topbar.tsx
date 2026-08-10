@@ -57,21 +57,21 @@ export const Topbar = memo(({
       )}
       suppressHydrationWarning
     >
-      <div className="flex max-w-2xl flex-1 items-center gap-4">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
         <Button
           variant="outline"
           size="icon"
           onClick={onMenuClick}
-          className="text-muted-foreground lg:hidden"
+          className="shrink-0 text-muted-foreground lg:hidden"
         >
           <Menu size={18} />
         </Button>
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           {pathname.startsWith('/dashboard') && <ProjectSelector />}
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {/* Notifications */}
         <Popover open={notifOpen} onOpenChange={setNotifOpen}>
           <PopoverTrigger asChild>
@@ -90,13 +90,13 @@ export const Topbar = memo(({
           </PopoverTrigger>
           <PopoverContent align="end" className="w-80 gap-0 overflow-hidden p-0">
             <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
-              <span className="text-[10px] font-black uppercase tracking-widest">Notifications</span>
+              <span className="text-[10px] font-black">Notifications</span>
               {unreadCount > 0 && (
                 <Button
                   variant="link"
                   size="xs"
                   onClick={() => markAllMutation.mutate()}
-                  className="h-auto gap-1 p-0 text-[9px] font-bold uppercase tracking-widest"
+                  className="h-auto gap-1 p-0 text-[9px] font-bold"
                 >
                   <CheckCheck size={12} /> Tout lire
                 </Button>
@@ -120,7 +120,7 @@ export const Topbar = memo(({
                     {notif.message && (
                       <p className="mt-0.5 text-[10px] text-muted-foreground leading-tight">{notif.message}</p>
                     )}
-                    <p className="mt-1 text-[9px] font-semibold text-muted-foreground uppercase">
+                    <p className="mt-1 text-[9px] font-semibold text-muted-foreground">
                       {new Date(notif.created_at).toLocaleDateString()}
                     </p>
                   </div>

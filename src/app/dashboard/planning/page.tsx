@@ -7,6 +7,7 @@ import { useApp } from '@/lib/context/app-context';
 import { Calendar, ChevronRight, Clock, CheckCircle2, AlertCircle, Plus, Loader2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -78,19 +79,19 @@ export default function PlanningPage() {
           </p>
         </div>
         {selectedProjectId && (
-          <Button size="sm" onClick={() => setModalOpen(true)} className="text-[10px] font-semibold uppercase tracking-widest">
+          <Button size="sm" onClick={() => setModalOpen(true)} className="text-[10px] font-semibold">
             <Plus className="mr-1.5 h-4 w-4" /> Nouvelle Phase
           </Button>
         )}
       </div>
 
       {!selectedProjectId ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-16 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-            <Calendar size={32} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
-          <p className="text-size-sm text-muted-foreground mt-1">Veuillez choisir un chantier pour voir son planning opérationnel.</p>
+        <Card className="border-border">
+          <EmptyState
+            icon={Calendar}
+            title="Sélectionnez un chantier"
+            description="Choisissez un chantier pour voir son planning opérationnel."
+          />
         </Card>
       ) : isLoading ? (
         <div className="flex justify-center py-20">
@@ -100,29 +101,35 @@ export default function PlanningPage() {
         <div className="space-y-6">
           {/* Stats */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card className="p-4 border-l-4 border-l-primary">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Progression Globale</p>
+            <Card className="p-4">
+              <p className="text-xs font-medium text-muted-foreground">Progression globale</p>
               <div className="mt-2 flex items-end gap-2">
-                <span className="text-2xl font-bold">{avgProgress}%</span>
+                <span className="text-2xl font-semibold">{avgProgress}%</span>
               </div>
               <Progress value={avgProgress} className="mt-3" />
             </Card>
-            <Card className="p-4 border-l-4 border-l-success">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Phases Terminées</p>
-              <p className="mt-2 text-2xl font-bold">{terminees} / {phases.length}</p>
+            <Card className="p-4">
+              <p className="text-xs font-medium text-muted-foreground">Phases terminées</p>
+              <p className="mt-2 text-2xl font-semibold">{terminees} / {phases.length}</p>
             </Card>
-            <Card className="p-4 border-l-4 border-l-warning">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Phase En Cours</p>
-              <p className="mt-2 text-sm font-bold truncate">{(enCours as any)?.nom || 'Aucune'}</p>
+            <Card className="p-4">
+              <p className="text-xs font-medium text-muted-foreground">Phase en cours</p>
+              <p className="mt-2 text-sm font-semibold truncate">{(enCours as any)?.nom || 'Aucune'}</p>
             </Card>
           </div>
 
           {phases.length === 0 ? (
-            <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-              <p className="text-muted-foreground font-medium mb-4">Aucune phase définie pour ce chantier.</p>
-              <Button onClick={() => setModalOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" /> Créer la première phase
-              </Button>
+            <Card className="border-border">
+              <EmptyState
+                icon={Calendar}
+                title="Aucune phase définie"
+                description="Créez la première phase pour structurer le planning de ce chantier."
+                action={
+                  <Button onClick={() => setModalOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" /> Créer la première phase
+                  </Button>
+                }
+              />
             </Card>
           ) : (
             <div className="space-y-3">
@@ -131,7 +138,7 @@ export default function PlanningPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 sm:p-6">
                     <div className={cn(
                       "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2",
-                      phase.statut === 'termine' ? "bg-success border-success text-success" :
+                      phase.statut === 'termine' ? "bg-success/10 border-success/20 text-success" :
                       phase.statut === 'en_cours' ? "bg-primary/5 border-primary/20 text-primary animate-pulse" :
                       phase.statut === 'bloque' ? "bg-destructive/10 border-destructive/20 text-destructive" :
                       "bg-muted border-transparent text-muted-foreground"
@@ -147,7 +154,7 @@ export default function PlanningPage() {
                         <select
                           value={phase.statut}
                           onChange={(e) => updateMutation.mutate({ id: phase.id, data: { statut: e.target.value } })}
-                          className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full border bg-transparent cursor-pointer"
+                          className="text-[8px] font-bold px-1.5 py-0.5 rounded-full border bg-transparent cursor-pointer"
                         >
                           <option value="planifie">Planifié</option>
                           <option value="en_cours">En cours</option>
@@ -167,7 +174,7 @@ export default function PlanningPage() {
 
                     <div className="w-full sm:w-48 space-y-2">
                       <div className="flex justify-between text-[10px] font-bold">
-                        <span className="text-muted-foreground uppercase">Avancement</span>
+                        <span className="text-muted-foreground">Avancement</span>
                         <span className="text-primary">{phase.avancement_pct || 0}%</span>
                       </div>
                       <input
@@ -209,16 +216,16 @@ export default function PlanningPage() {
           </DialogHeader>
           <form onSubmit={handleCreatePhase} className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Nom de la phase</Label>
+              <Label className="text-[10px] font-semibold text-muted-foreground">Nom de la phase</Label>
               <Input name="nom" required placeholder="Ex: Fondations" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Date début</Label>
+                <Label className="text-[10px] font-semibold text-muted-foreground">Date début</Label>
                 <Input name="date_debut" type="date" />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Date fin prévue</Label>
+                <Label className="text-[10px] font-semibold text-muted-foreground">Date fin prévue</Label>
                 <Input name="date_fin_prevue" type="date" />
               </div>
             </div>

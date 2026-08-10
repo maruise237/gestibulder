@@ -44,7 +44,7 @@ export default function SignUpPage() {
         subtitle="Un lien de confirmation vous a été envoyé."
       >
         <div className="space-y-4 text-center">
-          <div className="rounded-md bg-success p-4 text-sm font-medium text-success">
+          <div className="rounded-md bg-success/10 p-4 text-sm font-medium text-success">
             {successMessage}
           </div>
           <p className="text-muted-foreground text-sm">

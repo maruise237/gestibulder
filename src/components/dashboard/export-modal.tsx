@@ -52,10 +52,10 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'pdf'>('xlsx');
 
   const categories = [
-    { id: 'finances', label: 'Finances & Dépenses', icon: TrendingUp, color: 'text-warning bg-warning' },
-    { id: 'workers', label: 'Main d\'œuvre', icon: Users, color: 'text-success bg-success' },
-    { id: 'projects', label: 'Liste des Chantiers', icon: HardHat, color: 'text-primary bg-primary' },
-    { id: 'inventory', label: 'Stocks & Matériaux', icon: Package, color: 'text-zinc-600 bg-zinc-50' },
+    { id: 'finances', label: 'Finances & Dépenses', icon: TrendingUp, color: 'text-warning bg-warning/10' },
+    { id: 'workers', label: 'Main d\'œuvre', icon: Users, color: 'text-success bg-success/10' },
+    { id: 'projects', label: 'Liste des Chantiers', icon: HardHat, color: 'text-primary bg-primary/10' },
+    { id: 'inventory', label: 'Stocks & Matériaux', icon: Package, color: 'text-muted-foreground bg-muted' },
   ];
 
   const toggleCategory = (id: ExportCategory) => {
@@ -234,8 +234,8 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
               <Download size={24} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight uppercase">Configuration de l'Export</DialogTitle>
-              <DialogDescription className="text-zinc-500 text-[10px] font-black tracking-widest uppercase">
+              <DialogTitle className="text-2xl font-black tracking-tight">Configuration de l'Export</DialogTitle>
+              <DialogDescription className="text-zinc-500 text-[10px] font-black">
                 Choisissez les modules à inclure dans votre rapport
               </DialogDescription>
             </div>
@@ -260,7 +260,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                 <div className={cn('rounded-xl p-2 shadow-sm transition-transform group-hover:scale-110', cat.color)}>
                   <cat.icon size={20} strokeWidth={2.5} />
                 </div>
-                <span className="text-xs font-black tracking-tight text-zinc-900 uppercase">{cat.label}</span>
+                <span className="text-xs font-black tracking-tight text-zinc-900">{cat.label}</span>
                 {selectedCategories.includes(cat.id as ExportCategory) && (
                   <div className="bg-primary text-primary-foreground absolute top-3 right-3 rounded-full p-0.5">
                     <CheckCircle2 size={14} strokeWidth={3} />
@@ -271,7 +271,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-zinc-400 text-[10px] font-black tracking-widest uppercase">Format de sortie</h3>
+            <h3 className="text-zinc-400 text-[10px] font-black">Format de sortie</h3>
             <div className="flex gap-4">
               {[
                 { id: 'xlsx', label: 'Excel', icon: FileSpreadsheet },
@@ -284,7 +284,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                   variant="outline"
                   onClick={() => setFormat(f.id as any)}
                   className={cn(
-                    'h-auto flex-1 gap-2 rounded-xl border p-3 text-[10px] font-black uppercase tracking-widest',
+                    'h-auto flex-1 gap-2 rounded-xl border p-3 text-[10px] font-black',
                     format === f.id
                       ? 'border-primary bg-primary/50 text-primary shadow-sm'
                       : 'border-zinc-100 bg-card text-zinc-400 hover:border-zinc-200'
@@ -301,14 +301,14 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="text-zinc-500 h-12 flex-1 rounded-xl font-black uppercase tracking-widest text-[10px]"
+            className="text-zinc-500 h-12 flex-1 rounded-xl font-black text-[10px]"
           >
             Annuler
           </Button>
           <Button
             onClick={handleExport}
             disabled={isLoading || selectedCategories.length === 0}
-            className="bg-zinc-950 hover:bg-zinc-800 shadow-premium h-12 flex-1 rounded-xl font-black uppercase tracking-widest text-[10px]"
+            className="bg-zinc-950 hover:bg-zinc-800 shadow-premium h-12 flex-1 rounded-xl font-black text-[10px]"
           >
             {isLoading ? (
               <>

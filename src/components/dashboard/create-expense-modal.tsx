@@ -116,7 +116,7 @@ export function CreateExpenseModal({
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6">
             {!selectedProjectId && (
-              <div className="bg-warning border-warning text-warning mb-6 rounded-md border p-3 text-xs font-medium">
+              <div className="bg-warning/10 border-warning/20 text-warning mb-6 rounded-md border p-3 text-xs font-medium">
                 Veuillez sélectionner un chantier dans le sélecteur principal avant de créer une dépense.
               </div>
             )}

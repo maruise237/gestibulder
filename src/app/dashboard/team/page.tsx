@@ -101,14 +101,14 @@ export default function TeamPage() {
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
         <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Total</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">Total</span>
             <Users className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="text-size-xl font-semibold sm:text-size-2xl">{members.length}</div>
         </Card>
         <Card className="p-4 sm:p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Admins</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">Admins</span>
             <Shield className="h-4 w-4 text-primary" />
           </div>
           <div className="text-size-xl font-semibold sm:text-size-2xl">
@@ -117,7 +117,7 @@ export default function TeamPage() {
         </Card>
         <Card className="hidden lg:block p-6">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">Superviseurs</span>
+            <span className="text-[10px] font-semibold text-muted-foreground">Superviseurs</span>
             <HardHat className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="text-size-2xl font-semibold">
@@ -139,10 +139,10 @@ export default function TeamPage() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50 hover:bg-muted/50 border-b border-border">
-                  <TableHead className="h-10 text-[10px] uppercase tracking-widest font-semibold">Collaborateur</TableHead>
-                  <TableHead className="h-10 text-[10px] uppercase tracking-widest font-semibold">Rôle</TableHead>
-                  <TableHead className="h-10 text-[10px] uppercase tracking-widest font-semibold hidden sm:table-cell">Chantiers</TableHead>
-                  <TableHead className="h-10 text-[10px] uppercase tracking-widest font-semibold text-right">Actions</TableHead>
+                  <TableHead className="h-10 text-[10px] font-semibold">Collaborateur</TableHead>
+                  <TableHead className="h-10 text-[10px] font-semibold">Rôle</TableHead>
+                  <TableHead className="h-10 text-[10px] font-semibold hidden sm:table-cell">Chantiers</TableHead>
+                  <TableHead className="h-10 text-[10px] font-semibold text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -155,12 +155,12 @@ export default function TeamPage() {
                         </div>
                         <div className="flex flex-col min-w-0">
                           <span className="truncate text-size-xs font-semibold sm:text-size-sm">{member.nom_complet}</span>
-                          <span className="truncate text-[10px] text-muted-foreground font-mono uppercase tracking-tighter">ID:{member.id.slice(0, 6)}</span>
+                          <span className="truncate text-[10px] text-muted-foreground font-mono tracking-tighter">ID:{member.id.slice(0, 6)}</span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="py-3">
-                      <Badge variant={getRoleBadge(member.role) as any} className="text-[9px] uppercase tracking-widest h-5 px-1.5 font-semibold">
+                      <Badge variant={getRoleBadge(member.role) as any} className="text-[9px] h-5 px-1.5 font-semibold">
                         {member.role.replace('_', ' ')}
                       </Badge>
                     </TableCell>

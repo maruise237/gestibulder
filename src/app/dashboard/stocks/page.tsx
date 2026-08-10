@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Material } from '@/types/stock';
 import { CreateMaterialModal } from '@/components/dashboard/create-material-modal';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { StockHistoryModal } from '@/components/dashboard/stock-history-modal';
 import {
   Dialog,
@@ -120,12 +121,12 @@ export default function StocksPage() {
       </div>
 
       {!selectedProjectId ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-            <HardHat size={32} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-size-xl font-semibold tracking-tight text-foreground">Sélectionnez un chantier</h2>
-          <p className="text-size-sm text-muted-foreground mt-1">Utilisez le sélecteur en haut pour voir les stocks d'un chantier.</p>
+        <Card className="border-border">
+          <EmptyState
+            icon={HardHat}
+            title="Sélectionnez un chantier"
+            description="Utilisez le sélecteur en haut pour voir les stocks d'un chantier."
+          />
         </Card>
       ) : isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -138,17 +139,13 @@ export default function StocksPage() {
           ))}
         </div>
       ) : filteredMaterials.length === 0 ? (
-        <Card className="border-2 border-dashed border-border bg-muted/30 py-12 text-center">
-          <div className="mb-4 inline-flex rounded-xl bg-background p-4 text-muted-foreground shadow-sm">
-            <Package size={32} strokeWidth={1.5} />
-          </div>
-          <h2 className="mb-1 text-size-xl font-semibold tracking-tight text-foreground">
-            Aucun matériau
-          </h2>
-          <p className="mx-auto mb-6 max-w-sm text-size-sm font-medium text-muted-foreground">
-            {searchQuery ? "Aucun résultat pour cette recherche." : "Ajoutez les matériaux nécessaires à ce chantier."}
-          </p>
-          {!searchQuery && <CreateMaterialModal chantierId={selectedProjectId} onMaterialCreated={handleMaterialCreated} />}
+        <Card className="border-border">
+          <EmptyState
+            icon={Package}
+            title="Aucun matériau"
+            description={searchQuery ? "Aucun résultat pour cette recherche." : "Ajoutez les matériaux nécessaires à ce chantier."}
+            action={!searchQuery ? <CreateMaterialModal chantierId={selectedProjectId} onMaterialCreated={handleMaterialCreated} /> : undefined}
+          />
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -173,9 +170,9 @@ export default function StocksPage() {
                     </div>
                     <div className="flex items-center gap-2">
                        {isOut ? (
-                         <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-destructive uppercase">Rupture</span>
+                         <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-semibold text-destructive">Rupture</span>
                        ) : isLow ? (
-                         <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-semibold tracking-widest text-warning uppercase">Critique</span>
+                         <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-semibold text-warning">Critique</span>
                        ) : null}
                        <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
                          <MoreVertical size={16} />
@@ -186,7 +183,7 @@ export default function StocksPage() {
                   <h3 className="truncate text-size-lg font-semibold tracking-tight text-foreground group-hover:text-primary">
                     {mat.nom}
                   </h3>
-                  <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground uppercase">
+                  <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground">
                     Seuil: {mat.seuil_alerte} {mat.unite}
                   </p>
 
@@ -198,7 +195,7 @@ export default function StocksPage() {
                       )}>
                         {stock}
                       </span>
-                      <span className="text-[9px] font-semibold text-muted-foreground uppercase">{mat.unite}</span>
+                      <span className="text-[9px] font-semibold text-muted-foreground">{mat.unite}</span>
                     </div>
                     <div className="flex gap-1.5">
                       <Button
@@ -223,13 +220,13 @@ export default function StocksPage() {
                   </div>
 
                   <div className="mt-auto flex items-center justify-between">
-                     <span className="text-[8px] font-medium text-muted-foreground uppercase tracking-wider">
+                     <span className="text-[8px] font-medium text-muted-foreground tracking-wider">
                        Maj {new Date(mat.created_at).toLocaleDateString()}
                      </span>
                      <Button
                        variant="ghost"
                        size="sm"
-                       className="h-7 px-2 text-[9px] font-semibold uppercase tracking-widest"
+                       className="h-7 px-2 text-[9px] font-semibold"
                        onClick={() => setHistoryModal({ open: true, material: mat })}
                      >
                        Historique
@@ -278,14 +275,14 @@ export default function StocksPage() {
             <form onSubmit={handleMovement} className="flex flex-1 flex-col overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="rounded-md border border-border bg-muted/30 p-4 text-center mb-6">
-                  <p className="text-[9px] font-semibold text-muted-foreground uppercase mb-1">Matériau</p>
+                  <p className="text-[9px] font-semibold text-muted-foreground mb-1">Matériau</p>
                   <p className="text-size-lg font-semibold text-foreground">{movementModal.material.nom}</p>
-                  <p className="text-[9px] font-medium text-muted-foreground uppercase">{movementModal.material.unite}</p>
+                  <p className="text-[9px] font-medium text-muted-foreground">{movementModal.material.unite}</p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Quantité ({movementModal.material.unite})</Label>
+                    <Label className="text-[10px] font-semibold text-muted-foreground">Quantité ({movementModal.material.unite})</Label>
                     <Input
                       name="quantite"
                       type="number"
@@ -300,7 +297,7 @@ export default function StocksPage() {
                   {movementModal.type === 'entree' ? (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Prix Unit.</Label>
+                        <Label className="text-[10px] font-semibold text-muted-foreground">Prix Unit.</Label>
                         <Input
                           name="cout_unitaire"
                           type="number"
@@ -310,7 +307,7 @@ export default function StocksPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Fournisseur</Label>
+                        <Label className="text-[10px] font-semibold text-muted-foreground">Fournisseur</Label>
                         <Input
                           name="fournisseur"
                           placeholder="Nom..."
@@ -320,7 +317,7 @@ export default function StocksPage() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Destination</Label>
+                      <Label className="text-[10px] font-semibold text-muted-foreground">Destination</Label>
                       <Input
                         name="usage"
                         placeholder="Ex: Dalle 2ème étage..."
@@ -336,7 +333,7 @@ export default function StocksPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setMovementModal({ ...movementModal, open: false })}
-                  className="flex-1 text-[10px] font-semibold uppercase tracking-widest"
+                  className="flex-1 text-[10px] font-semibold"
                 >
                   Annuler
                 </Button>
@@ -344,7 +341,7 @@ export default function StocksPage() {
                   type="submit"
                   disabled={movementMutation.isPending}
                   className={cn(
-                    "flex-1 text-[10px] font-semibold uppercase tracking-widest",
+                    "flex-1 text-[10px] font-semibold",
                     movementModal.type === 'entree' ? "bg-success hover:bg-success" : "bg-destructive hover:bg-destructive/90"
                   )}
                 >

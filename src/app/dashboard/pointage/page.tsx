@@ -23,6 +23,7 @@ import { PointageTable } from '@/components/dashboard/pointage/pointage-table';
 import { QRScanner } from '@/components/dashboard/pointage/qr-scanner';
 import { QRGenerator } from '@/components/dashboard/pointage/qr-generator';
 import { PointageStats } from '@/components/dashboard/pointage/pointage-stats';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import { toast } from 'sonner';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -63,7 +64,7 @@ export default function PointagePage() {
         <div className="bg-primary p-6 rounded-full mb-6">
           <AlertCircle className="h-12 w-12 text-primary" />
         </div>
-        <h2 className="text-2xl font-black uppercase mb-2">Aucun projet sélectionné</h2>
+        <h2 className="text-2xl font-black mb-2">Aucun projet sélectionné</h2>
         <p className="text-muted-foreground max-w-sm font-medium">
           Veuillez sélectionner un projet dans le sélecteur en haut pour gérer le pointage.
         </p>
@@ -79,7 +80,7 @@ export default function PointagePage() {
       {/* Header section */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-foreground">Gestion du Pointage</h1>
+          <h1 className="text-3xl font-black tracking-tight text-foreground">Gestion du Pointage</h1>
           <p className="text-muted-foreground font-medium mt-1">
             Enregistrez la présence de vos ouvriers et suivez les salaires journaliers.
           </p>
@@ -90,7 +91,7 @@ export default function PointagePage() {
             <CalendarIcon className="w-5 h-5" />
           </div>
           <div className="pr-4">
-            <p className="text-[10px] font-black uppercase text-muted-foreground leading-none mb-1">Date de pointage</p>
+            <p className="text-[10px] font-black text-muted-foreground leading-none mb-1">Date de pointage</p>
             <Input
               type="date"
               value={selectedDate}
@@ -103,19 +104,19 @@ export default function PointagePage() {
 
       <Tabs defaultValue="pointage" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:h-14 bg-muted/50 p-1.5 rounded-2xl gap-1">
-          <TabsTrigger value="pointage" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="pointage" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
             <UserCheck className="w-4 h-4 mr-2 hidden sm:inline" />
             Pointage
           </TabsTrigger>
-          <TabsTrigger value="scan" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="scan" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
             <QrCode className="w-4 h-4 mr-2 hidden sm:inline" />
             Scan Rapide
           </TabsTrigger>
-          <TabsTrigger value="qr-codes" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="qr-codes" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
             <Printer className="w-4 h-4 mr-2 hidden sm:inline" />
             Cartes QR
           </TabsTrigger>
-          <TabsTrigger value="stats" className="rounded-xl font-black text-[10px] md:text-[11px] uppercase tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="stats" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
             <BarChart3 className="w-4 h-4 mr-2 hidden sm:inline" />
             Rapports
           </TabsTrigger>
@@ -124,13 +125,13 @@ export default function PointagePage() {
         <div className="mt-8">
           <TabsContent value="pointage" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="font-black text-lg uppercase">Liste des ouvriers</h3>
+              <h3 className="font-black text-lg">Liste des ouvriers</h3>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => initMutation.mutate()}
                 disabled={initMutation.isPending || workers.length === 0}
-                className="rounded-xl h-10 px-4 font-bold text-[10px] uppercase tracking-widest border-primary text-primary hover:bg-primary"
+                className="rounded-xl h-10 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               >
                 {initMutation.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Plus className="mr-2 h-3 w-3" />}
                 Initialiser la journée
@@ -140,15 +141,19 @@ export default function PointagePage() {
             {loadingWorkers || loadingPointages ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Chargement des données...</p>
+                <p className="text-muted-foreground font-bold text-[10px]">Chargement des données...</p>
               </div>
             ) : workers.length === 0 ? (
-              <Card className="p-12 text-center border-dashed border-2 bg-muted/20 rounded-2xl">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-20" />
-                <p className="text-muted-foreground font-black uppercase text-sm">Aucun ouvrier trouvé pour ce projet</p>
-                <Button variant="link" className="text-primary font-bold mt-2" onClick={() => window.location.href='/dashboard/ouvriers'}>
-                  Ajouter des ouvriers →
-                </Button>
+              <Card className="border-border">
+                <EmptyState
+                  icon={Users}
+                  title="Aucun ouvrier trouvé pour ce projet"
+                  action={
+                    <Button variant="link" onClick={() => window.location.href='/dashboard/ouvriers'}>
+                      Ajouter des ouvriers →
+                    </Button>
+                  }
+                />
               </Card>
             ) : (
               <PointageTable

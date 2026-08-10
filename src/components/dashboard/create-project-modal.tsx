@@ -97,7 +97,7 @@ export function CreateProjectModal({
               <DialogTitle className="text-2xl font-black tracking-tight">
                 Lancer un Projet
               </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-bold tracking-widest uppercase">
+              <DialogDescription className="text-muted-foreground/70 text-xs font-bold">
                 Nouveau chantier de construction
               </DialogDescription>
             </div>
@@ -109,7 +109,7 @@ export function CreateProjectModal({
             <div className="space-y-2.5">
               <Label
                 htmlFor="nom"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
               >
                 <Target size={14} className="text-primary" /> Identité du Projet
               </Label>
@@ -125,7 +125,7 @@ export function CreateProjectModal({
             <div className="space-y-2.5">
               <Label
                 htmlFor="adresse"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
               >
                 <MapPin size={14} className="text-primary" /> Localisation
               </Label>
@@ -142,7 +142,7 @@ export function CreateProjectModal({
               <div className="space-y-2.5">
                 <Label
                   htmlFor="budget_total"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
                 >
                   <Calculator size={14} className="text-primary" /> Budget ({enterprise?.devise || 'DZD'})
                 </Label>
@@ -159,7 +159,7 @@ export function CreateProjectModal({
               <div className="space-y-2.5">
                 <Label
                   htmlFor="date_debut"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
                 >
                   <Calendar size={14} className="text-primary" /> Date de début
                 </Label>
@@ -177,7 +177,7 @@ export function CreateProjectModal({
             <div className="space-y-2.5">
               <Label
                 htmlFor="date_fin_prevue"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black tracking-widest uppercase"
+                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
               >
                 <Calendar size={14} className="text-primary" /> Fin prévue
               </Label>
@@ -193,7 +193,7 @@ export function CreateProjectModal({
           {mutation.isError && (
             <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
               <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black tracking-widest uppercase">
+              <p className="text-destructive text-xs font-black">
                 {mutation.error instanceof Error ? mutation.error.message : 'Une erreur est survenue'}
               </p>
             </div>

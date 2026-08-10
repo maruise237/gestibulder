@@ -63,8 +63,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
   return (
     <Card className="mx-auto max-w-lg border-none bg-card shadow-elevated rounded-3xl overflow-hidden">
       <div className="bg-primary p-8 text-primary-foreground">
-        <h2 className="text-xl font-black uppercase tracking-tight">Configuration Initiale</h2>
-        <p className="text-primary text-xs font-semibold uppercase mt-1 tracking-widest opacity-80">
+        <h2 className="text-xl font-black tracking-tight">Configuration Initiale</h2>
+        <p className="text-primary text-xs font-semibold mt-1 opacity-80">
           Étape {step} sur 3
         </p>
         <div className="mt-6 flex gap-1.5">
@@ -86,7 +86,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 className="space-y-4"
               >
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Votre premier chantier</Label>
+                  <Label className="text-[10px] font-black text-muted-foreground">Votre premier chantier</Label>
                   <Input
                     placeholder="Ex: Résidence Les Palmiers"
                     value={projectName}
@@ -96,7 +96,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   <p className="text-[10px] text-muted-foreground italic">Vous pourrez en ajouter d'autres plus tard.</p>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Budget prévisionnel</Label>
+                  <Label className="text-[10px] font-black text-muted-foreground">Budget prévisionnel</Label>
                   <div className="relative">
                     <Input
                       type="number"
@@ -120,7 +120,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                 className="space-y-6"
               >
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Devise de l'entreprise</Label>
+                  <Label className="text-[10px] font-black text-muted-foreground">Devise de l'entreprise</Label>
                   <Select value={currency} onValueChange={(val) => val && setCurrency(val)}>
                     <SelectTrigger className="h-12 rounded-xl font-bold">
                       <SelectValue placeholder="Choisir une devise" />
@@ -149,8 +149,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                     <Sparkles size={20} />
                   </div>
                   <div>
-                    <p className="text-xs font-black uppercase tracking-tight">Mode Sandbox</p>
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase leading-tight mt-0.5">Pré-remplir avec des données de test (ouvriers, stocks, dépenses)</p>
+                    <p className="text-xs font-black tracking-tight">Mode Sandbox</p>
+                    <p className="text-[10px] font-semibold text-muted-foreground leading-tight mt-0.5">Pré-remplir avec des données de test (ouvriers, stocks, dépenses)</p>
                   </div>
                 </div>
               </motion.div>
@@ -184,7 +184,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                       <Clock size={20} />
                     </div>
                     <div>
-                      <p className="text-xs font-bold uppercase tracking-widest text-primary">Gain de temps estimé</p>
+                      <p className="text-xs font-bold text-primary">Gain de temps estimé</p>
                       <p className="text-lg font-bold text-foreground">~4 heures / semaine</p>
                       <p className="text-[10px] text-muted-foreground italic">Sur la base d'une gestion manuelle classique</p>
                     </div>
