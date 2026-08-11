@@ -354,7 +354,7 @@ export default function BudgetPage() {
           </Card>
 
           <Card className="bg-primary text-primary-foreground border-none p-6 rounded-2xl shadow-xl shadow-primary/20">
-             <h3 className="text-[10px] font-black tracking-[0.2em] opacity-80 mb-1">Enveloppe Budgétaire</h3>
+             <h3 className="text-[10px] font-black opacity-80 mb-1">Enveloppe Budgétaire</h3>
              <p className="text-2xl font-black mb-4">
                {formatCurrency(budgetTotal, enterprise?.devise)}
              </p>

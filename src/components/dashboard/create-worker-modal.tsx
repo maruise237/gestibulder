@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { PAYMENT_TYPE_LABELS } from '@/lib/labels';
 import { useApp } from '@/lib/context/app-context';
 import { Worker } from '@/types/worker';
 
@@ -126,7 +127,7 @@ export function CreateWorkerModal({
       <DialogContent className="max-h-[90vh] overflow-y-auto border-none p-0 sm:max-w-[700px]">
         <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground rounded-md p-3 ">
+            <div className="bg-success text-success-foreground rounded-md p-3 ">
               {isEdit ? <Edit size={24} strokeWidth={2.5} /> : <Briefcase size={24} strokeWidth={2.5} />}
             </div>
             <div className="space-y-1">
@@ -143,7 +144,7 @@ export function CreateWorkerModal({
         <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em]">
+              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold">
                 <ShieldCheck size={14} className="text-primary" /> Détails Personnels
               </h3>
               <div className="space-y-2.5">
@@ -186,7 +187,7 @@ export function CreateWorkerModal({
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em]">
+              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold">
                 <Target size={14} className="text-primary" /> Profil Professionnel
               </h3>
               <div className="space-y-2.5">
@@ -195,7 +196,9 @@ export function CreateWorkerModal({
                 </Label>
                 <Select value={selectedMetier} onValueChange={(val) => val && setSelectedMetier(val)}>
                   <SelectTrigger className="h-9 font-medium">
-                    <SelectValue placeholder="Choisir un métier" />
+                    <SelectValue placeholder="Choisir un métier">
+                      {(value: string) => METIERS.find((m) => m.value === value)?.label || value}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {METIERS.map((m) => (
@@ -245,7 +248,7 @@ export function CreateWorkerModal({
           </div>
 
           <div className="space-y-6 border-t pt-8">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold tracking-[0.2em]">
+            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold">
               <Banknote size={14} className="text-primary" /> Modèle de Rémunération
             </h3>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -262,7 +265,7 @@ export function CreateWorkerModal({
                       onClick={() => setPaymentType(type)}
                       className="h-8 text-[10px] font-semibold"
                     >
-                      {type}
+                      {PAYMENT_TYPE_LABELS[type]}
                     </Button>
                   ))}
                 </div>

@@ -122,7 +122,7 @@ export function DeployEquipmentModal({
 
         <form onSubmit={handleSubmit} className="space-y-8 p-6 sm:p-8">
           <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6 text-center">
-            <p className="mb-2 text-[10px] font-black tracking-[0.2em] text-primary/60">
+            <p className="mb-2 text-[10px] font-black text-primary/60">
               Équipement identifié
             </p>
             <p className="text-3xl font-black tracking-tight text-foreground">{equipment.nom}</p>
@@ -138,7 +138,9 @@ export function DeployEquipmentModal({
               </Label>
               <Select value={selectedProject} onValueChange={(val) => val && setSelectedProject(val)}>
                 <SelectTrigger className="bg-muted/20 border-muted h-12 rounded-xl px-4 font-bold">
-                  <SelectValue placeholder="Choisir un chantier" />
+                  <SelectValue placeholder="Choisir un chantier">
+                    {(value: string) => projects.find((p) => p.id === value)?.nom || 'Choisir un chantier'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {projects.map((p) => (

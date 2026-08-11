@@ -43,7 +43,6 @@ export function QRScanner({ chantierId }: QRScannerProps) {
           { facingMode: "environment" },
           {
             fps: 10,
-            qrbox: { width: 250, height: 250 },
           },
           async (decodedText) => {
             if (isProcessing) return;
@@ -205,10 +204,10 @@ export function QRScanner({ chantierId }: QRScannerProps) {
 
             {/* Success/Already Result Overlay */}
             {lastScanResult && (
-              <div className="absolute inset-0 bg-white flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-300">
+              <div className="absolute inset-0 bg-card flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in-95 duration-300">
                 <div className={cn(
                   "h-24 w-24 rounded-full flex items-center justify-center mb-6",
-                  lastScanResult.already ? "bg-warning" : "bg-success"
+                  lastScanResult.already ? "bg-warning/10" : "bg-success/10"
                 )}>
                   {lastScanResult.already ? (
                     <AlertCircle className="h-12 w-12 text-warning" />
@@ -222,7 +221,7 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                   {lastScanResult.already ? "DÉJÀ POINTÉ À" : "POINTÉ AVEC SUCCÈS À"} {lastScanResult.time}
                 </p>
 
-                <div className="h-1 bg-primary w-32 rounded-full overflow-hidden">
+                <div className="h-1 bg-muted w-32 rounded-full overflow-hidden">
                   <div className="h-full bg-primary animate-progress origin-left"></div>
                 </div>
               </div>

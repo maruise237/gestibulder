@@ -64,7 +64,7 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
     <Card className="mx-auto max-w-lg border-none bg-card shadow-elevated rounded-3xl overflow-hidden">
       <div className="bg-primary p-8 text-primary-foreground">
         <h2 className="text-xl font-black tracking-tight">Configuration Initiale</h2>
-        <p className="text-primary text-xs font-semibold mt-1 opacity-80">
+        <p className="text-primary-foreground text-xs font-semibold mt-1 opacity-80">
           Étape {step} sur 3
         </p>
         <div className="mt-6 flex gap-1.5">
@@ -123,7 +123,12 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
                   <Label className="text-[10px] font-black text-muted-foreground">Devise de l'entreprise</Label>
                   <Select value={currency} onValueChange={(val) => val && setCurrency(val)}>
                     <SelectTrigger className="h-12 rounded-xl font-bold">
-                      <SelectValue placeholder="Choisir une devise" />
+                      <SelectValue placeholder="Choisir une devise">
+                        {(value: string) => {
+                          const c = CURRENCIES.find((cur) => cur.code === value);
+                          return c ? `${c.symbol} - ${c.label} (${c.code})` : value;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {CURRENCIES.map((c) => (

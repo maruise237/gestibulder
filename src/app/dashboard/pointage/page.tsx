@@ -61,7 +61,7 @@ export default function PointagePage() {
   if (!selectedProjectId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-        <div className="bg-primary p-6 rounded-full mb-6">
+        <div className="bg-primary/10 p-6 rounded-full mb-6">
           <AlertCircle className="h-12 w-12 text-primary" />
         </div>
         <h2 className="text-2xl font-black mb-2">Aucun projet sélectionné</h2>

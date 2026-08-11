@@ -15,6 +15,7 @@ import { ExportModal } from '@/components/dashboard/export-modal';
 import { WorkerPaymentModal } from '@/components/dashboard/worker-payment-modal';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { cn, formatCurrency } from '@/lib/utils';
+import { label, PAYMENT_TYPE_LABELS } from '@/lib/labels';
 import { Worker } from '@/types/worker';
 
 export default function WorkersPage() {
@@ -189,7 +190,7 @@ export default function WorkersPage() {
                           {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
                         </span>
                         <span className="text-[9px] font-black text-primary">
-                          {worker.type_paiement}
+                          {label(PAYMENT_TYPE_LABELS, worker.type_paiement)}
                         </span>
                       </div>
                     </TableCell>

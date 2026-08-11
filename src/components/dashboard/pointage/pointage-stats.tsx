@@ -135,7 +135,9 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
             <Label className="text-[10px] font-black text-muted-foreground ml-1">Mois</Label>
             <Select value={mois} onValueChange={(val) => val && setMois(val)}>
               <SelectTrigger className="w-[180px] h-10 rounded-xl font-bold">
-                <SelectValue placeholder="Mois" />
+                <SelectValue placeholder="Mois">
+                  {(value: string) => MONTHS.find((m) => m.value === value)?.label || value}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {MONTHS.map(m => (

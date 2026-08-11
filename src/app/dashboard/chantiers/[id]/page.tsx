@@ -26,6 +26,7 @@ import {
   Activity as ActivityIcon
 } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
+import { label, PAYMENT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/labels';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/dashboard/empty-state';
@@ -181,7 +182,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                disabled={isUpdating}
              >
                <SelectTrigger className="h-8 w-[140px] border-none bg-transparent text-[10px] font-black shadow-none">
-                 <SelectValue />
+                 <SelectValue>
+                   {(value: string) => label(PROJECT_STATUS_LABELS, value)}
+                 </SelectValue>
                </SelectTrigger>
                <SelectContent>
                  <SelectItem value="preparation">En attente</SelectItem>
@@ -447,7 +450,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                         <span className="text-size-sm font-semibold text-muted-foreground">{formatMetier(worker)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="text-size-sm font-black text-primary">{worker.type_paiement}</span>
+                        <span className="text-size-sm font-black text-primary">{label(PAYMENT_TYPE_LABELS, worker.type_paiement)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <span className="text-size-sm font-black text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>

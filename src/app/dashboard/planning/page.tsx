@@ -12,6 +12,8 @@ import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { PHASE_STATUS_LABELS } from '@/lib/labels';
 import {
   Dialog, DialogContent, DialogHeader,
   DialogTitle, DialogFooter
@@ -151,16 +153,22 @@ export default function PlanningPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <h4 className="font-semibold text-foreground truncate">{phase.nom}</h4>
-                        <select
+                        <Select
                           value={phase.statut}
-                          onChange={(e) => updateMutation.mutate({ id: phase.id, data: { statut: e.target.value } })}
-                          className="text-[8px] font-bold px-1.5 py-0.5 rounded-full border bg-transparent cursor-pointer"
+                          onValueChange={(val) => val && updateMutation.mutate({ id: phase.id, data: { statut: val } })}
                         >
-                          <option value="planifie">Planifié</option>
-                          <option value="en_cours">En cours</option>
-                          <option value="termine">Terminé</option>
-                          <option value="bloque">Bloqué</option>
-                        </select>
+                          <SelectTrigger size="sm" className="h-6 w-auto rounded-full border-none bg-muted px-2 text-[10px] font-medium">
+                            <SelectValue>
+                              {(value: string) => PHASE_STATUS_LABELS[value] ?? value}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="planifie">Planifié</SelectItem>
+                            <SelectItem value="en_cours">En cours</SelectItem>
+                            <SelectItem value="termine">Terminé</SelectItem>
+                            <SelectItem value="bloque">Bloqué</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground font-medium">
                         {phase.date_debut && (

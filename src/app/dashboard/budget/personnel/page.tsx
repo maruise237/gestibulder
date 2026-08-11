@@ -149,7 +149,7 @@ export default function PersonnelPaymentPage() {
 
                  <div className="space-y-6">
                     <div>
-                       <p className="text-[11px] font-bold tracking-[0.2em] opacity-80 mb-2">Total Engagé</p>
+                       <p className="text-[11px] font-bold opacity-80 mb-2">Total Engagé</p>
                        <p className="text-3xl font-black">{formatCurrency(workers.reduce((s: number, w: any) => s + w.totalDue, 0), enterprise?.devise)}</p>
                     </div>
 

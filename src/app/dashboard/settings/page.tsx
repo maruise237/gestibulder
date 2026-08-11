@@ -193,7 +193,12 @@ export default function SettingsPage() {
                   <Label htmlFor="devise">Devise</Label>
                   <Select name="devise" defaultValue={enterprise?.devise}>
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {(value: string) => {
+                          const curr = CURRENCIES.find((c) => c.code === value);
+                          return curr ? `${curr.code} - ${curr.label}` : value;
+                        }}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {CURRENCIES.map((curr) => (
@@ -229,7 +234,9 @@ export default function SettingsPage() {
                   onValueChange={(val) => setSelectedProjectId(val || null)}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Sélectionner..." />
+                    <SelectValue placeholder="Sélectionner...">
+                      {(value: string) => projects.find((p) => p.id === value)?.nom || 'Sélectionner...'}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {projects.map((p) => (

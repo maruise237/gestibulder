@@ -103,7 +103,7 @@ export function CreateExpenseModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="bg-muted/30 border-b p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground rounded-md p-2">
+            <div className="bg-destructive text-destructive-foreground rounded-md p-2">
               <Wallet size={20} />
             </div>
             <div className="space-y-1">

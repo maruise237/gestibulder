@@ -69,14 +69,14 @@ export function WorkerPaymentModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] rounded-3xl overflow-hidden p-0 border-none shadow-2xl">
-        <DialogHeader className="bg-primary p-8 text-primary-foreground">
+        <DialogHeader className="bg-success p-8 text-success-foreground">
           <div className="flex items-center gap-4">
             <div className="bg-white/20 rounded-2xl p-3">
               <Wallet size={24} />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black tracking-tight">Régler Salaire</DialogTitle>
-              <DialogDescription className="text-primary text-[10px] font-bold opacity-80">
+              <DialogTitle className="text-xl font-black tracking-tight text-success-foreground">Régler Salaire</DialogTitle>
+              <DialogDescription className="text-success-foreground text-[10px] font-bold opacity-80">
                 {worker.nom_complet}
               </DialogDescription>
             </div>
