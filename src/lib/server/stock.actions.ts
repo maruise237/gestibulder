@@ -60,6 +60,27 @@ export async function addStockMovement(data: NewStockMovement) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Empêcher une sortie de stock supérieure à la quantité disponible.
+  // Validation faite côté serveur car le client ne doit jamais être la
+  // seule barrière (formulaire, extension, appel API direct, etc.)
+  if (data.type_mouvement === 'sortie') {
+    const { data: materialWithStock, error: stockError } = await supabase
+      .from('materiaux_avec_stock')
+      .select('nom, stock_actuel, unite')
+      .eq('id', data.materiau_id)
+      .single();
+
+    if (stockError || !materialWithStock) {
+      return { error: "Matériau introuvable" };
+    }
+
+    if (data.quantite > (materialWithStock.stock_actuel || 0)) {
+      return {
+        error: `Stock insuffisant : ${materialWithStock.stock_actuel} ${materialWithStock.unite} disponible(s) pour "${materialWithStock.nom}", impossible de sortir ${data.quantite}.`,
+      };
+    }
+  }
+
   const { data: movement, error } = await supabase
     .from('mouvements_stock')
     .insert([{ ...data, entreprise_id, saisi_par: user?.id }])

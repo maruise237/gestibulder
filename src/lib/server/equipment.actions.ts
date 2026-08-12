@@ -44,6 +44,28 @@ export async function createEquipment(data: NewEquipment) {
   return { equipment };
 }
 
+export async function updateEquipment(id: string, data: NewEquipment) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
+  const supabase = await createClient();
+  const { data: equipment, error } = await supabase
+    .from('equipements')
+    .update(data)
+    .eq('id', id)
+    .eq('entreprise_id', entreprise_id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating equipment:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/equipements');
+  return { equipment };
+}
+
 export async function updateEquipmentStatus(equipmentId: string, status: string) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { error: authError };

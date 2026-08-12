@@ -9,8 +9,9 @@ import {
   Trash2,
   Edit,
   Search,
+  RotateCcw,
 } from 'lucide-react';
-import { getEquipments, deleteEquipment } from '@/lib/server/equipment.actions';
+import { getEquipments, deleteEquipment, updateEquipmentStatus } from '@/lib/server/equipment.actions';
 import { Equipment } from '@/types/equipment';
 import { CreateEquipmentModal } from '@/components/dashboard/create-equipment-modal';
 import { DeployEquipmentModal } from '@/components/dashboard/deploy-equipment-modal';
@@ -82,6 +83,15 @@ export default function EquipementsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Supprimer cet équipement ?')) return;
     const result = await deleteEquipment(id);
+    if (result.error) {
+      alert(result.error);
+    } else {
+      fetchEquipments();
+    }
+  };
+
+  const handleRelease = async (id: string) => {
+    const result = await updateEquipmentStatus(id, 'disponible');
     if (result.error) {
       alert(result.error);
     } else {
@@ -186,9 +196,22 @@ export default function EquipementsPage() {
 
                   <div className="mt-6 flex items-center justify-between">
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon-sm" className="h-7 w-7">
-                        <Edit size={14} className="text-muted-foreground hover:text-primary" />
-                      </Button>
+                      <CreateEquipmentModal equipment={equipment} onEquipmentCreated={fetchEquipments}>
+                        <Button variant="ghost" size="icon-sm" className="h-7 w-7">
+                          <Edit size={14} className="text-muted-foreground hover:text-primary" />
+                        </Button>
+                      </CreateEquipmentModal>
+                      {equipment.etat !== 'disponible' && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="h-7 w-7"
+                          title="Marquer comme disponible"
+                          onClick={() => handleRelease(equipment.id)}
+                        >
+                          <RotateCcw size={14} className="text-muted-foreground hover:text-success" />
+                        </Button>
+                      )}
                       <Button variant="ghost" size="icon-sm" className="h-7 w-7 text-destructive hover:bg-destructive/5" onClick={() => handleDelete(equipment.id)}>
                         <Trash2 size={14} />
                       </Button>

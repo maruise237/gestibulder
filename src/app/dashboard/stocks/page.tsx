@@ -17,6 +17,7 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -63,9 +64,16 @@ export default function StocksPage() {
 
   const movementMutation = useMutation({
     mutationFn: (data: any) => addStockMovement(data),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result?.error) {
+        toast.error(result.error);
+        return;
+      }
       queryClient.invalidateQueries({ queryKey: ['stocks', selectedProjectId] });
       setMovementModal({ open: false, material: null, type: 'entree' });
+    },
+    onError: () => {
+      toast.error("Une erreur est survenue lors de l'enregistrement du mouvement.");
     },
   });
 
@@ -86,7 +94,7 @@ export default function StocksPage() {
       cout_unitaire: formData.get('cout_unitaire') ? Number(formData.get('cout_unitaire')) : undefined,
       fournisseur: formData.get('fournisseur') as string,
       usage: formData.get('usage') as string,
-      date: new Date().toISOString(),
+      date_operation: new Date().toISOString(),
     });
   };
 

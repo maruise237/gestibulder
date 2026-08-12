@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { createEquipment } from '@/lib/server/equipment.actions';
+import { createEquipment, updateEquipment } from '@/lib/server/equipment.actions';
 import { Loader2, Plus, Truck, Tag, Hash, ShieldCheck } from 'lucide-react';
-import { NewEquipment } from '@/types/equipment';
+import { NewEquipment, Equipment } from '@/types/equipment';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -35,11 +35,14 @@ const CATEGORIES = [
 
 export function CreateEquipmentModal({
   children,
+  equipment,
   onEquipmentCreated
 }: {
   children?: React.ReactNode;
+  equipment?: Equipment;
   onEquipmentCreated: () => void
 }) {
+  const isEdit = !!equipment;
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +57,12 @@ export function CreateEquipmentModal({
       nom: formData.get('nom') as string,
       categorie: formData.get('categorie') as string,
       numero_serie: formData.get('numero_serie') as string,
-      etat: 'disponible',
+      etat: equipment?.etat || 'disponible',
     };
 
-    const result = await createEquipment(data);
+    const result = isEdit && equipment
+      ? await updateEquipment(equipment.id, data)
+      : await createEquipment(data);
 
     if (result.error) {
       setError(result.error);
@@ -87,7 +92,7 @@ export function CreateEquipmentModal({
             </div>
             <div className="space-y-1">
               <DialogTitle className="text-2xl font-black tracking-tight">
-                Nouvel Équipement
+                {isEdit ? "Modifier l'équipement" : 'Nouvel Équipement'}
               </DialogTitle>
               <DialogDescription className="text-muted-foreground/70 text-xs font-bold">
                 Inventaire du parc matériel
@@ -109,6 +114,7 @@ export function CreateEquipmentModal({
                 id="nom"
                 name="nom"
                 required
+                defaultValue={equipment?.nom}
                 placeholder="Ex: Pelleteuse Caterpillar 320"
                 className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-9 rounded-xl px-4 font-bold"
               />
@@ -119,7 +125,7 @@ export function CreateEquipmentModal({
                 <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
                   <Tag size={14} className="text-primary" /> Catégorie
                 </Label>
-                <Select name="categorie" required>
+                <Select name="categorie" required defaultValue={equipment?.categorie}>
                   <SelectTrigger className="bg-muted/20 border-muted focus:ring-primary/20 h-9 rounded-xl px-4 font-bold">
                     <SelectValue placeholder="Choisir" />
                   </SelectTrigger>
@@ -143,6 +149,7 @@ export function CreateEquipmentModal({
                 <Input
                   id="numero_serie"
                   name="numero_serie"
+                  defaultValue={equipment?.numero_serie}
                   placeholder="SN-XXXXXX"
                   className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-9 rounded-xl px-4 font-bold"
                 />
@@ -178,6 +185,8 @@ export function CreateEquipmentModal({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Enregistrement...
                 </>
+              ) : isEdit ? (
+                'Enregistrer les modifications'
               ) : (
                 'Enregistrer'
               )}

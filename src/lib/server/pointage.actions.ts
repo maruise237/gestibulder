@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { getAuthenticatedEnterpriseId } from './utils';
+import { getTauxJournalierEffectif } from '@/lib/payroll';
 import { PointageStatut, PointageWithOuvrier, PointageStats } from '@/types/pointage';
 
 /**
@@ -48,10 +49,10 @@ export async function upsertPointage(data: {
 
   const supabase = await createClient();
 
-  // 1. Récupérer le taux journalier de l'ouvrier
+  // 1. Récupérer les infos de paie de l'ouvrier
   const { data: ouvrier, error: ouvrierError } = await supabase
     .from('ouvriers')
-    .select('taux_journalier')
+    .select('type_paiement, taux_journalier, salaire_hebdo, salaire_mensuel')
     .eq('id', data.ouvrier_id)
     .single();
 
@@ -59,9 +60,9 @@ export async function upsertPointage(data: {
     return { error: "Ouvrier non trouvé" };
   }
 
-  // 2. Calculer le salaire journalier
+  // 2. Calculer le salaire journalier (équivalent journalier quel que soit le cycle de paie)
   let salaire_jour = 0;
-  const taux = ouvrier.taux_journalier || 0;
+  const taux = getTauxJournalierEffectif(ouvrier);
 
   if (data.statut === 'present') {
     salaire_jour = taux;
@@ -104,7 +105,7 @@ export async function pointageRapideQR(ouvrier_id: string, chantier_id: string) 
   // 1. Récupérer d'abord les infos de l'ouvrier pour pouvoir les retourner même si déjà pointé
   const { data: ouvrier } = await supabase
     .from('ouvriers')
-    .select('nom_complet, taux_journalier')
+    .select('nom_complet, type_paiement, taux_journalier, salaire_hebdo, salaire_mensuel')
     .eq('id', ouvrier_id)
     .single();
 
@@ -137,7 +138,7 @@ export async function pointageRapideQR(ouvrier_id: string, chantier_id: string) 
       date: today,
       statut: 'present',
       heure_arrivee: nowTime,
-      salaire_jour: ouvrier.taux_journalier || 0
+      salaire_jour: getTauxJournalierEffectif(ouvrier)
     });
 
   if (error) return { error: error.message };
@@ -168,7 +169,7 @@ export async function getPointagesStats(chantier_id: string, mois: number, annee
       statut,
       salaire_jour,
       ouvrier_id,
-      ouvrier:ouvriers(nom_complet, metier, taux_journalier)
+      ouvrier:ouvriers(nom_complet, metier, type_paiement, taux_journalier, salaire_hebdo, salaire_mensuel)
     `)
     .eq('entreprise_id', entreprise_id)
     .eq('chantier_id', chantier_id)
@@ -186,7 +187,7 @@ export async function getPointagesStats(chantier_id: string, mois: number, annee
         ouvrier_id: oid,
         nom_complet: p.ouvrier.nom_complet,
         metier: p.ouvrier.metier,
-        taux_journalier: p.ouvrier.taux_journalier,
+        taux_journalier: getTauxJournalierEffectif(p.ouvrier),
         jours_present: 0,
         jours_absent: 0,
         demi_journees: 0,

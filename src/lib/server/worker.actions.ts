@@ -36,18 +36,22 @@ export async function getWorkers(page: number = 1, pageSize: number = 10) {
   };
 }
 
-export async function getWorkersByProject(projectId: string) {
+export async function getWorkersByProject(projectId: string, activeOnly: boolean = false) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { error: authError };
 
   const supabase = await createClient();
 
-  const { data: workers, error } = await supabase
+  let query = supabase
     .from('ouvriers')
     .select('*')
     .eq('entreprise_id', entreprise_id)
     .contains('chantier_ids', [projectId])
     .order('nom_complet', { ascending: true });
+
+  if (activeOnly) query = query.eq('actif', true);
+
+  const { data: workers, error } = await query;
 
   if (error) {
     console.error('Error fetching workers by project:', error);
@@ -99,6 +103,15 @@ export async function updateWorker(id: string, data: any) {
   return { worker };
 }
 
+/**
+ * "Supprime" un ouvrier : en réalité une désactivation (actif = false), pas
+ * une suppression physique. Un hard delete entraînerait la suppression en
+ * cascade (ON DELETE CASCADE) de tout son historique de pointage et de
+ * paiement, ce qui est inacceptable pour la comptabilité et les litiges
+ * éventuels sur des salaires déjà versés. L'ouvrier désactivé n'apparaît
+ * plus dans les listes de pointage mais reste visible dans l'effectif avec
+ * le badge "Inactif", et son historique reste intact.
+ */
 export async function deleteWorker(id: string) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { error: authError };
@@ -106,15 +119,37 @@ export async function deleteWorker(id: string) {
   const supabase = await createClient();
   const { error } = await supabase
     .from('ouvriers')
-    .delete()
+    .update({ actif: false })
     .eq('id', id)
     .eq('entreprise_id', entreprise_id);
 
   if (error) {
-    console.error('Error deleting worker:', error);
+    console.error('Error deactivating worker:', error);
     return { error: error.message };
   }
 
   revalidatePath('/dashboard/ouvriers');
+  revalidatePath('/dashboard/pointage');
+  return { success: true };
+}
+
+export async function reactivateWorker(id: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('ouvriers')
+    .update({ actif: true })
+    .eq('id', id)
+    .eq('entreprise_id', entreprise_id);
+
+  if (error) {
+    console.error('Error reactivating worker:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/ouvriers');
+  revalidatePath('/dashboard/pointage');
   return { success: true };
 }

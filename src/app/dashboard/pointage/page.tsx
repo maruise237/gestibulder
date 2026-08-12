@@ -35,7 +35,7 @@ export default function PointagePage() {
   // Fetch Workers
   const { data: workersData, isLoading: loadingWorkers } = useQuery({
     queryKey: ['workers', selectedProjectId],
-    queryFn: () => getWorkersByProject(selectedProjectId!),
+    queryFn: () => getWorkersByProject(selectedProjectId!, true),
     enabled: !!selectedProjectId,
   });
 

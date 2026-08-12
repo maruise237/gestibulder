@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { getWorkersByProject, deleteWorker } from '@/lib/server/worker.actions';
+import { getWorkersByProject, deleteWorker, reactivateWorker } from '@/lib/server/worker.actions';
 import { useApp } from '@/lib/context/app-context';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
-import { Search, Plus, Trash2, Edit, Users, HardHat, Loader2, Wallet } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, Users, HardHat, Loader2, Wallet, RotateCcw } from 'lucide-react';
 import { CreateWorkerModal } from '@/components/dashboard/create-worker-modal';
 import { ExportModal } from '@/components/dashboard/export-modal';
 import { WorkerPaymentModal } from '@/components/dashboard/worker-payment-modal';
@@ -62,8 +62,17 @@ export default function WorkersPage() {
 
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet ouvrier ?')) return;
+    if (!confirm("Désactiver cet ouvrier ? Il n'apparaîtra plus dans les listes de pointage, mais son historique de présence et de paiement sera conservé.")) return;
     const result = await deleteWorker(id);
+    if (result.error) {
+      alert(result.error);
+    } else {
+      refetch();
+    }
+  };
+
+  const handleReactivate = async (id: string) => {
+    const result = await reactivateWorker(id);
     if (result.error) {
       alert(result.error);
     } else {
@@ -228,14 +237,27 @@ export default function WorkersPage() {
                              <Edit size={14} />
                            </Button>
                         </CreateWorkerModal>
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          className="h-7 w-7 text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDelete(worker.id)}
-                        >
-                          <Trash2 size={14} />
-                        </Button>
+                        {worker.actif ? (
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDelete(worker.id)}
+                            title="Désactiver"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="icon-sm"
+                            className="h-7 w-7 text-success hover:bg-success/10"
+                            onClick={() => handleReactivate(worker.id)}
+                            title="Réactiver"
+                          >
+                            <RotateCcw size={14} />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

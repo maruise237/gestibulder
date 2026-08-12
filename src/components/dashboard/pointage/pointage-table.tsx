@@ -10,6 +10,7 @@ import { upsertPointage } from '@/lib/server/pointage.actions';
 import { PointageStatut, PointageWithOuvrier } from '@/types/pointage';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { getTauxJournalierEffectif } from '@/lib/payroll';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface PointageTableProps {
@@ -75,7 +76,7 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
       <div className="grid grid-cols-1 gap-3">
         {workers.map((worker) => {
           const state = localState[worker.id] || { statut: 'absent', heure_arrivee: '08:00' };
-          const taux = worker.taux_journalier || 0;
+          const taux = getTauxJournalierEffectif(worker);
           const salaire = state.statut === 'present' ? taux : state.statut === 'demi_journee' ? taux / 2 : 0;
 
           return (
