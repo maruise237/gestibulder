@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, Check, X, Clock } from 'lucide-react';
-import { upsertPointage } from '@/lib/server/pointage.actions';
+import { runOrQueue } from '@/lib/offline-sync';
 import { PointageStatut, PointageWithOuvrier } from '@/types/pointage';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -51,18 +51,32 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
   const handleSaveAll = async () => {
     setIsSaving(true);
     try {
-      const promises = Object.entries(localState).map(([ouvrier_id, data]) =>
-        upsertPointage({
-          ouvrier_id,
-          chantier_id: chantierId,
-          date,
-          statut: data.statut,
-          heure_arrivee: data.heure_arrivee
-        })
+      const results = await Promise.all(
+        Object.entries(localState).map(([ouvrier_id, data]) =>
+          runOrQueue(
+            'upsertPointage',
+            {
+              ouvrier_id,
+              chantier_id: chantierId,
+              date,
+              statut: data.statut,
+              heure_arrivee: data.heure_arrivee
+            },
+            `Pointage ${ouvrier_id} — ${date}`
+          )
+        )
       );
 
-      await Promise.all(promises);
-      toast.success("Pointages enregistrés avec succès");
+      const queuedCount = results.filter((r) => r.queued).length;
+      const errorResult = results.find((r) => r.error && !r.queued);
+
+      if (errorResult) {
+        toast.error(errorResult.error || "Erreur lors de l'enregistrement");
+      } else if (queuedCount > 0) {
+        toast.info(`Hors ligne — ${queuedCount} pointage(s) sauvegardé(s) localement. Synchronisation automatique à la reconnexion.`);
+      } else {
+        toast.success("Pointages enregistrés avec succès");
+      }
       queryClient.invalidateQueries({ queryKey: ['pointages', chantierId, date] });
     } catch (error) {
       toast.error("Erreur lors de l'enregistrement");

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { getMaterials, addStockMovement } from '@/lib/server/stock.actions';
+import { getMaterials, addStockMovement, deleteMaterial } from '@/lib/server/stock.actions';
 import { getProjects } from '@/lib/server/project.actions';
 import { useApp } from '@/lib/context/app-context';
 import {
@@ -15,6 +15,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   ChevronDown,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -28,6 +29,7 @@ import { Material } from '@/types/stock';
 import { CreateMaterialModal } from '@/components/dashboard/create-material-modal';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { StockHistoryModal } from '@/components/dashboard/stock-history-modal';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Dialog,
   DialogContent,
@@ -100,6 +102,16 @@ export default function StocksPage() {
 
   const handleMaterialCreated = () => {
     queryClient.invalidateQueries({ queryKey: ['stocks', selectedProjectId] });
+  };
+
+  const handleDeleteMaterial = async (id: string) => {
+    if (!confirm('Supprimer ce matériau du catalogue ?')) return;
+    const result = await deleteMaterial(id);
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      queryClient.invalidateQueries({ queryKey: ['stocks', selectedProjectId] });
+    }
   };
 
   return (
@@ -182,9 +194,22 @@ export default function StocksPage() {
                        ) : isLow ? (
                          <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-semibold text-warning">Critique</span>
                        ) : null}
-                       <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
-                         <MoreVertical size={16} />
-                       </Button>
+                       <Popover>
+                         <PopoverTrigger asChild>
+                           <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
+                             <MoreVertical size={16} />
+                           </Button>
+                         </PopoverTrigger>
+                         <PopoverContent align="end" className="w-44 p-1">
+                           <Button
+                             variant="ghost"
+                             className="w-full justify-start gap-2 text-xs font-medium text-destructive hover:bg-destructive/5 hover:text-destructive"
+                             onClick={() => handleDeleteMaterial(mat.id)}
+                           >
+                             <Trash2 size={14} /> Supprimer
+                           </Button>
+                         </PopoverContent>
+                       </Popover>
                     </div>
                   </div>
 

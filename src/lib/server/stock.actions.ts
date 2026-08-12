@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { NewMaterial, NewStockMovement } from '@/types/stock';
 import { getAuthenticatedEnterpriseId } from './utils';
+import { notifyEnterprise } from './notification.actions';
 
 export async function getMaterials(chantierId: string) {
   const supabase = await createClient();
@@ -51,6 +52,41 @@ export async function createMaterial(data: NewMaterial) {
   return { material };
 }
 
+/**
+ * Empêche la suppression physique d'un matériau qui a déjà des mouvements
+ * de stock enregistrés (entrées/sorties) : ça effacerait leur historique
+ * financier (coûts, fournisseurs). Un matériau jamais utilisé peut être
+ * supprimé sans risque.
+ */
+export async function deleteMaterial(id: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
+  const supabase = await createClient();
+
+  const { count } = await supabase
+    .from('mouvements_stock')
+    .select('id', { count: 'exact', head: true })
+    .eq('materiau_id', id);
+
+  if (count && count > 0) {
+    return {
+      error: "Ce matériau a des mouvements de stock enregistrés et ne peut pas être supprimé, pour préserver l'historique financier.",
+    };
+  }
+
+  const { error } = await supabase
+    .from('materiaux')
+    .delete()
+    .eq('id', id)
+    .eq('entreprise_id', entreprise_id);
+
+  if (error) return { error: error.message };
+
+  revalidatePath('/dashboard/stocks');
+  return { success: true };
+}
+
 export async function addStockMovement(data: NewStockMovement) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { error: authError };
@@ -60,17 +96,19 @@ export async function addStockMovement(data: NewStockMovement) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // On a besoin des infos du matériau à la fois pour la validation (sortie)
+  // et pour savoir, après le mouvement, si le seuil d'alerte est franchi.
+  const { data: materialWithStock } = await supabase
+    .from('materiaux_avec_stock')
+    .select('nom, stock_actuel, seuil_alerte, unite')
+    .eq('id', data.materiau_id)
+    .single();
+
   // Empêcher une sortie de stock supérieure à la quantité disponible.
   // Validation faite côté serveur car le client ne doit jamais être la
   // seule barrière (formulaire, extension, appel API direct, etc.)
   if (data.type_mouvement === 'sortie') {
-    const { data: materialWithStock, error: stockError } = await supabase
-      .from('materiaux_avec_stock')
-      .select('nom, stock_actuel, unite')
-      .eq('id', data.materiau_id)
-      .single();
-
-    if (stockError || !materialWithStock) {
+    if (!materialWithStock) {
       return { error: "Matériau introuvable" };
     }
 
@@ -88,6 +126,22 @@ export async function addStockMovement(data: NewStockMovement) {
     .single();
 
   if (error) return { error: error.message };
+
+  // Alerte stock critique : uniquement si une sortie vient de faire passer
+  // le stock sous (ou à) son seuil d'alerte alors qu'il était au-dessus
+  // avant ce mouvement (pour ne notifier qu'une seule fois au franchissement,
+  // pas à chaque sortie tant qu'on reste sous le seuil).
+  if (data.type_mouvement === 'sortie' && materialWithStock) {
+    const stockAvant = materialWithStock.stock_actuel || 0;
+    const stockApres = stockAvant - data.quantite;
+    const seuil = materialWithStock.seuil_alerte || 0;
+
+    if (stockAvant > seuil && stockApres <= seuil) {
+      const titre = stockApres <= 0 ? 'Rupture de stock' : 'Stock critique';
+      const message = `"${materialWithStock.nom}" : il reste ${stockApres} ${materialWithStock.unite}${stockApres > 0 ? ` (seuil : ${seuil})` : ''}.`;
+      notifyEnterprise(entreprise_id, titre, message).catch(() => {});
+    }
+  }
 
   revalidatePath('/dashboard/stocks');
   return { movement };

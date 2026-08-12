@@ -130,6 +130,21 @@ export async function deleteEquipment(id: string) {
   if (authError) return { error: authError };
 
   const supabase = await createClient();
+
+  // Empêcher la suppression physique d'un équipement qui a déjà été déployé :
+  // ça effacerait en cascade tout son historique de déploiement. On propose
+  // plutôt de le marquer "hors service" (updateEquipmentStatus).
+  const { count } = await supabase
+    .from('affectations_equipements')
+    .select('id', { count: 'exact', head: true })
+    .eq('equipement_id', id);
+
+  if (count && count > 0) {
+    return {
+      error: "Cet équipement a un historique de déploiement et ne peut pas être supprimé. Marquez-le plutôt comme \"Hors service\".",
+    };
+  }
+
   const { error } = await supabase
     .from('equipements')
     .delete()

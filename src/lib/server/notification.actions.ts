@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function getNotifications() {
   const supabase = await createClient()
@@ -40,4 +41,31 @@ export async function markAllAsRead() {
     .eq('lu', false)
   if (error) return { error: error.message }
   return { success: true }
+}
+
+/**
+ * Crée une notification pour chaque membre actif d'une entreprise.
+ * Utilisé en interne par les autres server actions (ex: alerte de stock
+ * critique) — pas un endpoint appelé directement depuis le client.
+ */
+export async function notifyEnterprise(entrepriseId: string, titre: string, message?: string) {
+  const admin = createAdminClient();
+  if (!admin) return;
+
+  const { data: profiles, error: profilesError } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('entreprise_id', entrepriseId)
+    .eq('actif', true);
+
+  if (profilesError || !profiles || profiles.length === 0) return;
+
+  const rows = profiles.map((p) => ({
+    entreprise_id: entrepriseId,
+    destinataire_id: p.id,
+    titre,
+    message,
+  }));
+
+  await admin.from('notifications').insert(rows);
 }

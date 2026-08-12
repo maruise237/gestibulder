@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/dashboard/sidebar';
 import { Topbar } from '@/components/dashboard/topbar';
 import { cn } from '@/lib/utils';
 import { Providers } from '@/components/providers';
+import { OfflineIndicator } from '@/components/dashboard/offline-indicator';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
@@ -44,6 +45,7 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
           {/* Topbar */}
           <Topbar onMenuClick={() => setSidebarOpen(true)} userProfile={userProfile} />
+          <OfflineIndicator />
 
           {/* Page Content */}
           <main className={cn('flex-1 transition-all duration-300', 'lg:ml-72')}>

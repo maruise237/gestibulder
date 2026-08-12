@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, use } from 'react';
-import { getProjectById, updateProjectStatus, updateProjectProgress, getProjectActivity } from '@/lib/server/project.actions';
+import { getProjectById, updateProjectStatus, updateProjectProgress, getProjectActivity, deleteProject } from '@/lib/server/project.actions';
 import { getWorkers } from '@/lib/server/worker.actions';
 import { getMaterials } from '@/lib/server/stock.actions';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
@@ -23,7 +23,8 @@ import {
   Search,
   HardHat,
   History,
-  Activity as ActivityIcon
+  Activity as ActivityIcon,
+  Trash2
 } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { label, PAYMENT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/labels';
@@ -32,6 +33,9 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { useApp } from '@/lib/context/app-context';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from 'sonner';
 import { Worker } from '@/types/worker';
 import { Material } from '@/types/stock';
 import { Expense } from '@/types/expense';
@@ -57,6 +61,7 @@ import {
 export default function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const { enterprise } = useApp();
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -65,8 +70,21 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
   const [activities, setActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'workforce' | 'inventory' | 'finances'>('overview');
   const [activityModalOpen, setActivityModalOpen] = useState(false);
+
+  const handleDeleteProject = async () => {
+    setIsDeleting(true);
+    const result = await deleteProject(id);
+    setIsDeleting(false);
+    if (result?.error) {
+      toast.error(result.error);
+    } else {
+      toast.success('Chantier supprimé.');
+      router.push('/dashboard/chantiers');
+    }
+  };
 
   const formatMetier = (worker: Worker) => {
     return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
@@ -219,6 +237,28 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
            <Button size="sm" className="h-8 px-2 text-[10px] font-semibold" onClick={() => setActivityModalOpen(true)}>
              <ActivityIcon size={14} className="mr-1.5" /> Activité
            </Button>
+           <Popover>
+             <PopoverTrigger asChild>
+               <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/5 hover:text-destructive">
+                 <Trash2 size={14} />
+               </Button>
+             </PopoverTrigger>
+             <PopoverContent align="end" className="w-72 space-y-3">
+               <p className="text-xs font-medium text-foreground">Supprimer ce chantier ?</p>
+               <p className="text-xs text-muted-foreground">
+                 Possible uniquement s'il n'a aucun pointage ni dépense enregistrés. Sinon, marquez-le "Terminé" plutôt.
+               </p>
+               <Button
+                 variant="destructive"
+                 size="sm"
+                 className="w-full"
+                 disabled={isDeleting}
+                 onClick={handleDeleteProject}
+               >
+                 {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmer la suppression'}
+               </Button>
+             </PopoverContent>
+           </Popover>
         </div>
       </div>
 

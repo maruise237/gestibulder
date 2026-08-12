@@ -44,6 +44,46 @@ export async function createProject(data: any) {
   return { project };
 }
 
+/**
+ * Un chantier a des cascades sur presque toutes les tables (pointages,
+ * dépenses, matériaux, mouvements de stock, paiements, phases). On
+ * n'autorise la suppression physique que si aucun pointage ni dépense
+ * n'a jamais été enregistré dessus (chantier créé par erreur, jamais
+ * réellement démarré). Sinon on suggère de le marquer "Terminé" plutôt
+ * que de détruire l'historique.
+ */
+export async function deleteProject(projectId: string) {
+  const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
+  if (authError) return { error: authError };
+
+  const supabase = await createClient();
+
+  const [{ count: pointagesCount }, { count: depensesCount }] = await Promise.all([
+    supabase.from('pointages').select('id', { count: 'exact', head: true }).eq('chantier_id', projectId),
+    supabase.from('depenses').select('id', { count: 'exact', head: true }).eq('chantier_id', projectId),
+  ]);
+
+  if ((pointagesCount && pointagesCount > 0) || (depensesCount && depensesCount > 0)) {
+    return {
+      error: "Ce chantier a un historique de pointage ou de dépenses et ne peut pas être supprimé. Marquez-le plutôt comme \"Terminé\".",
+    };
+  }
+
+  const { error } = await supabase
+    .from('chantiers')
+    .delete()
+    .eq('id', projectId)
+    .eq('entreprise_id', entreprise_id);
+
+  if (error) {
+    console.error('Error deleting project:', error);
+    return { error: error.message };
+  }
+
+  revalidatePath('/dashboard/chantiers');
+  return { success: true };
+}
+
 export async function updateProjectStatus(projectId: string, status: string) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
   if (authError) return { error: authError };
