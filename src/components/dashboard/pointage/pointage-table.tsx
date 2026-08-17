@@ -1,11 +1,9 @@
 "use client"
 
 import { useState, useEffect } from 'react';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, Check, X, Clock } from 'lucide-react';
+import { Loader2, Check, Clock } from 'lucide-react';
 import { runOrQueue } from '@/lib/offline-sync';
 import { PointageStatut, PointageWithOuvrier } from '@/types/pointage';
 import { toast } from 'sonner';
@@ -87,27 +85,22 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-3">
+      <div className="border border-border divide-y divide-border">
         {workers.map((worker) => {
           const state = localState[worker.id] || { statut: 'absent', heure_arrivee: '08:00' };
           const taux = getTauxJournalierEffectif(worker);
           const salaire = state.statut === 'present' ? taux : state.statut === 'demi_journee' ? taux / 2 : 0;
 
           return (
-            <Card key={worker.id} className="p-4 border-border rounded-2xl">
+            <div key={worker.id} className="p-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-                    {worker.nom_complet.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground text-sm">{worker.nom_complet}</p>
-                    <p className="text-xs text-muted-foreground">{worker.metier}</p>
-                  </div>
+                <div>
+                  <p className="font-medium text-foreground text-size-sm">{worker.nom_complet}</p>
+                  <p className="text-xs text-muted-foreground">{worker.metier}</p>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex bg-muted p-1 rounded-lg">
+                  <div className="flex bg-muted p-0.5">
                     {[
                       { val: 'present', label: 'P', color: 'bg-success text-success-foreground' },
                       { val: 'demi_journee', label: 'D', color: 'bg-warning text-warning-foreground' },
@@ -119,7 +112,7 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
                         variant="ghost"
                         onClick={() => updateLocal(worker.id, { statut: btn.val as PointageStatut })}
                         className={cn(
-                          "w-10 h-8 text-xs font-bold",
+                          "w-10 h-8 text-xs font-medium",
                           state.statut === btn.val ? btn.color : "text-muted-foreground hover:bg-background"
                         )}
                       >
@@ -133,22 +126,22 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
                       <Clock className="w-3 h-3 text-muted-foreground" />
                       <Input
                         type="time"
-                        className="h-9 w-24 text-xs font-bold"
+                        className="font-tabular h-9 w-24 text-xs"
                         value={state.heure_arrivee}
                         onChange={(e) => updateLocal(worker.id, { heure_arrivee: e.target.value })}
                       />
                     </div>
                   )}
 
-                  <div className="min-w-[80px] text-right">
-                    <p className="text-[10px] font-bold text-muted-foreground">Salaire</p>
-                    <p className="font-black text-primary text-sm">
-                      {salaire.toLocaleString('fr-FR')} <span className="text-[10px]">FCFA</span>
+                  <div className="min-w-[90px] text-right">
+                    <p className="text-xs text-muted-foreground">Salaire</p>
+                    <p className="font-tabular font-medium text-primary text-sm">
+                      {salaire.toLocaleString('fr-FR')} <span className="text-xs">FCFA</span>
                     </p>
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
           );
         })}
       </div>
@@ -157,10 +150,10 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
         <Button
           onClick={handleSaveAll}
           disabled={isSaving}
-          className="rounded-xl px-8 h-12 font-black shadow-lg"
+          className="px-8 h-11 shadow-elevated"
         >
           {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-          ENREGISTRER TOUT
+          Enregistrer tout
         </Button>
       </div>
     </div>

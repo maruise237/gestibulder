@@ -3,23 +3,15 @@
 import React from 'react';
 import { getBudgetData } from '@/lib/server/dashboard.actions';
 import {
-  Wallet,
-  Calculator, Plus,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
+  Calculator,
   MoreVertical,
-  Package,
-  HardHat,
-  ArrowDownRight,
   AlertCircle,
   Users,
-  Banknote,
   ArrowRight,
-  HandCoins,
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { label, EXPENSE_CATEGORY_LABELS } from '@/lib/labels';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useApp } from '@/lib/context/app-context';
@@ -27,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { CreateExpenseModal } from '@/components/dashboard/create-expense-modal';
 import { ExportModal } from '@/components/dashboard/export-modal';
+import { EmptyState } from '@/components/dashboard/empty-state';
 import Link from 'next/link';
 
 export default function BudgetPage() {
@@ -83,14 +76,14 @@ export default function BudgetPage() {
       {/* Header Section */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl font-black">Finances</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block tracking-wider">
+          <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Finances</h1>
+          <p className="hidden text-size-sm text-muted-foreground sm:block">
             Suivi des dépenses et rentabilité des chantiers.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Link href="/dashboard/budget/personnel">
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 px-4 rounded-xl">
+            <Button variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground h-9 px-4">
                <Users size={14} className="mr-2" />
                Paiements personnel
             </Button>
@@ -102,115 +95,64 @@ export default function BudgetPage() {
 
       {/* Alerte budget dépassé */}
       {selectedProjectObj && totalEngaged > budgetTotal && budgetTotal > 0 && (
-        <div className="flex items-center gap-3 rounded-2xl border-2 border-destructive/20 bg-destructive/5 p-4 animate-in fade-in slide-in-from-top-2">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive text-destructive-foreground shadow-lg shadow-destructive/20">
-            <AlertCircle size={20} />
-          </div>
+        <div className="flex items-center gap-3 border border-destructive/20 bg-destructive/5 p-4">
+          <AlertCircle size={20} className="shrink-0 text-destructive" />
           <div className="min-w-0">
-            <p className="text-[11px] font-black text-destructive">Risque budgétaire élevé</p>
-            <p className="text-[10px] font-bold text-destructive/80">
-              Dépassement de {formatCurrency(totalEngaged - budgetTotal, enterprise?.devise)}
-              (Matériaux + Tout le Personnel pointé)
+            <p className="text-size-sm font-medium text-destructive">Risque budgétaire élevé</p>
+            <p className="font-tabular text-xs text-destructive/80">
+              Dépassement de {formatCurrency(totalEngaged - budgetTotal, enterprise?.devise)} (matériaux + personnel pointé)
             </p>
           </div>
         </div>
       )}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-fluid-md">
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-primary/10 p-2 text-primary">
-              <Wallet size={18} />
-            </div>
-            <span className="text-[10px] font-black text-muted-foreground">
-              Budget Engagé
-            </span>
-          </div>
-          <p className="text-size-2xl font-black tracking-tight text-foreground">
-            {isLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              formatCurrency(totalEngaged, enterprise?.devise)
-            )}
+      <div className="grid grid-cols-2 divide-y divide-x divide-border border border-border md:grid-cols-4 md:divide-y-0">
+        <div className="p-4 sm:p-6">
+          <p className="text-xs text-muted-foreground">Budget engagé</p>
+          <p className="font-tabular mt-1.5 text-size-xl font-medium text-foreground sm:text-size-2xl">
+            {isLoading ? <Skeleton className="h-8 w-32" /> : formatCurrency(totalEngaged, enterprise?.devise)}
           </p>
-          <p className="mt-2 text-[9px] font-black text-muted-foreground italic text-destructive">Total Personnel + Matériaux</p>
-        </Card>
+          <p className="mt-1 text-xs text-muted-foreground">Personnel + matériaux</p>
+        </div>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-destructive/10 p-2 text-destructive">
-              <Banknote size={18} />
-            </div>
-            <span className="text-[10px] font-black text-muted-foreground">
-              Impayés (Dettes)
-            </span>
-          </div>
-          <p className="text-size-2xl font-black tracking-tight text-destructive">
-            {isLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              formatCurrency(totalLaborDebt, enterprise?.devise)
-            )}
+        <div className="p-4 sm:p-6">
+          <p className="text-xs text-muted-foreground">Impayés (dettes)</p>
+          <p className="font-tabular mt-1.5 text-size-xl font-medium text-destructive sm:text-size-2xl">
+            {isLoading ? <Skeleton className="h-8 w-32" /> : formatCurrency(totalLaborDebt, enterprise?.devise)}
           </p>
-          <p className="mt-2 text-[9px] font-black text-muted-foreground italic">Salaires dus à ce jour</p>
-        </Card>
+          <p className="mt-1 text-xs text-muted-foreground">Salaires dus à ce jour</p>
+        </div>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-success/10 p-2 text-success">
-              <HandCoins size={18} />
-            </div>
-            <span className="text-[10px] font-black text-muted-foreground">
-              Budget Restant
-            </span>
-          </div>
-          <p className="text-size-2xl font-black tracking-tight text-success">
-            {isLoading ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              formatCurrency(budgetRemaining, enterprise?.devise)
-            )}
+        <div className="p-4 sm:p-6">
+          <p className="text-xs text-muted-foreground">Budget restant</p>
+          <p className="font-tabular mt-1.5 text-size-xl font-medium text-success sm:text-size-2xl">
+            {isLoading ? <Skeleton className="h-8 w-32" /> : formatCurrency(budgetRemaining, enterprise?.devise)}
           </p>
-          <p className="mt-2 text-[9px] font-black text-muted-foreground italic">Trésorerie théorique</p>
-        </Card>
+          <p className="mt-1 text-xs text-muted-foreground">Trésorerie théorique</p>
+        </div>
 
-        <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-          <div className="mb-4 flex items-center gap-3">
-            <div className={cn(
-              "rounded-xl p-2 shadow-sm transition-colors",
-              margin && Number(margin) > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-            )}>
-              {margin && Number(margin) > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
-            </div>
-            <span className="text-[10px] font-black text-muted-foreground">
-              Rentabilité
-            </span>
-          </div>
+        <div className="p-4 sm:p-6">
+          <p className="text-xs text-muted-foreground">Rentabilité</p>
           <p className={cn(
-            "text-size-2xl font-black tracking-tight",
+            "font-tabular mt-1.5 text-size-xl font-medium sm:text-size-2xl",
             margin && Number(margin) > 0 ? "text-success" : "text-destructive"
           )}>
-            {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '--'}
+            {isLoading ? <Skeleton className="h-8 w-20" /> : margin ? `${margin}%` : '—'}
           </p>
-          <p className="mt-2 text-[9px] font-black text-muted-foreground italic">Santé financière globale</p>
-        </Card>
+          <p className="mt-1 text-xs text-muted-foreground">Santé financière globale</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Transaction Ledger */}
         <div className="lg:col-span-2 space-y-6">
-          <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
-            <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
-              <div className="flex items-center gap-3">
-                <div className="rounded-xl border border-border bg-card p-2 shadow-sm">
-                  <Calendar size={18} className="text-primary" />
-                </div>
-                <h2 className="text-size-lg font-black tracking-tight text-foreground">
-                  Grand Livre
-                </h2>
-              </div>
-              <div className="text-[10px] font-black text-muted-foreground">
+          <Card className="overflow-hidden border-border" padding="none">
+            <div className="flex flex-col justify-between gap-2 border-b border-border p-4 sm:p-6 md:flex-row md:items-center">
+              <h2 className="font-display text-lg font-medium text-foreground">
+                Grand livre
+              </h2>
+              <div className="text-xs text-muted-foreground">
                 Historique des sorties
               </div>
             </div>
@@ -219,8 +161,7 @@ export default function BudgetPage() {
               <div className="divide-y divide-border">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="flex items-center justify-between p-4 sm:p-6">
-                    <Skeleton className="h-10 w-10 rounded-xl" />
-                    <div className="flex-1 px-4 space-y-2">
+                    <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />
                       <Skeleton className="h-3 w-24" />
                     </div>
@@ -229,55 +170,32 @@ export default function BudgetPage() {
                 ))}
               </div>
             ) : filteredExpensesForTable.length === 0 ? (
-              <div className="py-20 text-center">
-                <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-background shadow-premium border border-border">
-                  <Calculator size={40} className="text-primary/20" />
-                  <div className="absolute -right-2 -top-2 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-premium animate-bounce">
-                    <Plus size={16} />
-                  </div>
-                </div>
-                <h2 className="mb-2 text-size-xl font-black tracking-tight text-foreground">
-                  Historique vide
-                </h2>
-                <p className="mx-auto mb-10 max-w-sm text-size-sm font-bold text-muted-foreground italic">
-                  Aucune transaction n'a été enregistrée.
-                </p>
-                <CreateExpenseModal onExpenseCreated={refetch}>
-                  <Button className="h-11 rounded-xl px-8 font-black shadow-premium transition-all hover:scale-105 active:scale-95 bg-primary">
-                    Saisir une dépense
-                  </Button>
-                </CreateExpenseModal>
-              </div>
+              <EmptyState
+                icon={Calculator}
+                title="Historique vide"
+                description="Aucune transaction n'a été enregistrée."
+                action={<CreateExpenseModal onExpenseCreated={refetch} />}
+              />
             ) : (
               <div className="divide-y divide-border">
                 {filteredExpensesForTable.map((expense) => (
                   <div
                     key={expense.id}
-                    className="group flex items-center justify-between p-4 transition-all duration-200 hover:bg-muted/30 sm:p-6"
+                    className="flex items-center justify-between p-4 transition-colors hover:bg-muted/30 sm:p-6"
                   >
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className={cn(
-                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 transition-transform group-hover:scale-110 shadow-sm',
-                        expense.categorie === 'materiaux' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-primary/10 text-primary border-primary/20'
-                      )}>
-                        {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
+                    <div className="min-w-0">
+                      <div className="truncate text-size-sm font-medium text-foreground">
+                        {expense.libelle}
                       </div>
-                      <div className="min-w-0">
-                        <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary tracking-tight">
-                          {expense.libelle}
-                        </div>
-                        <div className="mt-1 flex items-center gap-2 text-[9px] font-black text-muted-foreground">
-                          <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
-                          <span className="text-muted-foreground/30">•</span>
-                          <span className="text-primary">{expense.categorie.replace(/_/g, ' ')}</span>
-                        </div>
+                      <div className="font-tabular mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
+                        <span>·</span>
+                        <span className="font-sans">{label(EXPENSE_CATEGORY_LABELS, expense.categorie)}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 sm:gap-6">
-                      <div className="text-right">
-                        <div className="text-size-sm font-black text-destructive sm:text-size-base">
-                          - {formatCurrency(expense.montant, enterprise?.devise)}
-                        </div>
+                    <div className="flex items-center gap-3">
+                      <div className="font-tabular text-size-sm font-medium text-destructive sm:text-size-base">
+                        − {formatCurrency(expense.montant, enterprise?.devise)}
                       </div>
                       <Button variant="ghost" size="icon-sm" className="text-muted-foreground hover:text-foreground">
                         <MoreVertical size={16} />
@@ -292,52 +210,45 @@ export default function BudgetPage() {
 
         {/* Labor Debt Details */}
         <div className="space-y-6">
-          <Card className="shadow-premium border-border rounded-2xl overflow-hidden" padding="none">
-             <div className="border-b border-border bg-destructive/5 p-4 sm:p-6 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-destructive text-destructive-foreground p-2 shadow-lg shadow-destructive/20">
-                    <Users size={18} />
-                  </div>
-                  <div>
-                    <h2 className="text-size-lg font-black tracking-tight text-foreground">
-                      Impayés
-                    </h2>
-                    <p className="text-[10px] font-bold text-muted-foreground">
-                      Soldes par ouvrier
-                    </p>
-                  </div>
+          <Card className="border-border overflow-hidden" padding="none">
+             <div className="border-b border-border p-4 sm:p-6 flex items-center justify-between">
+                <div>
+                  <h2 className="font-display text-lg font-medium text-foreground">
+                    Impayés
+                  </h2>
+                  <p className="text-xs text-muted-foreground">
+                    Soldes par ouvrier
+                  </p>
                 </div>
                 <Link href="/dashboard/budget/personnel">
-                   <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg text-destructive hover:bg-destructive hover:text-destructive-foreground">
+                   <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive hover:text-destructive-foreground">
                       <ArrowRight size={16} />
                    </Button>
                 </Link>
              </div>
 
-             <div className="p-2">
+             <div>
                 {isLoading ? (
                   <div className="space-y-2 p-4">
-                    <Skeleton className="h-12 w-full rounded-xl" />
-                    <Skeleton className="h-12 w-full rounded-xl" />
+                    <Skeleton className="h-12 w-full" />
+                    <Skeleton className="h-12 w-full" />
                   </div>
                 ) : !laborSummary || laborSummary.workers.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <HardHat size={32} className="mx-auto mb-2 text-muted-foreground/20" />
-                    <p className="text-[10px] font-black text-muted-foreground italic">Tout est réglé</p>
+                  <div className="py-12 text-center text-xs text-muted-foreground">
+                    Tout est réglé.
                   </div>
                 ) : (
-                  <div className="space-y-1">
+                  <div className="divide-y divide-border">
                     {laborSummary.workers.filter((w: any) => w.remaining > 0).map((worker: any) => (
-                      <div key={worker.id} className="flex items-center justify-between p-3 rounded-xl transition-colors hover:bg-muted/50 border border-transparent hover:border-border">
+                      <div key={worker.id} className="flex items-center justify-between p-4">
                          <div className="min-w-0">
-                            <p className="text-[11px] font-black text-foreground truncate">{worker.nom_complet}</p>
-                            <p className="text-[9px] font-bold text-muted-foreground">{worker.daysPresent} jours présents</p>
+                            <p className="text-size-sm font-medium text-foreground truncate">{worker.nom_complet}</p>
+                            <p className="text-xs text-muted-foreground">{worker.daysPresent} jours présents</p>
                          </div>
                          <div className="text-right">
-                            <p className="text-xs font-black text-destructive">
+                            <p className="font-tabular text-size-sm font-medium text-destructive">
                               {formatCurrency(worker.remaining, enterprise?.devise)}
                             </p>
-                            <p className="text-[8px] font-bold text-muted-foreground tracking-tighter">Solde restant</p>
                          </div>
                       </div>
                     ))}
@@ -347,25 +258,25 @@ export default function BudgetPage() {
 
              <div className="border-t border-border bg-muted/20 p-4">
                 <div className="flex justify-between items-center">
-                   <span className="text-[10px] font-black text-muted-foreground">Dette Totale Personnel</span>
-                   <span className="text-sm font-black text-destructive">{formatCurrency(totalLaborDebt, enterprise?.devise)}</span>
+                   <span className="text-xs text-muted-foreground">Dette totale personnel</span>
+                   <span className="font-tabular text-sm font-medium text-destructive">{formatCurrency(totalLaborDebt, enterprise?.devise)}</span>
                 </div>
              </div>
           </Card>
 
-          <Card className="bg-primary text-primary-foreground border-none p-6 rounded-2xl shadow-xl shadow-primary/20">
-             <h3 className="text-[10px] font-black opacity-80 mb-1">Enveloppe Budgétaire</h3>
-             <p className="text-2xl font-black mb-4">
+          <Card className="border-border p-6">
+             <p className="text-xs text-muted-foreground mb-1">Enveloppe budgétaire</p>
+             <p className="font-tabular text-size-2xl font-medium text-foreground mb-4">
                {formatCurrency(budgetTotal, enterprise?.devise)}
              </p>
              <div className="space-y-2">
-                <div className="flex justify-between text-[10px] font-bold">
-                   <span>Consommation Réelle</span>
-                   <span>{margin ? (100 - Number(margin)).toFixed(1) : 0}%</span>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                   <span>Consommation réelle</span>
+                   <span className="font-tabular">{margin ? (100 - Number(margin)).toFixed(1) : 0}%</span>
                 </div>
-                <div className="h-2 w-full bg-white/20 rounded-full overflow-hidden">
+                <div className="h-1 w-full bg-muted overflow-hidden">
                    <div
-                    className="h-full bg-white transition-all duration-1000"
+                    className="h-full bg-primary transition-all duration-1000"
                     style={{ width: `${Math.min(100, margin ? 100 - Number(margin) : 0)}%` }}
                    />
                 </div>

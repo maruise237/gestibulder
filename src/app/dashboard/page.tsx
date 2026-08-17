@@ -2,14 +2,7 @@
 
 import React from 'react';
 import {
-  HardHat,
-  Users,
-  TrendingUp,
   Package,
-  AlertCircle,
-  TrendingDown,
-  Clock,
-  Plus,
 } from 'lucide-react';
 import { getDashboardData } from '@/lib/server/dashboard.actions';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
@@ -79,14 +72,14 @@ export default function DashboardPage() {
         <OnboardingWizard onComplete={() => refetch()} />
       ) : (
         <>
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+          <div className="flex flex-col justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-end">
             <div className="space-y-1">
-              <h1 className="text-size-2xl font-black tracking-tight text-foreground sm:text-size-3xl">Tableau de bord</h1>
-              <p className="text-size-xs font-semibold tracking-wider text-muted-foreground">
+              <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Tableau de bord</h1>
+              <p className="text-size-sm text-muted-foreground">
                 {isLoading ? (
-                  <Skeleton className="h-3 w-48" />
+                  <Skeleton className="h-4 w-48" />
                 ) : (
-                  `Vue d'ensemble • ${stats.projectsCount} Chantiers`
+                  `Vue d'ensemble — ${stats.projectsCount} chantier${stats.projectsCount > 1 ? 's' : ''}`
                 )}
               </p>
             </div>
@@ -96,67 +89,47 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-fluid-md">
-            {/* Quick Stats */}
+          <div className="grid grid-cols-2 divide-y divide-x divide-border border border-border sm:grid-cols-4 sm:divide-y-0">
+            {/* Quick Stats — la typographie porte la hiérarchie, pas des icônes dans des carrés colorés */}
             {[
               {
-                label: 'Chantiers',
+                label: 'Chantiers en cours',
                 value: stats.activeProjects,
-                icon: HardHat,
-                color: 'indigo',
-                sub: 'En cours',
+                sub: `sur ${stats.projectsCount} au total`,
+                tone: 'default',
               },
               {
-                label: 'Dépenses',
+                label: 'Dépenses cumulées',
                 value: formatCurrency(stats.totalExpenses, enterprise?.devise),
-                icon: TrendingDown,
-                color: 'rose',
-                sub: 'Total cumulé',
+                sub: 'tous chantiers confondus',
+                tone: 'default',
+                tabular: true,
               },
               {
-                label: 'Effectifs',
+                label: 'Effectif présent',
                 value: stats.activeWorkers,
-                icon: Users,
-                color: 'emerald',
-                sub: 'Présents ce jour',
+                sub: `sur ${stats.workersCount} ouvriers`,
+                tone: 'success',
               },
               {
-                label: 'Stocks',
+                label: 'Alertes stock',
                 value: stats.stockAlerts,
-                icon: AlertCircle,
-                color: stats.stockAlerts > 0 ? 'amber' : 'emerald',
-                sub: 'Alertes critiques',
+                sub: stats.stockAlerts > 0 ? 'à traiter' : 'aucune alerte',
+                tone: stats.stockAlerts > 0 ? 'warning' : 'success',
               },
             ].map((stat, i) => (
-              <Card
-                key={i}
-                className="group border-border p-3 transition-all duration-300 hover:border-primary/30 sm:p-fluid-md rounded-2xl"
-              >
-                <div className="mb-2 flex items-center sm:mb-4">
-                  <div
-                    className={cn(
-                      'rounded-md p-1.5 transition-transform group-hover:scale-110 sm:p-2',
-                      stat.color === 'rose' && 'bg-destructive/10 text-destructive',
-                      stat.color === 'indigo' && 'bg-primary/10 text-primary',
-                      stat.color === 'emerald' && 'bg-success/10 text-success',
-                      stat.color === 'amber' && 'bg-warning/10 text-warning'
-                    )}
-                  >
-                    <stat.icon size={16} className="sm:size-5" />
-                  </div>
-                </div>
-                <div className="space-y-0.5 sm:space-y-1">
-                  <p className="text-[11px] font-medium text-muted-foreground sm:text-size-xs">
-                    {stat.label}
-                  </p>
-                  <p className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-2xl">
-                    {isLoading ? <Skeleton className="h-6 w-16 sm:h-8 sm:w-24" /> : stat.value}
-                  </p>
-                  <p className="text-[10px] font-medium text-muted-foreground sm:text-[11px]">
-                    {stat.sub}
-                  </p>
-                </div>
-              </Card>
+              <div key={i} className="p-4 sm:p-6">
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className={cn(
+                  'font-display mt-1.5 text-2xl font-medium sm:text-3xl',
+                  stat.tabular && 'font-tabular text-xl sm:text-2xl',
+                  stat.tone === 'success' && 'text-success',
+                  stat.tone === 'warning' && 'text-warning'
+                )}>
+                  {isLoading ? <Skeleton className="h-8 w-16" /> : stat.value}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{stat.sub}</p>
+              </div>
             ))}
           </div>
 
@@ -166,14 +139,9 @@ export default function DashboardPage() {
               className="overflow-hidden border-border lg:col-span-8 rounded-2xl"
               padding="none"
             >
-              <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
-                <div className="flex items-center gap-2">
-                  <div className="rounded-md border border-border bg-card p-1.5">
-                    <Clock size={14} className="text-primary sm:size-5" />
-                  </div>
-                  <h2 className="text-size-base font-semibold tracking-tight text-foreground sm:text-size-xl">Mouvements récents</h2>
-                </div>
-                <Button variant="ghost" size="sm" asChild className="h-7 px-2 text-[11px] font-medium sm:h-9 sm:px-3 sm:text-xs">
+              <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+                <h2 className="font-display text-lg font-medium text-foreground sm:text-xl">Mouvements récents</h2>
+                <Button variant="ghost" size="sm" asChild className="h-7 px-2 text-xs font-medium sm:h-9 sm:px-3">
                   <Link href="/dashboard/stocks">Tout voir</Link>
                 </Button>
               </div>
@@ -198,45 +166,29 @@ export default function DashboardPage() {
                   recentMovements.slice(0, 4).map((mov, i) => (
                     <div
                       key={i}
-                      className="group flex items-center justify-between p-3 transition-all duration-300 hover:bg-muted/30 sm:p-6"
+                      className="flex items-center justify-between p-4 transition-colors hover:bg-muted/30 sm:px-6"
                     >
-                      <div className="flex items-center gap-3 sm:gap-5">
+                      <div className="flex items-center gap-4">
                         <div
                           className={cn(
-                            'flex h-8 w-8 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110 sm:h-11 sm:w-11',
-                            mov.type_mouvement === 'entree'
-                              ? 'border-success/20 bg-success/10 text-success'
-                              : 'border-destructive/20 bg-destructive/10 text-destructive'
+                            'font-tabular w-16 shrink-0 text-right text-sm font-medium sm:w-20 sm:text-base',
+                            mov.type_mouvement === 'entree' ? 'text-success' : 'text-destructive'
                           )}
                         >
-                          {mov.type_mouvement === 'entree' ? (
-                            <TrendingUp size={14} strokeWidth={2.5} className="sm:size-5" />
-                          ) : (
-                            <TrendingDown size={14} strokeWidth={2.5} className="sm:size-5" />
-                          )}
+                          {mov.type_mouvement === 'entree' ? '+' : '−'}{mov.quantite}
                         </div>
                         <div>
-                          <div className="text-size-xs leading-none font-semibold text-foreground transition-colors group-hover:text-primary sm:text-size-base">
+                          <div className="text-size-xs leading-none font-medium text-foreground sm:text-size-base">
                             {mov.materiaux?.nom}
+                            <span className="ml-1 font-normal text-muted-foreground">{mov.materiaux?.unite}</span>
                           </div>
-                          <div className="mt-1 flex items-center gap-1.5 text-[7px] font-semibold tracking-wider text-muted-foreground sm:mt-2 sm:text-[10px]">
-                            <span
-                              className={cn(
-                                'rounded-md border px-1 py-0.5 sm:px-2',
-                                mov.type_mouvement === 'entree'
-                                  ? 'border-success/20 bg-success/10 text-success'
-                                  : 'border-destructive/20 bg-destructive/10 text-destructive'
-                              )}
-                            >
-                              {mov.type_mouvement === 'entree' ? '+' : '-'}
-                              {mov.quantite} {mov.materiaux?.unite}
-                            </span>
-                            <span className="hidden xs:inline">• {mov.chantiers?.nom}</span>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {mov.chantiers?.nom}
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-[9px] font-semibold tracking-tight text-foreground sm:text-xs">
+                        <div className="font-tabular text-xs text-muted-foreground">
                           {formatDate(mov.created_at)}
                         </div>
                       </div>
@@ -248,38 +200,33 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:col-span-4 lg:grid-cols-1 lg:gap-fluid-md">
               {/* Teams Status */}
-              <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
-                <div className="flex items-center justify-between border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-md border border-border bg-card p-1.5">
-                      <Users size={14} className="text-success sm:size-5" />
-                    </div>
-                    <h2 className="text-size-base font-semibold tracking-tight text-foreground">Équipes</h2>
-                  </div>
+              <Card className="overflow-hidden border-border" padding="none">
+                <div className="flex items-center justify-between border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+                  <h2 className="font-display text-lg font-medium text-foreground">Équipes</h2>
                 </div>
                 <div className="p-3 space-y-4 sm:p-fluid-md sm:space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <p className="text-[8px] font-semibold text-muted-foreground sm:text-[10px]">Actifs</p>
-                      <p className="text-size-base font-semibold text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8" /> : stats.activeWorkers}</p>
+                      <p className="text-xs text-muted-foreground">Actifs</p>
+                      <p className="font-tabular text-size-base font-medium text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8" /> : stats.activeWorkers}</p>
                     </div>
                     <div className="h-6 w-[1px] bg-border sm:h-8" />
                     <div className="space-y-0.5 text-right">
-                      <p className="text-[8px] font-semibold text-muted-foreground sm:text-[10px]">Total</p>
-                      <p className="text-size-base font-semibold text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8 ml-auto" /> : stats.workersCount}</p>
+                      <p className="text-xs text-muted-foreground">Total</p>
+                      <p className="font-tabular text-size-base font-medium text-foreground sm:text-size-xl">{isLoading ? <Skeleton className="h-5 w-8 ml-auto" /> : stats.workersCount}</p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center text-[8px] font-semibold text-muted-foreground sm:text-[10px]">
+                    <div className="flex justify-between items-center text-xs text-muted-foreground">
                       <span>Activité</span>
-                      <span className="text-success">
+                      <span className="font-tabular text-success">
                         {isLoading ? '...' : `${Math.round((stats.activeWorkers / (stats.workersCount || 1)) * 100)}%`}
                       </span>
                     </div>
-                    <div className="h-1 w-full rounded-full bg-muted overflow-hidden sm:h-1.5">
+                    <div className="h-1 w-full bg-muted overflow-hidden">
                       <div
-                        className="h-full bg-success rounded-full transition-all duration-1000"
+                        className="h-full bg-success transition-all duration-1000"
                         style={{ width: isLoading ? '0%' : `${(stats.activeWorkers / (stats.workersCount || 1)) * 100}%` }}
                       />
                     </div>
@@ -289,53 +236,45 @@ export default function DashboardPage() {
                     asChild
                     variant="outline"
                     size="sm"
-                    className="h-8 w-full text-[9px] font-semibold sm:h-10 sm:text-size-xs"
+                    className="h-9 w-full text-xs"
                   >
-                    <Link href="/dashboard/ouvriers">Effectifs</Link>
+                    <Link href="/dashboard/ouvriers">Voir l'effectif</Link>
                   </Button>
                 </div>
               </Card>
 
               {/* Deadlines */}
-              <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
-                <div className="border-b border-border bg-muted/30 px-3 py-2 sm:p-fluid-md">
-                  <div className="flex items-center gap-2">
-                    <div className="rounded-md border border-border bg-card p-1.5">
-                      <AlertCircle size={14} className="text-primary sm:size-5" />
-                    </div>
-                    <h2 className="text-size-base font-semibold tracking-tight text-foreground">
-                      Échéances
-                    </h2>
-                  </div>
+              <Card className="overflow-hidden border-border" padding="none">
+                <div className="border-b border-border px-4 py-3 sm:px-6 sm:py-4">
+                  <h2 className="font-display text-lg font-medium text-foreground">
+                    Échéances
+                  </h2>
                 </div>
-                <div className="space-y-2 bg-card p-3 sm:p-fluid-md sm:space-y-3">
+                <div className="divide-y divide-border">
                   {isLoading ? (
                     Array.from({ length: 2 }).map((_, i) => (
-                      <div key={i} className="rounded-md border border-border bg-muted/30 p-2">
-                        <Skeleton className="h-3 w-full rounded-md" />
+                      <div key={i} className="p-4">
+                        <Skeleton className="h-4 w-full" />
                       </div>
                     ))
                   ) : recentProjects.length === 0 ? (
-                    <p className="py-4 text-center text-[10px] font-semibold text-muted-foreground italic sm:py-6 sm:text-xs">
+                    <p className="p-6 text-center text-xs text-muted-foreground">
                       Aucune échéance.
                     </p>
                   ) : (
                     recentProjects.slice(0, 2).map((proj, i) => (
                       <div
                         key={i}
-                        className="group rounded-md border border-border bg-muted/30 p-2 transition-all hover:border-primary/20 hover:bg-card sm:p-3"
+                        className="p-4 transition-colors hover:bg-muted/30"
                       >
-                        <div className="mb-1 flex items-center justify-between">
-                          <span className="rounded-md bg-primary/10 px-1 py-0.5 text-[7px] font-semibold text-primary sm:text-[8px]">
-                            PROJET
-                          </span>
-                          <span className="text-[8px] font-semibold text-muted-foreground sm:text-[9px]">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate text-size-sm font-medium text-foreground">
+                            {proj.nom}
+                          </p>
+                          <span className="font-tabular shrink-0 text-xs text-muted-foreground">
                             {formatDate(proj.date_fin_prevue)}
                           </span>
                         </div>
-                        <p className="truncate text-[10px] font-semibold text-foreground sm:text-size-sm">
-                          {proj.nom}
-                        </p>
                       </div>
                     ))
                   )}

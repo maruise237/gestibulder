@@ -9,25 +9,17 @@ import { getAttendance } from '@/lib/server/attendance.actions';
 import {
   MapPin,
   Calendar,
-  Clock,
-  Plus,
   Loader2,
   ChevronLeft,
-  Users,
   Package,
   Wallet,
-  TrendingUp,
-  TrendingDown,
-  Calculator,
-  ArrowDownRight,
   Search,
-  HardHat,
   History,
   Activity as ActivityIcon,
   Trash2
 } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
-import { label, PAYMENT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/lib/labels';
+import { label, PAYMENT_TYPE_LABELS, PROJECT_STATUS_LABELS, EXPENSE_CATEGORY_LABELS } from '@/lib/labels';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/dashboard/empty-state';
@@ -164,42 +156,37 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
       {/* Back Button */}
       <Link
         href="/dashboard/chantiers"
-        className="inline-flex items-center gap-2 text-[10px] font-black text-muted-foreground transition-colors hover:text-primary"
+        className="inline-flex items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-primary"
       >
         <ChevronLeft size={14} />
         Retour aux chantiers
       </Link>
 
       {/* Header Profile */}
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex items-start gap-5">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-premium">
-            <HardHat size={32} />
-          </div>
-          <div className="space-y-1">
-            <h1 className="text-size-3xl font-black tracking-tight text-foreground">
-              {project.nom}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 text-[10px] font-black text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <MapPin size={12} /> {project.adresse || 'Non spécifié'}
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <Calendar size={12} /> Fin : {project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'N/A'}
-              </span>
-            </div>
+      <div className="flex flex-col gap-6 border-b border-border pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="text-size-3xl font-medium text-foreground">
+            {project.nom}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <MapPin size={12} /> {project.adresse || 'Non spécifié'}
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Calendar size={12} /> Fin prévue le {project.date_fin_prevue ? formatDate(project.date_fin_prevue) : 'non définie'}
+            </span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-           <div className="flex items-center gap-2 bg-muted/50 p-1.5 rounded-xl border border-border">
+           <div className="flex items-center gap-2 border border-border p-1">
              <Select
                value={project.statut}
                onValueChange={handleUpdateStatus}
                disabled={isUpdating}
              >
-               <SelectTrigger className="h-8 w-[140px] border-none bg-transparent text-[10px] font-black shadow-none">
+               <SelectTrigger className="h-8 w-[140px] border-none bg-transparent text-xs shadow-none">
                  <SelectValue>
                    {(value: string) => label(PROJECT_STATUS_LABELS, value)}
                  </SelectValue>
@@ -215,7 +202,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
              <div className="h-4 w-[1px] bg-border mx-1" />
 
              <div className="flex items-center gap-2 px-2">
-               <span className="text-[10px] font-black text-muted-foreground">Progrès:</span>
+               <span className="text-xs text-muted-foreground">Progrès</span>
                <div className="flex items-center gap-1">
                  <Input
                    type="number"
@@ -224,17 +211,17 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                    defaultValue={project.avancement_pct || 0}
                    onBlur={(e) => handleUpdateProgress(Number(e.target.value))}
                    disabled={isUpdating}
-                   className="h-7 w-14 border-border bg-background px-1 text-center text-[11px] font-black"
+                   className="font-tabular h-7 w-14 border-border bg-background px-1 text-center text-xs"
                  />
-                 <span className="text-[11px] font-black">%</span>
+                 <span className="text-xs text-muted-foreground">%</span>
                </div>
              </div>
            </div>
 
-           <Button variant="outline" size="sm" className="h-8 px-2 text-[10px] font-semibold" onClick={() => setActivityModalOpen(true)}>
+           <Button variant="outline" size="sm" className="h-8 px-3 text-xs" onClick={() => setActivityModalOpen(true)}>
              <History size={14} className="mr-1.5" /> Historique
            </Button>
-           <Button size="sm" className="h-8 px-2 text-[10px] font-semibold" onClick={() => setActivityModalOpen(true)}>
+           <Button size="sm" className="h-8 px-3 text-xs" onClick={() => setActivityModalOpen(true)}>
              <ActivityIcon size={14} className="mr-1.5" /> Activité
            </Button>
            <Popover>
@@ -264,40 +251,40 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
       {/* Activity Modal */}
       <Dialog open={activityModalOpen} onOpenChange={setActivityModalOpen}>
-        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden rounded-2xl border-none">
-          <DialogHeader className="bg-primary p-6 text-primary-foreground">
-            <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2">
-              <History size={20} /> Journal d'Activité
+        <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+          <DialogHeader className="border-b border-border p-6">
+            <DialogTitle className="font-display text-xl font-medium flex items-center gap-2">
+              <History size={18} className="text-muted-foreground" /> Journal d'activité
             </DialogTitle>
           </DialogHeader>
           <div className="max-h-[60vh] overflow-y-auto p-6">
             {activities.length === 0 ? (
-              <div className="py-12 text-center text-muted-foreground italic text-[10px] font-black">
+              <div className="py-12 text-center text-xs text-muted-foreground">
                 Aucune activité enregistrée.
               </div>
             ) : (
-              <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-0.5 before:bg-muted">
+              <div className="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-px before:bg-border">
                 {activities.map((act) => (
                   <div key={act.id} className="relative pl-10">
                     <div className={cn(
-                      "absolute left-0 top-0 h-8 w-8 rounded-full flex items-center justify-center border-2 border-background shadow-sm",
-                      act.type === 'expense' ? "bg-destructive text-destructive-foreground" :
-                      act.subType === 'entree' ? "bg-success text-success-foreground" : "bg-warning text-success-foreground"
+                      "absolute left-0 top-0 h-8 w-8 rounded-full flex items-center justify-center border-2 border-background",
+                      act.type === 'expense' ? "bg-destructive/10 text-destructive" :
+                      act.subType === 'entree' ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
                     )}>
                       {act.type === 'expense' ? <Wallet size={14} /> : <Package size={14} />}
                     </div>
                     <div>
-                      <p className="text-[11px] font-black text-foreground leading-tight">{act.title}</p>
+                      <p className="text-xs font-medium text-foreground leading-tight">{act.title}</p>
                       <div className="mt-1 flex items-center gap-2">
                         <span className={cn(
-                          "text-size-sm font-black",
+                          "font-tabular text-size-sm font-medium",
                           act.type === 'expense' ? "text-destructive" :
                           act.subType === 'entree' ? "text-success" : "text-warning"
                         )}>
                           {act.type === 'expense' ? `- ${formatCurrency(act.amount, enterprise?.devise)}` :
                            `${act.subType === 'entree' ? '+' : '-'}${act.amount} ${act.unit}`}
                         </span>
-                        <span className="text-[9px] font-bold text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           • {new Date(act.date).toLocaleDateString()}
                         </span>
                       </div>
@@ -322,7 +309,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="whitespace-nowrap px-4 py-2 text-[10px] font-black"
+              className="whitespace-nowrap px-4 py-2 text-xs font-medium"
             >
               {tab.label}
             </TabsTrigger>
@@ -335,101 +322,77 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         {activeTab === 'overview' && (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
-              <Card className="shadow-premium border-border rounded-2xl p-6">
+              <Card className="border-border p-6">
                 <div className="mb-6 flex items-center justify-between">
-                   <h2 className="text-size-lg font-black tracking-tight text-foreground">Statut d'Avancement</h2>
-                   <span className="text-size-2xl font-black text-primary">{project.avancement_pct || 0}%</span>
+                   <h2 className="font-display text-lg font-medium text-foreground">Statut d'avancement</h2>
+                   <span className="font-tabular text-size-2xl font-medium text-primary">{project.avancement_pct || 0}%</span>
                 </div>
-                <div className="h-4 w-full rounded-full bg-muted overflow-hidden">
+                <div className="h-1.5 w-full bg-muted overflow-hidden">
                    <div
                      className="h-full bg-primary transition-all duration-1000 ease-out"
                      style={{ width: `${project.avancement_pct || 0}%` }}
                    />
                 </div>
-                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="mt-6 grid grid-cols-2 gap-6 border-t border-border pt-6 sm:grid-cols-4">
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black text-muted-foreground">Effectif total</p>
-                    <p className="text-size-xl font-black text-foreground">{workers.length}</p>
+                    <p className="text-xs text-muted-foreground">Effectif total</p>
+                    <p className="font-tabular text-size-xl font-medium text-foreground">{workers.length}</p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black text-muted-foreground">Présents (jour)</p>
-                    <p className="text-size-xl font-black text-success">
+                    <p className="text-xs text-muted-foreground">Présents (jour)</p>
+                    <p className="font-tabular text-size-xl font-medium text-success">
                       {todayAttendance.filter(a => a.statut === 'present').length}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black text-muted-foreground">Alertes stock</p>
-                    <p className="text-size-xl font-black text-warning">
+                    <p className="text-xs text-muted-foreground">Alertes stock</p>
+                    <p className="font-tabular text-size-xl font-medium text-warning">
                       {materials.filter(m => (m.stock_actuel || 0) <= m.seuil_alerte).length}
                     </p>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[9px] font-black text-muted-foreground">Budget consommé</p>
-                    <p className="text-size-xl font-black text-foreground">
+                    <p className="text-xs text-muted-foreground">Budget consommé</p>
+                    <p className="font-tabular text-size-xl font-medium text-foreground">
                        {project.budget_total > 0 ? Math.round((totalExpenses / project.budget_total) * 100) : 0}%
                     </p>
                   </div>
                 </div>
               </Card>
 
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                 <Card className="border-border p-6 rounded-2xl">
-                   <div className="mb-4 flex items-center justify-between">
-                      <div className="rounded-xl bg-success/10 p-2 text-success">
-                        <Users size={20} />
-                      </div>
-                      <Link href="/dashboard/pointage" className="text-[9px] font-black text-primary">Pointage</Link>
+              <div className="grid grid-cols-1 divide-y divide-border border border-border sm:grid-cols-2 sm:divide-y-0 sm:divide-x">
+                 <Link href="/dashboard/pointage" className="block p-6 transition-colors hover:bg-muted/30">
+                   <div className="flex items-center justify-between">
+                     <h3 className="text-xs text-muted-foreground">Main d'œuvre</h3>
+                     <span className="text-xs text-primary">Pointage →</span>
                    </div>
-                   <h3 className="text-size-sm font-black text-muted-foreground">Main d'œuvre</h3>
-                   <p className="mt-1 text-size-xl font-black text-foreground">{workers.length} ouvriers</p>
-                 </Card>
+                   <p className="font-tabular mt-2 text-size-xl font-medium text-foreground">{workers.length} <span className="font-sans text-size-sm font-normal text-muted-foreground">ouvriers</span></p>
+                 </Link>
 
-                 <Card className="border-border p-6 rounded-2xl">
-                    <div className="mb-4 flex items-center justify-between">
-                       <div className="rounded-xl bg-warning/10 p-2 text-warning">
-                         <Package size={20} />
-                       </div>
-                       <Link href="/dashboard/stocks" className="text-[9px] font-black text-primary">Stocks</Link>
+                 <Link href="/dashboard/stocks" className="block p-6 transition-colors hover:bg-muted/30">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-xs text-muted-foreground">Matériaux</h3>
+                      <span className="text-xs text-primary">Stocks →</span>
                     </div>
-                    <h3 className="text-size-sm font-black text-muted-foreground">Matériaux</h3>
-                    <p className="mt-1 text-size-xl font-black text-foreground">{materials.length} références</p>
-                 </Card>
+                    <p className="font-tabular mt-2 text-size-xl font-medium text-foreground">{materials.length} <span className="font-sans text-size-sm font-normal text-muted-foreground">références</span></p>
+                 </Link>
               </div>
             </div>
 
             <div className="space-y-6">
-               <Card className="border-border p-6 rounded-2xl">
-                 <div className="mb-4 flex items-center gap-3">
-                    <div className="rounded-lg bg-primary/10 p-2 text-primary">
-                      <Wallet size={18} />
-                    </div>
-                    <span className="text-[10px] font-black text-muted-foreground">Budget Total</span>
-                 </div>
-                 <p className="text-size-2xl font-black text-foreground">{formatCurrency(project.budget_total, enterprise?.devise)}</p>
+               <Card className="border-border p-6">
+                 <p className="text-xs text-muted-foreground">Budget total</p>
+                 <p className="font-tabular mt-1 text-size-2xl font-medium text-foreground">{formatCurrency(project.budget_total, enterprise?.devise)}</p>
                </Card>
 
-               <Card className="border-border p-6 rounded-2xl">
-                  <div className="mb-4 flex items-center gap-3">
-                     <div className="rounded-lg bg-destructive/10 p-2 text-destructive">
-                       <TrendingDown size={18} />
-                     </div>
-                     <span className="text-[10px] font-black text-muted-foreground">Dépenses réelles</span>
-                  </div>
-                  <p className="text-size-2xl font-black text-foreground">{formatCurrency(totalExpenses, enterprise?.devise)}</p>
+               <Card className="border-border p-6">
+                  <p className="text-xs text-muted-foreground">Dépenses réelles</p>
+                  <p className="font-tabular mt-1 text-size-2xl font-medium text-foreground">{formatCurrency(totalExpenses, enterprise?.devise)}</p>
                </Card>
 
-               <Card className="border-border p-6 rounded-2xl">
-                  <div className="mb-4 flex items-center gap-3">
-                     <div className={cn(
-                       "rounded-lg p-2",
-                       marginValue > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                     )}>
-                       {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
-                     </div>
-                     <span className="text-[10px] font-black text-muted-foreground">Marge actuelle</span>
-                  </div>
+               <Card className="border-border p-6">
+                  <p className="text-xs text-muted-foreground">Marge actuelle</p>
                   <p className={cn(
-                    "text-size-2xl font-black",
+                    "font-tabular mt-1 text-size-2xl font-medium",
                     marginValue > 0 ? "text-success" : "text-destructive"
                   )}>{formatCurrency(marginValue, enterprise?.devise)}</p>
                </Card>
@@ -438,16 +401,9 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
         )}
 
         {activeTab === 'workforce' && (
-          <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
-            <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
-              <div className="flex items-center gap-3">
-                <div className="rounded-md border border-border bg-background p-2">
-                  <Users size={18} className="text-primary" />
-                </div>
-                <h2 className="text-size-lg font-black tracking-tight text-foreground">
-                  Ouvriers affectés
-                </h2>
-              </div>
+          <Card className="overflow-hidden border-border" padding="none">
+            <div className="flex flex-col justify-between gap-4 border-b border-border p-4 sm:p-6 md:flex-row md:items-center">
+              <h3 className="font-display text-lg font-medium text-foreground">Main d'œuvre — ouvriers affectés</h3>
               <div className="group relative">
                 <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground" size={14} />
                 <Input
@@ -461,48 +417,43 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/20">
-                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Nom complet</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Métier</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Paiement</TableHead>
-                  <TableHead className="px-6 py-4 text-[10px] font-black text-muted-foreground">Taux</TableHead>
-                  <TableHead className="px-6 py-4 text-center text-[10px] font-black text-muted-foreground">Statut</TableHead>
+                  <TableHead className="px-6 py-3">Nom complet</TableHead>
+                  <TableHead className="px-6 py-3">Métier</TableHead>
+                  <TableHead className="px-6 py-3">Paiement</TableHead>
+                  <TableHead className="px-6 py-3">Taux</TableHead>
+                  <TableHead className="px-6 py-3 text-center">Statut</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {workers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-12 text-center text-muted-foreground italic text-[10px] font-black">
+                    <TableCell colSpan={5} className="py-12 text-center text-xs text-muted-foreground">
                        Aucun ouvrier affecté.
                     </TableCell>
                   </TableRow>
                 ) : (
                   workers.map((worker) => (
-                    <TableRow key={worker.id} className="group">
+                    <TableRow key={worker.id}>
                       <TableCell className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
-                            {worker.nom_complet.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="text-size-sm font-black text-foreground truncate max-w-[150px]">{worker.nom_complet}</span>
-                        </div>
+                        <span className="text-size-sm font-medium text-foreground truncate max-w-[150px]">{worker.nom_complet}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="text-size-sm font-semibold text-muted-foreground">{formatMetier(worker)}</span>
+                        <span className="text-size-sm text-muted-foreground">{formatMetier(worker)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="text-size-sm font-black text-primary">{label(PAYMENT_TYPE_LABELS, worker.type_paiement)}</span>
+                        <span className="text-size-sm text-foreground">{label(PAYMENT_TYPE_LABELS, worker.type_paiement)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="text-size-sm font-black text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
+                        <span className="font-tabular text-size-sm font-medium text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex justify-center">
                           <span
                             className={cn(
-                              'rounded-full px-2 py-0.5 text-[8px] font-black',
+                              'px-2 py-0.5 text-xs',
                               worker.actif
-                                ? 'bg-success/10 text-success'
-                                : 'bg-destructive/10 text-destructive'
+                                ? 'text-success'
+                                : 'text-destructive'
                             )}
                           >
                             {worker.actif ? 'Actif' : 'Inactif'}
@@ -536,50 +487,37 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                 return (
                   <Card
                     key={mat.id}
-                    className="group flex flex-col overflow-hidden border-border p-0 rounded-2xl"
+                    className="flex flex-col overflow-hidden border-border p-0"
                     padding="none"
                   >
-                    <div className="p-4 sm:p-6">
-                      <div className="mb-4 flex items-start justify-between">
-                        <div className={cn(
-                          "rounded-md p-2",
-                          isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
-                        )}>
-                          <Package size={18} />
-                        </div>
-                        <div className="flex items-center gap-2">
-                           {isOut ? (
-                             <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-black text-destructive">Rupture</span>
-                           ) : isLow ? (
-                             <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-black text-warning">Critique</span>
-                           ) : null}
-                        </div>
+                    <div className="p-6">
+                      <div className="mb-3 flex items-start justify-between gap-2">
+                        <h3 className="truncate text-size-lg font-medium text-foreground">
+                          {mat.nom}
+                        </h3>
+                        {isOut ? (
+                          <span className="shrink-0 text-xs font-medium text-destructive">Rupture</span>
+                        ) : isLow ? (
+                          <span className="shrink-0 text-xs font-medium text-warning">Critique</span>
+                        ) : null}
                       </div>
-
-                      <h3 className="truncate text-size-lg font-black tracking-tight text-foreground group-hover:text-primary">
-                        {mat.nom}
-                      </h3>
-                      <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground">
-                        Seuil: {mat.seuil_alerte} {mat.unite}
+                      <p className="text-xs text-muted-foreground">
+                        Seuil d'alerte : {mat.seuil_alerte} {mat.unite}
                       </p>
 
-                      <div className="my-6 flex items-center justify-between rounded-lg border border-border bg-muted/20 p-4">
-                        <div className="flex flex-col">
-                          <span className={cn(
-                            "text-size-3xl font-black tracking-tight",
-                            isOut ? "text-destructive" : isLow ? "text-warning" : "text-foreground"
-                          )}>
-                            {stock}
-                          </span>
-                          <span className="text-[9px] font-black text-muted-foreground">{mat.unite}</span>
-                        </div>
+                      <div className="my-6 border-t border-b border-border py-4">
+                        <span className={cn(
+                          "font-display text-size-3xl font-medium",
+                          isOut ? "text-destructive" : isLow ? "text-warning" : "text-foreground"
+                        )}>
+                          {stock}
+                        </span>
+                        <span className="ml-1.5 text-xs text-muted-foreground">{mat.unite}</span>
                       </div>
 
-                      <div className="mt-auto flex items-center justify-between">
-                         <span className="text-[8px] font-semibold text-muted-foreground">
-                           Maj {new Date(mat.created_at).toLocaleDateString()}
-                         </span>
-                      </div>
+                      <p className="font-tabular text-xs text-muted-foreground">
+                        Mis à jour le {new Date(mat.created_at).toLocaleDateString()}
+                      </p>
                     </div>
                   </Card>
                 );
@@ -590,99 +528,55 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
         {activeTab === 'finances' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="rounded-md bg-primary/10 p-2 text-primary">
-                    <Wallet size={18} />
-                  </div>
-                  <span className="text-[10px] font-black text-muted-foreground">
-                    Total Dépenses
-                  </span>
-                </div>
-                <p className="text-size-2xl font-black tracking-tight text-foreground">
+            <div className="grid grid-cols-1 divide-y divide-border border border-border md:grid-cols-2 md:divide-y-0 md:divide-x">
+              <div className="p-6">
+                <p className="text-xs text-muted-foreground">Total dépenses</p>
+                <p className="font-tabular mt-1 text-size-2xl font-medium text-foreground">
                   {formatCurrency(totalExpenses, enterprise?.devise)}
                 </p>
-                <div className="mt-2 flex items-center gap-1 text-success">
-                  <ArrowDownRight size={14} />
-                  <span className="text-[9px] font-black">
-                    Actualisé
-                  </span>
-                </div>
-              </Card>
+              </div>
 
-              <Card className="group relative overflow-hidden border-border p-4 sm:p-6 rounded-2xl">
-                <div className="mb-4 flex items-center gap-3">
-                  <div className={cn(
-                    "rounded-md p-2",
-                    marginValue > 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
-                  )}>
-                    {marginValue > 0 ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
-                  </div>
-                  <span className="text-[10px] font-black text-muted-foreground">
-                    Marge (Currency)
-                  </span>
-                </div>
+              <div className="p-6">
+                <p className="text-xs text-muted-foreground">Marge restante</p>
                 <p className={cn(
-                  "text-size-2xl font-black tracking-tight",
+                  "font-tabular mt-1 text-size-2xl font-medium",
                   marginValue > 0 ? "text-success" : "text-destructive"
                 )}>
                   {formatCurrency(marginValue, enterprise?.devise)}
                 </p>
-                <p className="mt-2 text-[9px] font-black text-muted-foreground">
-                   Reste à dépenser
-                </p>
-              </Card>
+              </div>
             </div>
 
-            <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
-              <div className="flex flex-col justify-between gap-4 border-b border-border bg-muted/30 p-4 sm:p-6 md:flex-row md:items-center">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-md border border-border bg-background p-2">
-                    <Calculator size={18} className="text-primary" />
-                  </div>
-                  <h2 className="text-size-lg font-black tracking-tight text-foreground">
-                    Grand Livre
-                  </h2>
-                </div>
+            <Card className="overflow-hidden border-border" padding="none">
+              <div className="border-b border-border p-4 sm:p-6">
+                <h2 className="font-display text-lg font-medium text-foreground">
+                  Grand livre
+                </h2>
               </div>
 
               {expenses.length === 0 ? (
-                <div className="p-12 text-center text-muted-foreground">
-                  <Calculator size={32} className="mx-auto mb-2 opacity-10" />
-                  <p className="text-[10px] font-black italic">Aucune transaction enregistrée.</p>
+                <div className="p-12 text-center text-xs text-muted-foreground">
+                  Aucune transaction enregistrée.
                 </div>
               ) : (
                 <div className="divide-y divide-border">
                   {expenses.map((expense) => (
                     <div
                       key={expense.id}
-                      className="group flex items-center justify-between p-4 transition-all duration-200 hover:bg-muted/30 sm:p-6"
+                      className="flex items-center justify-between p-4 transition-colors hover:bg-muted/30 sm:p-6"
                     >
-                      <div className="flex items-center gap-3 sm:gap-4">
-                        <div className={cn(
-                          'flex h-10 w-10 shrink-0 items-center justify-center rounded-md border transition-transform group-hover:scale-110',
-                          expense.categorie === 'materiaux' ? 'bg-warning/10 text-warning border-warning/20' : 'bg-primary/10 text-primary border-primary/20'
-                        )}>
-                          {expense.categorie === 'materiaux' ? <Package size={18} /> : <Calculator size={18} />}
+                      <div className="min-w-0">
+                        <div className="truncate text-size-sm font-medium text-foreground">
+                          {expense.libelle}
                         </div>
-                        <div className="min-w-0">
-                          <div className="truncate text-size-sm font-black text-foreground group-hover:text-primary">
-                            {expense.libelle}
-                          </div>
-                          <div className="mt-1 flex items-center gap-2 text-[9px] font-semibold text-muted-foreground">
-                            <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
-                            <span>•</span>
-                            <span>{expense.categorie.replace(/_/g, ' ')}</span>
-                          </div>
+                        <div className="font-tabular mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>{new Date(expense.date_operation).toLocaleDateString()}</span>
+                          <span>·</span>
+                          <span className="font-sans">{label(EXPENSE_CATEGORY_LABELS, expense.categorie)}</span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-4 sm:gap-6">
-                        <div className="text-right">
-                          <div className="text-size-sm font-black text-destructive sm:text-size-base">
-                            - {formatCurrency(expense.montant, enterprise?.devise)}
-                          </div>
-                        </div>
+                      <div className="font-tabular shrink-0 text-size-sm font-medium text-destructive sm:text-size-base">
+                        − {formatCurrency(expense.montant, enterprise?.devise)}
                       </div>
                     </div>
                   ))}

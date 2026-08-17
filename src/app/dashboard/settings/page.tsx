@@ -3,12 +3,8 @@
 import React, { useState } from 'react';
 import { useApp } from '@/lib/context/app-context';
 import {
-  Building2,
-  Shield,
-  Palette,
   ChevronRight,
   Loader2,
-  HardHat,
 } from 'lucide-react';
 import { updateEnterprise, updateUserProfile } from '@/lib/server/enterprise.actions';
 import { getProjects } from '@/lib/server/project.actions';
@@ -71,8 +67,8 @@ export default function SettingsPage() {
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-0.5">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Paramètres</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+          <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Paramètres</h1>
+          <p className="hidden text-size-sm text-muted-foreground sm:block">
             {activeSection === 'index'
               ? "Gérez les préférences de votre compte."
               : activeSection === 'enterprise'
@@ -90,93 +86,64 @@ export default function SettingsPage() {
       </div>
 
       {activeSection === 'index' ? (
-        <div className="grid gap-4 sm:gap-6">
+        <div className="grid gap-6 sm:gap-8">
           <div className="space-y-3">
-            <h2 className="text-[10px] font-semibold text-muted-foreground">Organisation</h2>
-            <div className="grid gap-3">
-              <Card
-                className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
+            <h2 className="font-display text-base font-medium text-foreground">Organisation</h2>
+            <div className="border border-border divide-y divide-border">
+              <div
+                className="flex items-center justify-between p-4 cursor-pointer transition-colors hover:bg-muted/30"
                 onClick={() => setActiveSection('enterprise')}
-                padding="none"
               >
-                <div className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <Building2 size={18} />
-                    </div>
-                    <div>
-                      <p className="text-size-sm font-semibold">{enterprise?.nom || 'Entreprise'}</p>
-                      <p className="text-[10px] text-muted-foreground">Organisation et devise.</p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted-foreground" />
+                <div>
+                  <p className="text-size-sm font-medium text-foreground">{enterprise?.nom || 'Entreprise'}</p>
+                  <p className="text-xs text-muted-foreground">Organisation et devise</p>
                 </div>
-              </Card>
+                <ChevronRight size={14} className="text-muted-foreground" />
+              </div>
 
-              <Card
-                className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
+              <div
+                className="flex items-center justify-between p-4 cursor-pointer transition-colors hover:bg-muted/30"
                 onClick={() => setActiveSection('project')}
-                padding="none"
               >
-                <div className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                      <HardHat size={18} />
-                    </div>
-                    <div>
-                      <p className="text-size-sm font-semibold">Chantier Actif</p>
-                      <p className="text-[10px] text-muted-foreground">
-                        {selectedProject ? `Actuellement: ${selectedProject.nom}` : "Aucun chantier sélectionné"}
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRight size={14} className="text-muted-foreground" />
+                <div>
+                  <p className="text-size-sm font-medium text-foreground">Chantier actif</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedProject ? `Actuellement : ${selectedProject.nom}` : "Aucun chantier sélectionné"}
+                  </p>
                 </div>
-              </Card>
+                <ChevronRight size={14} className="text-muted-foreground" />
+              </div>
 
-              <Card className="opacity-50 grayscale cursor-not-allowed border-border" padding="none">
-                <div className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                      <Palette size={18} />
-                    </div>
-                    <div>
-                      <p className="text-size-sm font-semibold">Apparence</p>
-                      <p className="text-[10px] text-muted-foreground">Personnalisation (Bientôt).</p>
-                    </div>
-                  </div>
+              <div className="flex items-center justify-between p-4 opacity-50 cursor-not-allowed">
+                <div>
+                  <p className="text-size-sm font-medium text-foreground">Apparence</p>
+                  <p className="text-xs text-muted-foreground">Personnalisation (bientôt)</p>
                 </div>
-              </Card>
+              </div>
             </div>
           </div>
 
           <div className="space-y-3">
-            <h2 className="text-[10px] font-semibold text-muted-foreground">Sécurité</h2>
-            <Card
-              className="hover:bg-muted/50 cursor-pointer transition-colors border-border"
-              onClick={() => setActiveSection('profile')}
-              padding="none"
-            >
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <Shield size={18} />
-                  </div>
-                  <div>
-                    <p className="text-size-sm font-semibold">{userProfile?.nom_complet || 'Mon Compte'}</p>
-                    <p className="text-[10px] text-muted-foreground">Informations personnelles.</p>
-                  </div>
+            <h2 className="font-display text-base font-medium text-foreground">Sécurité</h2>
+            <div className="border border-border divide-y divide-border">
+              <div
+                className="flex items-center justify-between p-4 cursor-pointer transition-colors hover:bg-muted/30"
+                onClick={() => setActiveSection('profile')}
+              >
+                <div>
+                  <p className="text-size-sm font-medium text-foreground">{userProfile?.nom_complet || 'Mon compte'}</p>
+                  <p className="text-xs text-muted-foreground">Informations personnelles</p>
                 </div>
                 <ChevronRight size={14} className="text-muted-foreground" />
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       ) : activeSection === 'enterprise' ? (
         <Card className="max-w-2xl border-border">
-          <CardHeader className="p-4 sm:p-6 border-b border-border bg-muted/30">
-            <CardTitle className="text-size-lg">Informations Entreprise</CardTitle>
-            <CardDescription className="text-[10px]">Détails légaux de votre organisation.</CardDescription>
+          <CardHeader className="p-4 sm:p-6 border-b border-border">
+            <CardTitle>Informations entreprise</CardTitle>
+            <CardDescription>Détails légaux de votre organisation.</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             <form onSubmit={handleUpdateEnterprise} className="space-y-4">
@@ -221,9 +188,9 @@ export default function SettingsPage() {
         </Card>
       ) : activeSection === 'project' ? (
         <Card className="max-w-2xl border-border">
-          <CardHeader className="p-4 sm:p-6 border-b border-border bg-muted/30">
-            <CardTitle className="text-size-lg">Chantier Actif</CardTitle>
-            <CardDescription className="text-[10px]">Sélectionnez le chantier sur lequel vous travaillez.</CardDescription>
+          <CardHeader className="p-4 sm:p-6 border-b border-border">
+            <CardTitle>Chantier actif</CardTitle>
+            <CardDescription>Sélectionnez le chantier sur lequel vous travaillez.</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4">
@@ -247,7 +214,7 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <p className="text-[10px] text-muted-foreground italic">
+              <p className="text-xs text-muted-foreground">
                 Ce réglage affecte l'affichage des données sur l'ensemble du tableau de bord.
               </p>
             </div>
@@ -255,9 +222,9 @@ export default function SettingsPage() {
         </Card>
       ) : (
         <Card className="max-w-2xl border-border">
-          <CardHeader className="p-4 sm:p-6 border-b border-border bg-muted/30">
-            <CardTitle className="text-size-lg">Mon Profil</CardTitle>
-            <CardDescription className="text-[10px]">Informations de contact.</CardDescription>
+          <CardHeader className="p-4 sm:p-6 border-b border-border">
+            <CardTitle>Mon profil</CardTitle>
+            <CardDescription>Informations de contact.</CardDescription>
           </CardHeader>
           <CardContent className="p-4 sm:p-6">
             <form onSubmit={handleUpdateProfile} className="space-y-4">

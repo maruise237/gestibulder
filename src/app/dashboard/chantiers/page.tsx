@@ -52,8 +52,8 @@ export default function ChantiersPage() {
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Mes Chantiers</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+          <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Mes chantiers</h1>
+          <p className="hidden text-size-sm text-muted-foreground sm:block">
             Veuillez sélectionner un chantier dans le menu supérieur.
           </p>
         </div>

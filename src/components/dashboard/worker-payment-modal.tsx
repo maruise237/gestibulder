@@ -68,15 +68,15 @@ export function WorkerPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] rounded-3xl overflow-hidden p-0 border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[425px] overflow-hidden p-0 border-none shadow-2xl">
         <DialogHeader className="bg-success p-8 text-success-foreground">
           <div className="flex items-center gap-4">
-            <div className="bg-white/20 rounded-2xl p-3">
+            <div className="bg-white/20 p-3">
               <Wallet size={24} />
             </div>
             <div>
-              <DialogTitle className="text-xl font-black tracking-tight text-success-foreground">Régler Salaire</DialogTitle>
-              <DialogDescription className="text-success-foreground text-[10px] font-bold opacity-80">
+              <DialogTitle className="font-display text-xl font-medium text-success-foreground">Régler salaire</DialogTitle>
+              <DialogDescription className="text-success-foreground text-xs opacity-80">
                 {worker.nom_complet}
               </DialogDescription>
             </div>
@@ -91,25 +91,25 @@ export function WorkerPaymentModal({
           ) : (
             <>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-muted/30 p-4 rounded-2xl border border-border">
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Dû total</p>
-                  <p className="text-lg font-semibold text-foreground">{formatCurrency(dueData?.totalDue || 0, enterprise?.devise)}</p>
+                <div className="bg-muted/30 p-4 border border-border">
+                  <p className="text-xs text-muted-foreground mb-1">Dû total</p>
+                  <p className="font-tabular text-lg font-medium text-foreground">{formatCurrency(dueData?.totalDue || 0, enterprise?.devise)}</p>
                 </div>
-                <div className="bg-success/10 p-4 rounded-2xl border border-success/20">
-                  <p className="text-xs font-medium text-success mb-1">Déjà payé</p>
-                  <p className="text-lg font-semibold text-success">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
+                <div className="bg-success/10 p-4 border border-success/20">
+                  <p className="text-xs text-success mb-1">Déjà payé</p>
+                  <p className="font-tabular text-lg font-medium text-success">{formatCurrency(dueData?.totalPaid || 0, enterprise?.devise)}</p>
                 </div>
               </div>
 
-              <div className="bg-primary/5 p-6 rounded-2xl border border-primary/20 text-center">
-                 <p className="text-xs font-medium text-primary mb-1">Reste à payer</p>
-                 <p className="text-3xl font-semibold text-primary">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
+              <div className="bg-primary/5 p-6 border border-primary/20 text-center">
+                 <p className="text-xs text-primary mb-1">Reste à payer</p>
+                 <p className="font-tabular text-3xl font-medium text-primary">{formatCurrency(dueData?.remaining || 0, enterprise?.devise)}</p>
                  <p className="mt-2 text-xs text-muted-foreground">{dueData?.daysPresent} jours de présence</p>
               </div>
 
               <form onSubmit={handlePay} className="space-y-4 pt-2">
                 <div className="space-y-2">
-                  <Label className="text-xs font-medium text-muted-foreground">Montant du versement</Label>
+                  <Label className="text-xs text-muted-foreground">Montant du versement</Label>
                   <div className="relative">
                     <Input
                       type="number"
@@ -117,7 +117,7 @@ export function WorkerPaymentModal({
                       required
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="h-12 pl-12 text-lg font-semibold rounded-xl focus:border-primary"
+                      className="font-tabular h-12 pl-12 text-lg font-medium focus:border-primary"
                     />
                     <Coins className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
                   </div>
@@ -127,7 +127,7 @@ export function WorkerPaymentModal({
                    <Button
                      type="submit"
                      disabled={mutation.isPending || !amount}
-                     className="w-full h-12 rounded-xl"
+                     className="w-full h-12"
                    >
                      {mutation.isPending ? <Loader2 className="animate-spin" /> : 'Confirmer le paiement'}
                    </Button>

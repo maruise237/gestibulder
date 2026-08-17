@@ -36,7 +36,7 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
         {/* Overlay for mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-30 bg-zinc-950/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
+            className="fixed inset-0 z-30 bg-stone-950/40 backdrop-blur-sm transition-opacity duration-300 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -48,7 +48,7 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
           <OfflineIndicator />
 
           {/* Page Content */}
-          <main className={cn('flex-1 transition-all duration-300', 'lg:ml-72')}>
+          <main className={cn('flex-1 transition-all duration-300', 'lg:ml-64')}>
             {mounted ? (
               <AnimatePresence mode="wait">
                 <motion.div
@@ -72,7 +72,7 @@ export function DashboardShell({ children, userProfile, enterprise }: DashboardS
           <footer
             className={cn(
               'border-t border-border bg-card/50 px-4 py-6 transition-all duration-300 sm:px-6 lg:px-8',
-              'lg:ml-72'
+              'lg:ml-64'
             )}
           >
             <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">

@@ -50,7 +50,7 @@ export const Topbar = memo(({
     <header
       className={cn(
         'sticky top-0 z-30 flex items-center justify-between px-4 transition-all duration-300 sm:px-6 lg:px-8',
-        'lg:ml-72',
+        'lg:ml-64',
         isScrolled
           ? 'h-14 border-b border-border bg-background/80 shadow-sm backdrop-blur-xl'
           : 'h-16 bg-transparent'
@@ -90,13 +90,13 @@ export const Topbar = memo(({
           </PopoverTrigger>
           <PopoverContent align="end" className="w-80 gap-0 overflow-hidden p-0">
             <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
-              <span className="text-[10px] font-black">Notifications</span>
+              <span className="text-xs font-medium text-foreground">Notifications</span>
               {unreadCount > 0 && (
                 <Button
                   variant="link"
                   size="xs"
                   onClick={() => markAllMutation.mutate()}
-                  className="h-auto gap-1 p-0 text-[9px] font-bold"
+                  className="h-auto gap-1 p-0 text-xs font-medium"
                 >
                   <CheckCheck size={12} /> Tout lire
                 </Button>
@@ -104,7 +104,7 @@ export const Topbar = memo(({
             </div>
             <div className="max-h-72 overflow-y-auto divide-y divide-border">
               {!notifData || notifData.length === 0 ? (
-                <div className="p-6 text-center text-[10px] font-medium text-muted-foreground italic">
+                <div className="p-6 text-center text-xs text-muted-foreground">
                   Aucune notification.
                 </div>
               ) : (
@@ -116,11 +116,11 @@ export const Topbar = memo(({
                       !notif.lu && 'bg-primary/5 border-l-2 border-l-primary'
                     )}
                   >
-                    <p className="text-[11px] font-bold text-foreground leading-tight">{notif.titre}</p>
+                    <p className="text-sm font-medium text-foreground leading-tight">{notif.titre}</p>
                     {notif.message && (
-                      <p className="mt-0.5 text-[10px] text-muted-foreground leading-tight">{notif.message}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground leading-tight">{notif.message}</p>
                     )}
-                    <p className="mt-1 text-[9px] font-semibold text-muted-foreground">
+                    <p className="mt-1 text-[11px] text-muted-foreground">
                       {new Date(notif.created_at).toLocaleDateString()}
                     </p>
                   </div>
@@ -134,9 +134,9 @@ export const Topbar = memo(({
 
         <Button
           variant="ghost"
-          className="group h-auto gap-2 rounded-md border border-transparent py-1 pr-1 pl-1.5"
+          className="h-auto gap-2 rounded-sm border border-transparent py-1 pr-1 pl-1.5"
         >
-          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-primary text-[10px] font-semibold text-primary-foreground shadow-sm transition-transform group-hover:rotate-3">
+          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-sm bg-secondary text-xs font-medium text-secondary-foreground">
             {mounted && userProfile?.nom_complet ? (
               userProfile.nom_complet.charAt(0).toUpperCase()
             ) : (
@@ -144,7 +144,7 @@ export const Topbar = memo(({
             )}
           </div>
           <div className="hidden flex-col items-start text-left sm:flex">
-            <span className="flex items-center gap-1 text-[12px] leading-none font-semibold text-foreground">
+            <span className="flex items-center gap-1 text-[13px] leading-none font-medium text-foreground">
               {mounted && userProfile?.nom_complet ? userProfile.nom_complet : 'User'}
               <ChevronDown size={10} className="text-muted-foreground" />
             </span>

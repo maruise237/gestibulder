@@ -37,6 +37,7 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { generateReportId } from '@/lib/utils/report-id';
+import { label, EXPENSE_CATEGORY_LABELS } from '@/lib/labels';
 
 type ExportCategory = 'finances' | 'workers' | 'projects' | 'inventory';
 
@@ -52,10 +53,10 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
   const [format, setFormat] = useState<'csv' | 'xlsx' | 'pdf'>('xlsx');
 
   const categories = [
-    { id: 'finances', label: 'Finances & Dépenses', icon: TrendingUp, color: 'text-warning bg-warning/10' },
-    { id: 'workers', label: 'Main d\'œuvre', icon: Users, color: 'text-success bg-success/10' },
-    { id: 'projects', label: 'Liste des Chantiers', icon: HardHat, color: 'text-primary bg-primary/10' },
-    { id: 'inventory', label: 'Stocks & Matériaux', icon: Package, color: 'text-muted-foreground bg-muted' },
+    { id: 'finances', label: 'Finances & Dépenses', icon: TrendingUp },
+    { id: 'workers', label: 'Main d\'œuvre', icon: Users },
+    { id: 'projects', label: 'Liste des Chantiers', icon: HardHat },
+    { id: 'inventory', label: 'Stocks & Matériaux', icon: Package },
   ];
 
   const toggleCategory = (id: ExportCategory) => {
@@ -128,7 +129,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
           head: [['Libellé', 'Catégorie', 'Date', 'Montant']],
           body: expenses.map((e: any) => [
             e.libelle,
-            e.categorie,
+            label(EXPENSE_CATEGORY_LABELS, e.categorie),
             new Date(e.date_operation).toLocaleDateString(),
             formatCurrency(e.montant, enterprise?.devise)
           ]),
@@ -218,7 +219,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <DialogTrigger asChild>
-              <Button variant="outline" size="icon" className="shadow-sm transition-all hover:bg-muted active:scale-95 h-9 w-9 rounded-md border-border">
+              <Button variant="outline" size="icon" className="h-9 w-9 border-border">
                 <Download size={18} />
                 <span className="sr-only">Exporter les données</span>
               </Button>
@@ -227,23 +228,16 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
           <TooltipContent>Exporter les données</TooltipContent>
         </Tooltip>
       )}
-      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[600px] rounded-3xl">
-        <DialogHeader className="bg-zinc-50/50 border-b p-8 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-zinc-950 text-white rounded-2xl p-3 shadow-lg">
-              <Download size={24} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">Configuration de l'Export</DialogTitle>
-              <DialogDescription className="text-zinc-500 text-[10px] font-black">
-                Choisissez les modules à inclure dans votre rapport
-              </DialogDescription>
-            </div>
-          </div>
+      <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[600px]">
+        <DialogHeader className="border-b p-8 pb-6">
+          <DialogTitle className="font-display text-2xl font-medium">Configuration de l'export</DialogTitle>
+          <DialogDescription className="text-xs">
+            Choisissez les modules à inclure dans votre rapport
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-8 p-8 pt-6">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3">
             {categories.map((cat) => (
               <Button
                 key={cat.id}
@@ -251,16 +245,14 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                 variant="outline"
                 onClick={() => toggleCategory(cat.id as ExportCategory)}
                 className={cn(
-                  'group relative flex h-auto flex-col items-start gap-3 rounded-2xl border p-5',
+                  'relative flex h-auto flex-col items-start gap-2 border p-4',
                   selectedCategories.includes(cat.id as ExportCategory)
-                    ? 'border-primary bg-primary/30 ring-4 ring-primary/5'
-                    : 'border-zinc-100 bg-card hover:border-zinc-200'
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border bg-card hover:border-primary/40'
                 )}
               >
-                <div className={cn('rounded-xl p-2 shadow-sm transition-transform group-hover:scale-110', cat.color)}>
-                  <cat.icon size={20} strokeWidth={2.5} />
-                </div>
-                <span className="text-xs font-black tracking-tight text-zinc-900">{cat.label}</span>
+                <cat.icon size={18} className="text-muted-foreground" />
+                <span className="text-size-sm font-medium text-foreground">{cat.label}</span>
                 {selectedCategories.includes(cat.id as ExportCategory) && (
                   <div className="bg-primary text-primary-foreground absolute top-3 right-3 rounded-full p-0.5">
                     <CheckCircle2 size={14} strokeWidth={3} />
@@ -270,9 +262,9 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
             ))}
           </div>
 
-          <div className="space-y-4">
-            <h3 className="text-zinc-400 text-[10px] font-black">Format de sortie</h3>
-            <div className="flex gap-4">
+          <div className="space-y-3">
+            <h3 className="text-xs text-muted-foreground">Format de sortie</h3>
+            <div className="flex gap-2">
               {[
                 { id: 'xlsx', label: 'Excel', icon: FileSpreadsheet },
                 { id: 'csv', label: 'CSV', icon: FileText },
@@ -284,10 +276,10 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                   variant="outline"
                   onClick={() => setFormat(f.id as any)}
                   className={cn(
-                    'h-auto flex-1 gap-2 rounded-xl border p-3 text-[10px] font-black',
+                    'h-auto flex-1 gap-2 border p-3 text-xs font-medium',
                     format === f.id
-                      ? 'border-primary bg-primary/50 text-primary shadow-sm'
-                      : 'border-zinc-100 bg-card text-zinc-400 hover:border-zinc-200'
+                      ? 'border-primary bg-primary/5 text-primary'
+                      : 'border-border bg-card text-muted-foreground hover:border-primary/40'
                   )}
                 >
                   <f.icon size={16} /> {f.label}
@@ -297,18 +289,18 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
           </div>
         </div>
 
-        <DialogFooter className="bg-zinc-50/30 gap-3 border-t p-8 sm:gap-0">
+        <DialogFooter className="gap-3 border-t p-8 sm:gap-0">
           <Button
             variant="ghost"
             onClick={() => setIsOpen(false)}
-            className="text-zinc-500 h-12 flex-1 rounded-xl font-black text-[10px]"
+            className="flex-1"
           >
             Annuler
           </Button>
           <Button
             onClick={handleExport}
             disabled={isLoading || selectedCategories.length === 0}
-            className="bg-zinc-950 hover:bg-zinc-800 shadow-premium h-12 flex-1 rounded-xl font-black text-[10px]"
+            className="flex-1"
           >
             {isLoading ? (
               <>
@@ -316,7 +308,7 @@ export function ExportModal({ trigger, enterprise }: ExportModalProps) {
                 Préparation...
               </>
             ) : (
-              'Lancer l\'export'
+              "Lancer l'export"
             )}
           </Button>
         </DialogFooter>

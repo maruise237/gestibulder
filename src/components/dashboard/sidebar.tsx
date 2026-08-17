@@ -13,7 +13,6 @@ import {
   Calendar,
   Settings,
   LogOut,
-  ChevronRight,
   Shield
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,35 +60,24 @@ export const Sidebar = memo(({
   return (
     <aside
       className={cn(
-        'fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-border bg-card transition-transform duration-300 lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-sidebar text-sidebar-foreground transition-transform duration-300 lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       )}
     >
-      {/* Brand Header */}
-      <div className="flex h-16 items-center border-b border-border px-6">
+      {/* Brand */}
+      <div className="flex h-16 items-center border-b border-sidebar-border px-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-card p-1 shadow-sm border border-border">
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={28}
-              height={28}
-              className="object-contain"
-            />
+          <div className="flex h-8 w-8 items-center justify-center rounded-sm bg-sidebar-foreground/5 p-1">
+            <Image src="/logo.png" alt="Logo" width={22} height={22} className="object-contain" />
           </div>
-          <div className="flex flex-col">
-            <span className="text-size-sm font-semibold tracking-tight text-foreground">
-              {enterprise?.nom || 'GestiBulder'}
-            </span>
-            <span className="text-[9px] font-semibold text-muted-foreground">
-              GESTIBULDER
-            </span>
-          </div>
+          <span className="font-display truncate text-base font-medium text-sidebar-foreground">
+            {enterprise?.nom || 'GestiBulder'}
+          </span>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -103,50 +91,43 @@ export const Sidebar = memo(({
                 if (item.href === '/dashboard/budget') prefetchData('budget');
               }}
               className={cn(
-                'group flex items-center justify-between rounded-md px-3 py-2 transition-all duration-200',
+                'group relative flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-150',
                 isActive
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-muted hover:text-primary'
+                  ? 'bg-sidebar-accent text-sidebar-foreground font-medium'
+                  : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
               )}
             >
-              <div className="flex items-center gap-3">
-                <item.icon
-                  size={18}
-                  strokeWidth={isActive ? 2.5 : 2}
-                  className={cn(
-                    'transition-transform',
-                    isActive ? 'scale-110' : 'group-hover:scale-110'
-                  )}
-                />
-                <span className="text-[13px] font-medium">{item.name}</span>
-              </div>
-              {isActive && <ChevronRight size={12} className="text-primary-foreground/50" />}
+              {isActive && (
+                <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-sidebar-primary" />
+              )}
+              <item.icon size={17} strokeWidth={1.75} className="shrink-0" />
+              <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom Section */}
-      <div className="space-y-1 border-t border-border p-3">
+      {/* Bottom */}
+      <div className="space-y-0.5 border-t border-sidebar-border p-3">
         <Link
           href="/dashboard/settings"
           onClick={() => setIsOpen(false)}
           className={cn(
-            'flex items-center gap-3 rounded-md px-3 py-2 text-[13px] font-medium transition-all duration-200',
+            'flex items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-150',
             pathname === '/dashboard/settings'
-              ? 'bg-muted text-primary border border-border'
-              : 'text-muted-foreground hover:bg-muted hover:text-primary'
+              ? 'bg-sidebar-accent text-sidebar-foreground font-medium'
+              : 'text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground'
           )}
         >
-          <Settings size={18} />
+          <Settings size={17} strokeWidth={1.75} />
           <span>Paramètres</span>
         </Link>
         <Button
           variant="ghost"
           onClick={handleLogout}
-          className="w-full justify-start gap-3 px-3 py-2 text-[13px] font-medium text-destructive hover:bg-destructive/5 hover:text-destructive active:scale-95"
+          className="w-full justify-start gap-3 rounded-sm px-3 py-2 text-sm text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
         >
-          <LogOut size={18} />
+          <LogOut size={17} strokeWidth={1.75} />
           <span>Déconnexion</span>
         </Button>
       </div>

@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  Calendar as CalendarIcon,
   QrCode,
   UserCheck,
   Printer,
@@ -64,8 +63,8 @@ export default function PointagePage() {
         <div className="bg-primary/10 p-6 rounded-full mb-6">
           <AlertCircle className="h-12 w-12 text-primary" />
         </div>
-        <h2 className="text-2xl font-black mb-2">Aucun projet sélectionné</h2>
-        <p className="text-muted-foreground max-w-sm font-medium">
+        <h2 className="font-display text-2xl font-medium mb-2">Aucun projet sélectionné</h2>
+        <p className="text-muted-foreground max-w-sm text-size-sm">
           Veuillez sélectionner un projet dans le sélecteur en haut pour gérer le pointage.
         </p>
       </div>
@@ -76,47 +75,42 @@ export default function PointagePage() {
   const pointages = pointagesData?.pointages || [];
 
   return (
-    <div className="container max-w-6xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="container max-w-6xl mx-auto p-4 md:p-8 space-y-8">
       {/* Header section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-6">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground">Gestion du Pointage</h1>
-          <p className="text-muted-foreground font-medium mt-1">
+          <h1 className="text-size-3xl font-medium text-foreground">Gestion du pointage</h1>
+          <p className="text-muted-foreground text-size-sm mt-1">
             Enregistrez la présence de vos ouvriers et suivez les salaires journaliers.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 bg-card border p-2 rounded-2xl shadow-sm">
-          <div className="bg-primary p-2 rounded-xl text-primary-foreground">
-            <CalendarIcon className="w-5 h-5" />
-          </div>
-          <div className="pr-4">
-            <p className="text-[10px] font-black text-muted-foreground leading-none mb-1">Date de pointage</p>
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="h-8 border-none p-0 font-black text-sm focus-visible:ring-0"
-            />
-          </div>
+        <div className="space-y-1">
+          <p className="text-xs text-muted-foreground">Date de pointage</p>
+          <Input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="font-tabular h-9 w-44 text-sm"
+          />
         </div>
       </div>
 
       <Tabs defaultValue="pointage" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto md:h-14 bg-muted/50 p-1.5 rounded-2xl gap-1">
-          <TabsTrigger value="pointage" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto gap-1 bg-muted p-1">
+          <TabsTrigger value="pointage" className="text-xs py-2">
             <UserCheck className="w-4 h-4 mr-2 hidden sm:inline" />
             Pointage
           </TabsTrigger>
-          <TabsTrigger value="scan" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="scan" className="text-xs py-2">
             <QrCode className="w-4 h-4 mr-2 hidden sm:inline" />
-            Scan Rapide
+            Scan rapide
           </TabsTrigger>
-          <TabsTrigger value="qr-codes" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="qr-codes" className="text-xs py-2">
             <Printer className="w-4 h-4 mr-2 hidden sm:inline" />
             Cartes QR
           </TabsTrigger>
-          <TabsTrigger value="stats" className="rounded-xl font-black text-[10px] md:text-[11px] tracking-wider data-[state=active]:bg-white data-[state=active]:shadow-sm py-2">
+          <TabsTrigger value="stats" className="text-xs py-2">
             <BarChart3 className="w-4 h-4 mr-2 hidden sm:inline" />
             Rapports
           </TabsTrigger>
@@ -125,13 +119,13 @@ export default function PointagePage() {
         <div className="mt-8">
           <TabsContent value="pointage" className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="font-black text-lg">Liste des ouvriers</h3>
+              <h3 className="font-display text-lg font-medium text-foreground">Liste des ouvriers</h3>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => initMutation.mutate()}
                 disabled={initMutation.isPending || workers.length === 0}
-                className="rounded-xl h-10 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+                className="h-9 px-4 border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               >
                 {initMutation.isPending ? <Loader2 className="mr-2 h-3 w-3 animate-spin" /> : <Plus className="mr-2 h-3 w-3" />}
                 Initialiser la journée
@@ -140,8 +134,8 @@ export default function PointagePage() {
 
             {loadingWorkers || loadingPointages ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-                <p className="text-muted-foreground font-bold text-[10px]">Chargement des données...</p>
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-muted-foreground text-xs">Chargement des données...</p>
               </div>
             ) : workers.length === 0 ? (
               <Card className="border-border">

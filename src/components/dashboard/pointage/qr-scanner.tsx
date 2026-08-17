@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Camera, X, CheckCircle2, AlertCircle, ListChecks, UserCheck } from 'lucide-react';
+import { Camera, X, AlertCircle, ListChecks, UserCheck } from 'lucide-react';
 import { pointageRapideQR } from '@/lib/server/pointage.actions';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -134,27 +134,22 @@ export function QRScanner({ chantierId }: QRScannerProps) {
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-muted-foreground">
             <ListChecks className="w-4 h-4" />
-            <h4 className="text-[10px] font-black">Scans de la session</h4>
+            <h4 className="text-xs font-medium">Scans de la session</h4>
           </div>
-          <div className="space-y-2">
+          <div className="border border-border divide-y divide-border">
             {history.map((item, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-card border rounded-xl animate-in fade-in slide-in-from-left-2 duration-300">
+              <div key={i} className="flex items-center justify-between p-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-muted-foreground">{item.time}</span>
-                  <span className="font-bold text-sm">{item.workerName}</span>
+                  <span className="font-tabular text-xs text-muted-foreground">{item.time}</span>
+                  <span className="text-size-sm font-medium text-foreground">{item.workerName}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={cn(
-                    "text-[10px] font-black tracking-tighter",
+                    "text-xs font-medium",
                     item.status === 'success' ? "text-success" : "text-warning"
                   )}>
                     {item.status === 'success' ? "Pointé" : "Déjà pointé"}
                   </span>
-                  {item.status === 'success' ? (
-                    <CheckCircle2 className="w-4 h-4 text-success" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-warning" />
-                  )}
                 </div>
               </div>
             ))}
@@ -171,7 +166,7 @@ export function QRScanner({ chantierId }: QRScannerProps) {
             {!lastScanResult && (
               <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-between p-6">
                 <div className="w-full flex justify-between items-center text-white">
-                  <h2 className="font-black text-lg tracking-wider">Scanner</h2>
+                  <h2 className="font-display text-lg font-medium">Scanner</h2>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -189,14 +184,14 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                   <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   {isProcessing && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 animate-pulse rounded-lg">
-                      <span className="text-white font-black text-sm">Traitement...</span>
+                      <span className="text-white text-sm">Traitement...</span>
                     </div>
                   )}
                 </div>
 
                 <div className="text-center">
-                  <p className="text-white/70 text-[10px] font-bold mb-4">
-                    Placez le QR Code au centre du carré
+                  <p className="text-white/70 text-xs mb-4">
+                    Placez le QR code au centre du carré
                   </p>
                 </div>
               </div>
@@ -216,12 +211,12 @@ export function QRScanner({ chantierId }: QRScannerProps) {
                   )}
                 </div>
 
-                <h2 className="text-2xl font-black mb-1">{lastScanResult.name}</h2>
-                <p className="text-muted-foreground font-bold mb-4 text-xs">
-                  {lastScanResult.already ? "DÉJÀ POINTÉ À" : "POINTÉ AVEC SUCCÈS À"} {lastScanResult.time}
+                <h2 className="font-display text-2xl font-medium mb-1">{lastScanResult.name}</h2>
+                <p className="text-muted-foreground text-xs mb-4">
+                  {lastScanResult.already ? "Déjà pointé à" : "Pointé avec succès à"} {lastScanResult.time}
                 </p>
 
-                <div className="h-1 bg-muted w-32 rounded-full overflow-hidden">
+                <div className="h-1 bg-muted w-32 overflow-hidden">
                   <div className="h-full bg-primary animate-progress origin-left"></div>
                 </div>
               </div>

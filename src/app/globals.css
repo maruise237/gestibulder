@@ -4,29 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme {
-  /* SaaS 2026 Refined Color Palette */
-  --color-primary: #6366f1; /* Indigo SaaS standard */
-  --color-secondary: #0f172a; /* Slate 900 for text/nav */
-  --color-accent: #10b981; /* Success Emerald */
-  --color-success: #10b981; /* Success Emerald */
-  --color-success-foreground: #ffffff;
-  --color-danger: #ef4444; /* Alert Red */
-  --color-warning: #f59e0b; /* Warning Amber */
-  --color-warning-foreground: #ffffff;
-  --color-zinc-50: #fafafa;
-  --color-zinc-100: #f4f4f5;
-  --color-zinc-200: #e4e4e7;
-  --color-zinc-300: #d4d4d8;
-  --color-zinc-400: #a1a1aa;
-  --color-zinc-500: #71717a;
-  --color-zinc-600: #52525b;
-  --color-zinc-700: #3f3f46;
-  --color-zinc-800: #27272a;
-  --color-zinc-900: #18181b;
-  --color-zinc-950: #09090b;
+/* ============================================================================
+   GESTIBULDER — SYSTÈME DE DESIGN
+   Direction éditoriale/structurelle : titres en serif (Fraunces), interface en
+   grotesque technique (IBM Plex Sans), chiffres financiers en monospace
+   tabulaire (IBM Plex Mono) — pensé pour se lire comme un registre de
+   chantier fiable, pas comme un pitch deck. Palette ancrée dans le domaine
+   BTP (papier chaud, encre, terre cuite) plutôt que l'indigo SaaS générique.
+   ============================================================================ */
 
-  /* Fluid Typography Scale */
+@theme {
   --font-size-xs: clamp(0.75rem, 0.05vw + 0.74rem, 0.78rem);
   --font-size-sm: clamp(0.875rem, 0.13vw + 0.85rem, 0.94rem);
   --font-size-base: clamp(1rem, 0.22vw + 0.96rem, 1.13rem);
@@ -36,101 +23,117 @@
   --font-size-3xl: clamp(1.875rem, 1.4vw + 1.6rem, 2.73rem);
   --font-size-4xl: clamp(2.25rem, 2.22vw + 1.82rem, 3.6rem);
 
-  /* Fluid Spacing Scale */
   --spacing-fluid-xs: clamp(0.5rem, 0.11vw + 0.48rem, 0.56rem);
   --spacing-fluid-sm: clamp(0.75rem, 0.22vw + 0.71rem, 0.88rem);
   --spacing-fluid-md: clamp(1rem, 0.44vw + 0.91rem, 1.25rem);
   --spacing-fluid-lg: clamp(1.5rem, 0.88vw + 1.33rem, 2rem);
   --spacing-fluid-xl: clamp(2rem, 1.77vw + 1.66rem, 3rem);
 
-  --font-inter:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    sans-serif;
+  --color-success: oklch(0.45 0.085 145);
+  --color-success-foreground: oklch(0.98 0.008 70);
+  --color-warning: oklch(0.58 0.12 75);
+  --color-warning-foreground: oklch(0.2 0.02 50);
+
+  /* Échelle neutre chaude (remplace zinc, froid/bleuté) */
+  --color-stone-50: oklch(0.98 0.006 70);
+  --color-stone-100: oklch(0.955 0.01 68);
+  --color-stone-200: oklch(0.9 0.013 66);
+  --color-stone-300: oklch(0.82 0.016 62);
+  --color-stone-400: oklch(0.65 0.018 58);
+  --color-stone-500: oklch(0.52 0.018 55);
+  --color-stone-600: oklch(0.4 0.02 52);
+  --color-stone-700: oklch(0.3 0.018 50);
+  --color-stone-800: oklch(0.23 0.016 48);
+  --color-stone-900: oklch(0.18 0.014 46);
+  --color-stone-950: oklch(0.13 0.012 44);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --background: oklch(0.975 0.007 70);
+  --foreground: oklch(0.19 0.015 50);
 
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(0.995 0.004 75);
+  --card-foreground: oklch(0.19 0.015 50);
 
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(0.995 0.004 75);
+  --popover-foreground: oklch(0.19 0.015 50);
 
-  --primary: oklch(0.511 0.262 276.966); /* Modern Indigo */
-  --primary-foreground: oklch(0.985 0 0);
+  /* Terre cuite — accent unique, utilisé avec parcimonie */
+  --primary: oklch(0.48 0.15 38);
+  --primary-foreground: oklch(0.98 0.008 70);
 
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.129 0.042 264.695);
+  /* Encre — nav, texte fort, actions secondaires */
+  --secondary: oklch(0.22 0.017 48);
+  --secondary-foreground: oklch(0.98 0.008 70);
 
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
+  --muted: oklch(0.94 0.011 68);
+  --muted-foreground: oklch(0.48 0.02 55);
 
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.129 0.042 264.695);
+  --accent: oklch(0.94 0.011 68);
+  --accent-foreground: oklch(0.19 0.015 50);
 
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
+  /* Brique — distinct de l'accent terre cuite (plus rouge, moins orange) */
+  --destructive: oklch(0.46 0.16 24);
+  --destructive-foreground: oklch(0.98 0.008 70);
 
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.707 0.022 261.325);
+  --border: oklch(0.87 0.014 65);
+  --input: oklch(0.87 0.014 65);
+  --ring: oklch(0.48 0.15 38 / 0.5);
 
-  --radius: 0.5rem; /* Following memory: rounded-md */
+  --radius: 0.3rem;
 
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.511 0.262 276.966);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.707 0.022 261.325);
+  --sidebar: oklch(0.16 0.013 46);
+  --sidebar-foreground: oklch(0.93 0.01 68);
+  --sidebar-primary: oklch(0.55 0.16 38);
+  --sidebar-primary-foreground: oklch(0.98 0.008 70);
+  --sidebar-accent: oklch(0.22 0.015 48);
+  --sidebar-accent-foreground: oklch(0.93 0.01 68);
+  --sidebar-border: oklch(0.26 0.016 48);
+  --sidebar-ring: oklch(0.55 0.16 38 / 0.5);
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.985 0 0);
+  --background: oklch(0.16 0.013 46);
+  --foreground: oklch(0.94 0.009 68);
 
-  --card: oklch(0.129 0.042 264.695);
-  --card-foreground: oklch(0.985 0 0);
+  --card: oklch(0.19 0.014 47);
+  --card-foreground: oklch(0.94 0.009 68);
 
-  --popover: oklch(0.129 0.042 264.695);
-  --popover-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.19 0.014 47);
+  --popover-foreground: oklch(0.94 0.009 68);
 
-  --primary: oklch(0.588 0.158 269.056);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.62 0.16 40);
+  --primary-foreground: oklch(0.15 0.012 45);
 
-  --secondary: oklch(0.208 0.042 265.755);
-  --secondary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.27 0.016 48);
+  --secondary-foreground: oklch(0.94 0.009 68);
 
-  --muted: oklch(0.208 0.042 265.755);
-  --muted-foreground: oklch(0.707 0.022 261.325);
+  --muted: oklch(0.24 0.015 48);
+  --muted-foreground: oklch(0.66 0.017 60);
 
-  --accent: oklch(0.208 0.042 265.755);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.27 0.016 48);
+  --accent-foreground: oklch(0.94 0.009 68);
 
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.58 0.17 25);
+  --destructive-foreground: oklch(0.15 0.012 45);
 
-  --border: oklch(0.278 0.033 256.848);
-  --input: oklch(0.278 0.033 256.848);
-  --ring: oklch(0.442 0.129 267.034);
+  --border: oklch(0.29 0.017 48);
+  --input: oklch(0.29 0.017 48);
+  --ring: oklch(0.62 0.16 40 / 0.5);
 
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.588 0.158 269.056);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.278 0.033 256.848);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.278 0.033 256.848);
-  --sidebar-ring: oklch(0.442 0.129 267.034);
+  --sidebar: oklch(0.13 0.011 44);
+  --sidebar-foreground: oklch(0.9 0.01 68);
+  --sidebar-primary: oklch(0.62 0.16 40);
+  --sidebar-primary-foreground: oklch(0.15 0.012 45);
+  --sidebar-accent: oklch(0.22 0.015 48);
+  --sidebar-accent-foreground: oklch(0.9 0.01 68);
+  --sidebar-border: oklch(0.24 0.015 48);
+  --sidebar-ring: oklch(0.62 0.16 40 / 0.5);
 }
 
 body {
   background-color: var(--background);
-  font-family: var(--font-inter);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -145,39 +148,46 @@ body {
   body {
     background-color: var(--background);
     color: var(--foreground);
-    letter-spacing: -0.01em; /* Modern tight look */
+    letter-spacing: -0.006em;
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
   }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display), Georgia, serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.015em;
+  }
+
+  /* Chiffres financiers : monospace tabulaire, aligné comme un registre */
+  .font-tabular, .tabular-nums {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-feature-settings: 'tnum' 1;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
-/* Glassmorphism utility */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-/* 2026 SaaS Elevated Shadows */
+/* Ombres discrètes, jamais décoratives */
 .shadow-premium {
   box-shadow:
-    0 0 1px rgba(0, 0, 0, 0.05),
-    0 2px 4px rgba(0, 0, 0, 0.02),
-    0 12px 24px -4px rgba(0, 0, 0, 0.03);
+    0 0 1px rgba(30, 20, 10, 0.06),
+    0 1px 2px rgba(30, 20, 10, 0.03),
+    0 8px 16px -8px rgba(30, 20, 10, 0.06);
 }
 
 .shadow-elevated {
   box-shadow:
-    0 0 1px rgba(0, 0, 0, 0.1),
-    0 4px 12px -2px rgba(0, 0, 0, 0.05),
-    0 20px 40px -12px rgba(0, 0, 0, 0.08);
+    0 0 1px rgba(30, 20, 10, 0.08),
+    0 4px 10px -4px rgba(30, 20, 10, 0.08),
+    0 16px 32px -12px rgba(30, 20, 10, 0.12);
 }
 
 @theme inline {
+  --font-display: var(--font-display);
   --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -209,16 +219,16 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-sm: calc(var(--radius) * 0.7);
   --radius-md: var(--radius);
-  --radius-lg: calc(var(--radius) * 1.5);
-  --radius-xl: calc(var(--radius) * 2.4);
-  --radius-2xl: calc(var(--radius) * 3);
-  --radius-3xl: calc(var(--radius) * 3.5);
+  --radius-lg: calc(var(--radius) * 1.6);
+  --radius-xl: calc(var(--radius) * 2.2);
+  --radius-2xl: calc(var(--radius) * 2.8);
+  --radius-3xl: calc(var(--radius) * 3.4);
   --radius-4xl: calc(var(--radius) * 4);
 }
 
-/* Shepherd.js SaaS Custom Styles */
+/* Shepherd.js — visite guidée, alignée sur le système */
 .shepherd-element {
   background: var(--card);
   border: 1px solid var(--border);
@@ -227,6 +237,7 @@ body {
   max-width: 400px;
   outline: none;
   z-index: 9999;
+  font-family: var(--font-sans), sans-serif;
 }
 
 .shepherd-header {

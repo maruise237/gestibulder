@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { getMaterialHistory } from '@/lib/server/stock.actions';
-import { Loader2, Archive, TrendingUp, TrendingDown, Clock } from 'lucide-react';
+import { Loader2, Archive } from 'lucide-react';
 import { Material, StockMovement } from '@/types/stock';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,77 +36,49 @@ export function StockHistoryModal({
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[600px]">
-        <DialogHeader className="bg-muted/30 border-b p-6 sm:p-8 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-warning text-warning-foreground rounded-2xl p-3 shadow-lg">
-              <Clock size={24} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">
-                Historique des Mouvements
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-black">
-                {material.nom}
-              </DialogDescription>
-            </div>
-          </div>
+        <DialogHeader className="border-b p-6 sm:p-8 pb-6">
+          <DialogTitle className="font-display text-2xl font-medium">
+            Historique des mouvements
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            {material.nom}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[60vh] overflow-y-auto p-6 sm:p-8">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Loader2 className="mb-4 animate-spin text-primary" size={32} />
-              <p className="text-[10px] font-black">Récupération du registre...</p>
+              <p className="text-xs">Récupération du registre...</p>
             </div>
           ) : history.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-              <Archive size={48} className="mb-4 opacity-10" />
-              <p className="text-sm font-bold italic">Aucun mouvement enregistré pour le moment.</p>
+              <Archive size={32} className="mb-4 opacity-20" />
+              <p className="text-xs">Aucun mouvement enregistré pour le moment.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="border border-border divide-y divide-border">
               {history.map((mov) => (
                 <div
                   key={mov.id}
-                  className="group flex items-center justify-between rounded-2xl border border-muted bg-muted/20 p-5 transition-all hover:bg-white hover:shadow-sm"
+                  className="flex items-center justify-between p-4 transition-colors hover:bg-muted/30"
                 >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={cn(
-                        'flex h-10 w-10 items-center justify-center rounded-xl border shadow-sm',
-                        mov.type_mouvement === 'entree'
-                          ? 'border-success/20 bg-success/10 text-success'
-                          : 'border-destructive/20 bg-destructive/10 text-destructive'
-                      )}
-                    >
-                      {mov.type_mouvement === 'entree' ? (
-                        <TrendingUp size={18} strokeWidth={2.5} />
-                      ) : (
-                        <TrendingDown size={18} strokeWidth={2.5} />
-                      )}
+                  <div>
+                    <div className="text-size-sm font-medium text-foreground">
+                      {mov.type_mouvement === 'entree' ? 'Entrée de stock' : 'Consommation'}
                     </div>
-                    <div>
-                      <div className="text-sm font-black tracking-tight text-foreground">
-                        {mov.type_mouvement === 'entree' ? 'Entrée de Stock' : 'Consommation'}
-                      </div>
-                      <div className="mt-1 text-[9px] font-black text-muted-foreground">
-                        {formatDate(mov.date_operation)} • {mov.usage || mov.fournisseur || 'Général'}
-                      </div>
+                    <div className="font-tabular mt-1 text-xs text-muted-foreground">
+                      {formatDate(mov.date_operation)} · {mov.usage || mov.fournisseur || 'Général'}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div
-                      className={cn(
-                        'text-lg font-black tracking-tighter',
-                        mov.type_mouvement === 'entree' ? 'text-success' : 'text-destructive'
-                      )}
-                    >
-                      {mov.type_mouvement === 'entree' ? '+' : '-'}
-                      {mov.quantite} {material.unite}
-                    </div>
-                    <div className="mt-0.5 text-[8px] font-black text-muted-foreground">
-                      Traité
-                    </div>
+                  <div
+                    className={cn(
+                      'font-tabular text-size-sm font-medium',
+                      mov.type_mouvement === 'entree' ? 'text-success' : 'text-destructive'
+                    )}
+                  >
+                    {mov.type_mouvement === 'entree' ? '+' : '−'}
+                    {mov.quantite} {material.unite}
                   </div>
                 </div>
               ))}
@@ -114,9 +86,9 @@ export function StockHistoryModal({
           )}
         </div>
 
-        <div className="bg-muted/30 border-t p-6 sm:p-8">
-          <Button variant="outline" className="h-12 w-full rounded-xl font-bold" onClick={onClose}>
-            Fermer l'Historique
+        <div className="border-t p-6 sm:p-8">
+          <Button variant="outline" className="h-11 w-full" onClick={onClose}>
+            Fermer l'historique
           </Button>
         </div>
       </DialogContent>

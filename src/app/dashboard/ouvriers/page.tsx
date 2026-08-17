@@ -84,8 +84,8 @@ export default function WorkersPage() {
       {/* Page Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Ouvriers</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+          <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Ouvriers</h1>
+          <p className="hidden text-size-sm text-muted-foreground sm:block">
             Gestion de vos effectifs par chantier.
           </p>
         </div>
@@ -140,65 +140,57 @@ export default function WorkersPage() {
           />
         </Card>
       ) : (
-        <Card className="shadow-premium overflow-hidden border-border rounded-2xl" padding="none">
+        <Card className="overflow-hidden border-border" padding="none">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="px-4 py-3 text-[10px] font-black text-muted-foreground">
+                <TableRow>
+                  <TableHead className="px-4 py-3">
                     Ouvrier
                   </TableHead>
-                  <TableHead className="hidden px-4 py-3 text-[10px] font-black text-muted-foreground sm:table-cell">
+                  <TableHead className="hidden px-4 py-3 sm:table-cell">
                     Métier
                   </TableHead>
-                  <TableHead className="px-4 py-3 text-[10px] font-black text-muted-foreground">
+                  <TableHead className="px-4 py-3">
                     Rémunération
                   </TableHead>
-                  <TableHead className="px-4 py-3 text-center text-[10px] font-black text-muted-foreground">
+                  <TableHead className="px-4 py-3 text-center">
                     Statut
                   </TableHead>
-                  <TableHead className="px-4 py-3 text-right text-[10px] font-black text-muted-foreground">
+                  <TableHead className="px-4 py-3 text-right">
                     Actions
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredWorkers.map((worker) => (
-                  <TableRow
-                    key={worker.id}
-                    className="group"
-                  >
+                  <TableRow key={worker.id}>
                     <TableCell className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-[10px] font-black text-foreground">
-                          {worker.nom_complet.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="truncate text-size-xs font-black text-foreground sm:text-size-sm">
-                            {worker.nom_complet}
-                          </span>
-                          <span className="truncate text-[10px] font-bold text-muted-foreground sm:hidden">
-                            {formatMetier(worker)}
-                          </span>
-                        </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="truncate text-size-sm font-medium text-foreground">
+                          {worker.nom_complet}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground sm:hidden">
+                          {formatMetier(worker)}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell className="hidden px-4 py-3 sm:table-cell">
                       <div className="flex flex-col">
-                        <span className="text-size-xs font-bold text-foreground">
+                        <span className="text-size-sm text-foreground">
                           {formatMetier(worker)}
                         </span>
-                        <span className="text-[9px] font-black text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           {worker.unite_production}
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="text-size-xs font-black text-foreground sm:text-size-sm">
+                        <span className="font-tabular text-size-sm font-medium text-foreground">
                           {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
                         </span>
-                        <span className="text-[9px] font-black text-primary">
+                        <span className="text-xs text-muted-foreground">
                           {label(PAYMENT_TYPE_LABELS, worker.type_paiement)}
                         </span>
                       </div>
@@ -207,10 +199,8 @@ export default function WorkersPage() {
                       <div className="flex justify-center">
                         <span
                           className={cn(
-                            'rounded-full px-2 py-0.5 text-[8px] font-black sm:text-[9px]',
-                            worker.actif
-                              ? 'bg-success/10 text-success'
-                              : 'bg-destructive/10 text-destructive'
+                            'text-xs font-medium',
+                            worker.actif ? 'text-success' : 'text-muted-foreground'
                           )}
                         >
                           {worker.actif ? 'Actif' : 'Inactif'}

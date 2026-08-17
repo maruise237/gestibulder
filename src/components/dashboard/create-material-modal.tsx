@@ -75,13 +75,13 @@ export function CreateMaterialModal({
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[450px]">
-        <DialogHeader className="bg-muted/30 border-b p-6">
+        <DialogHeader className="border-b p-6">
           <div className="flex items-center gap-4">
-            <div className="bg-warning text-warning-foreground rounded-md p-2">
+            <div className="bg-warning text-warning-foreground p-2">
               <Package size={20} />
             </div>
             <div className="space-y-1">
-              <DialogTitle>Nouveau Matériau</DialogTitle>
+              <DialogTitle className="font-display text-xl font-medium">Nouveau matériau</DialogTitle>
               <DialogDescription>Gestion du catalogue de stock</DialogDescription>
             </div>
           </div>
@@ -91,7 +91,7 @@ export function CreateMaterialModal({
           <div className="flex-1 overflow-y-auto p-6">
             <div className="grid gap-4">
               <div className="space-y-2">
-                <Label htmlFor="nom">Désignation du Matériau</Label>
+                <Label htmlFor="nom">Désignation du matériau</Label>
                 <Input
                   id="nom"
                   name="nom"
@@ -108,7 +108,7 @@ export function CreateMaterialModal({
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="unite">Unité Standard</Label>
+                  <Label htmlFor="unite">Unité standard</Label>
                   <Input
                     id="unite"
                     name="unite"
@@ -117,12 +117,13 @@ export function CreateMaterialModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="seuil_alerte">Seuil d'Alerte</Label>
+                  <Label htmlFor="seuil_alerte">Seuil d'alerte</Label>
                   <Input
                     id="seuil_alerte"
                     name="seuil_alerte"
                     type="number"
                     defaultValue="5"
+                    className="font-tabular"
                   />
                 </div>
               </div>

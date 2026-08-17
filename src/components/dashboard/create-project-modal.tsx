@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { createProject } from '@/lib/server/project.actions';
-import { Loader2, Plus, HardHat, MapPin, Target, Calendar, Calculator } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
 import { ProjectStatus } from '@/types/project';
 import { Button } from '@/components/ui/button';
 import {
@@ -88,63 +88,45 @@ export function CreateProjectModal({
         </DialogTrigger>
       )}
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
-        <DialogHeader className="bg-muted/30 border-b p-8 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground shadow-primary/20 rounded-2xl p-3 shadow-lg">
-              <HardHat size={24} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">
-                Lancer un Projet
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-bold">
-                Nouveau chantier de construction
-              </DialogDescription>
-            </div>
-          </div>
+        <DialogHeader className="border-b p-8 pb-6">
+          <DialogTitle className="font-display text-2xl font-medium">
+            Lancer un projet
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            Nouveau chantier de construction
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-8 pt-6">
           <div className="grid gap-6">
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="nom"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
-              >
-                <Target size={14} className="text-primary" /> Identité du Projet
+            <div className="space-y-2">
+              <Label htmlFor="nom">
+                Identité du projet
               </Label>
               <Input
                 id="nom"
                 name="nom"
                 required
                 placeholder="Ex: Résidence Skyline"
-                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
               />
             </div>
 
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="adresse"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
-              >
-                <MapPin size={14} className="text-primary" /> Localisation
+            <div className="space-y-2">
+              <Label htmlFor="adresse">
+                Localisation
               </Label>
               <Input
                 id="adresse"
                 name="adresse"
                 required
                 placeholder="Adresse complète du chantier"
-                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="budget_total"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
-                >
-                  <Calculator size={14} className="text-primary" /> Budget ({enterprise?.devise || 'DZD'})
+              <div className="space-y-2">
+                <Label htmlFor="budget_total">
+                  Budget ({enterprise?.devise || 'DZD'})
                 </Label>
                 <Input
                   id="budget_total"
@@ -153,15 +135,12 @@ export function CreateProjectModal({
                   min="0"
                   required
                   placeholder="0.00"
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                  className="font-tabular"
                 />
               </div>
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="date_debut"
-                  className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
-                >
-                  <Calendar size={14} className="text-primary" /> Date de début
+              <div className="space-y-2">
+                <Label htmlFor="date_debut">
+                  Date de début
                 </Label>
                 <Input
                   id="date_debut"
@@ -169,31 +148,27 @@ export function CreateProjectModal({
                   type="date"
                   required
                   defaultValue={new Date().toISOString().split('T')[0]}
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                  className="font-tabular"
                 />
               </div>
             </div>
 
-            <div className="space-y-2.5">
-              <Label
-                htmlFor="date_fin_prevue"
-                className="text-muted-foreground flex items-center gap-2 text-[10px] font-black"
-              >
-                <Calendar size={14} className="text-primary" /> Fin prévue
+            <div className="space-y-2">
+              <Label htmlFor="date_fin_prevue">
+                Fin prévue
               </Label>
               <Input
                 id="date_fin_prevue"
                 name="date_fin_prevue"
                 type="date"
-                className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                className="font-tabular"
               />
             </div>
           </div>
 
           {mutation.isError && (
-            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-xl border p-4">
-              <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black">
+            <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 rounded-md border p-4">
+              <p className="text-destructive text-xs font-medium">
                 {mutation.error instanceof Error ? mutation.error.message : 'Une erreur est survenue'}
               </p>
             </div>
@@ -204,14 +179,14 @@ export function CreateProjectModal({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="border-muted hover:bg-muted/50 h-12 flex-1 rounded-xl font-bold"
+              className="flex-1"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={mutation.isPending}
-              className="shadow-primary/20 h-12 flex-1 rounded-xl font-bold shadow-lg"
+              className="flex-1"
             >
               {mutation.isPending ? (
                 <>
@@ -219,7 +194,7 @@ export function CreateProjectModal({
                   Création...
                 </>
               ) : (
-                'Créer le Projet'
+                'Créer le projet'
               )}
             </Button>
           </DialogFooter>

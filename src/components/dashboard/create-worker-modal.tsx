@@ -3,14 +3,9 @@
 import React, { useState } from 'react';
 import { createWorker, updateWorker } from '@/lib/server/worker.actions';
 import {
-  Briefcase,
   Loader2,
   Plus,
-  Edit,
   Phone,
-  ShieldCheck,
-  Target,
-  Ruler,
   Banknote,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -125,34 +120,24 @@ export function CreateWorkerModal({
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto border-none p-0 sm:max-w-[700px]">
-        <DialogHeader className="bg-muted/30 border-b p-6 pb-4">
-          <div className="flex items-center gap-4">
-            <div className="bg-success text-success-foreground rounded-md p-3 ">
-              {isEdit ? <Edit size={24} strokeWidth={2.5} /> : <Briefcase size={24} strokeWidth={2.5} />}
-            </div>
-            <div className="space-y-1">
-              <DialogTitle className="text-2xl font-semibold tracking-tight">
-                {isEdit ? 'Modifier le Profil' : 'Ajouter un Ouvrier'}
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-medium">
-                {isEdit ? `Édition de ${worker?.nom_complet}` : 'Nouvelle fiche personnel'}
-              </DialogDescription>
-            </div>
-          </div>
+        <DialogHeader className="border-b p-6 pb-4">
+          <DialogTitle className="font-display text-2xl font-medium">
+            {isEdit ? 'Modifier le profil' : 'Ajouter un ouvrier'}
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            {isEdit ? `Édition de ${worker?.nom_complet}` : 'Nouvelle fiche personnel'}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6 p-6 pt-4">
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold">
-                <ShieldCheck size={14} className="text-primary" /> Détails Personnels
+              <h3 className="text-muted-foreground text-xs font-medium">
+                Détails personnels
               </h3>
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="nom_complet"
-                  className="text-muted-foreground text-[10px] font-semibold"
-                >
-                  Nom Complet
+              <div className="space-y-2">
+                <Label htmlFor="nom_complet">
+                  Nom complet
                 </Label>
                 <Input
                   id="nom_complet"
@@ -160,15 +145,11 @@ export function CreateWorkerModal({
                   required
                   defaultValue={worker?.nom_complet}
                   placeholder="Ex: Amine Benali"
-                  className="h-9 font-medium"
                 />
               </div>
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="telephone"
-                  className="text-muted-foreground text-[10px] font-semibold"
-                >
-                  Numéro de Téléphone
+              <div className="space-y-2">
+                <Label htmlFor="telephone">
+                  Numéro de téléphone
                 </Label>
                 <div className="group relative">
                   <Phone
@@ -180,19 +161,19 @@ export function CreateWorkerModal({
                     name="telephone"
                     defaultValue={worker?.telephone}
                     placeholder="05XX XX XX XX"
-                    className="h-9 pr-4 pl-12 font-medium"
+                    className="pr-4 pl-12"
                   />
                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
-              <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold">
-                <Target size={14} className="text-primary" /> Profil Professionnel
+              <h3 className="text-muted-foreground text-xs font-medium">
+                Profil professionnel
               </h3>
-              <div className="space-y-2.5">
-                <Label className="text-muted-foreground text-[10px] font-semibold">
-                  Métier / Spécialité
+              <div className="space-y-2">
+                <Label>
+                  Métier / spécialité
                 </Label>
                 <Select value={selectedMetier} onValueChange={(val) => val && setSelectedMetier(val)}>
                   <SelectTrigger className="h-9 font-medium">
@@ -214,11 +195,8 @@ export function CreateWorkerModal({
                 </Select>
               </div>
               {selectedMetier === 'autre' && (
-                <div className="animate-in slide-in-from-top-2 space-y-2.5 duration-200">
-                  <Label
-                    htmlFor="metier_custom"
-                    className="text-muted-foreground text-[10px] font-semibold"
-                  >
+                <div className="animate-in slide-in-from-top-2 space-y-2 duration-200">
+                  <Label htmlFor="metier_custom">
                     Nom du métier personnalisé
                   </Label>
                   <Input
@@ -227,55 +205,46 @@ export function CreateWorkerModal({
                     required
                     defaultValue={worker?.metier_custom}
                     placeholder="Ex: Étanchéité"
-                    className="h-9 font-medium"
                   />
                 </div>
               )}
-              <div className="bg-muted border-border flex items-center gap-3 rounded-md border p-4">
-                <div className="bg-background text-primary border-border rounded-md border p-2 shadow-sm">
-                  <Ruler size={14} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-primary/60 mb-1.1 text-[9px] leading-none font-semibold">
-                    Unité de Production
-                  </p>
-                  <p className="text-foreground text-sm font-semibold">
-                    {METIERS.find((m) => m.value === selectedMetier)?.unit}
-                  </p>
-                </div>
+              <div className="border border-border flex items-center justify-between p-4">
+                <p className="text-xs text-muted-foreground">
+                  Unité de production
+                </p>
+                <p className="text-size-sm font-medium text-foreground">
+                  {METIERS.find((m) => m.value === selectedMetier)?.unit}
+                </p>
               </div>
             </div>
           </div>
 
           <div className="space-y-6 border-t pt-8">
-            <h3 className="text-muted-foreground flex items-center gap-2 text-[10px] font-semibold">
-              <Banknote size={14} className="text-primary" /> Modèle de Rémunération
+            <h3 className="text-muted-foreground text-xs font-medium">
+              Modèle de rémunération
             </h3>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-2.5">
-                <Label className="text-muted-foreground text-[10px] font-semibold">
+              <div className="space-y-2">
+                <Label>
                   Cycle de paie
                 </Label>
-                <div className="bg-muted/30 grid grid-cols-3 gap-2 rounded-md border p-1">
+                <div className="bg-muted grid grid-cols-3 gap-1 border p-1">
                   {(['journalier', 'hebdomadaire', 'mensuel'] as const).map((type) => (
                     <Button
                       key={type}
                       type="button"
                       variant={paymentType === type ? 'default' : 'ghost'}
                       onClick={() => setPaymentType(type)}
-                      className="h-8 text-[10px] font-semibold"
+                      className="h-8 text-xs font-medium"
                     >
                       {PAYMENT_TYPE_LABELS[type]}
                     </Button>
                   ))}
                 </div>
               </div>
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="taux"
-                  className="text-muted-foreground text-[10px] font-semibold"
-                >
-                  Taux ({paymentType})
+              <div className="space-y-2">
+                <Label htmlFor="taux">
+                  Taux ({PAYMENT_TYPE_LABELS[paymentType].toLowerCase()})
                 </Label>
                 <div className="group relative">
                   <Banknote
@@ -289,9 +258,9 @@ export function CreateWorkerModal({
                     required
                     defaultValue={currentTaux}
                     placeholder="0.00"
-                    className="h-9 pr-12 pl-12 font-medium"
+                    className="font-tabular pr-12 pl-12"
                   />
-                  <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-[10px] font-semibold">
+                  <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-xs">
                     DA
                   </span>
                 </div>
@@ -300,9 +269,8 @@ export function CreateWorkerModal({
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border-destructive/20 animate-in fade-in slide-in-from-top-2 flex items-center gap-3 rounded-md border p-4">
-              <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-semibold">
+            <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 rounded-md border p-4">
+              <p className="text-destructive text-xs font-medium">
                 {error}
               </p>
             </div>
@@ -313,14 +281,14 @@ export function CreateWorkerModal({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="h-9 flex-1 font-medium"
+              className="flex-1"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               disabled={isLoading || (!isEdit && !selectedProjectId)}
-              className="h-9 flex-1 font-medium"
+              className="flex-1"
             >
               {isLoading ? (
                 <>
@@ -328,7 +296,7 @@ export function CreateWorkerModal({
                   {isEdit ? 'Mise à jour...' : 'Enregistrement...'}
                 </>
               ) : (
-                isEdit ? 'Mettre à jour' : "Enregistrer l'Ouvrier"
+                isEdit ? 'Mettre à jour' : "Enregistrer l'ouvrier"
               )}
             </Button>
           </DialogFooter>

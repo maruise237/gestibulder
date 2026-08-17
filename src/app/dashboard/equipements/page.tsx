@@ -50,32 +50,17 @@ export default function EquipementsPage() {
   const getStatusInfo = (status: Equipment['etat']) => {
     switch (status) {
       case 'disponible':
-        return {
-          label: 'Disponible',
-          color: 'bg-success/10 text-success border-success/20',
-        };
+        return { label: 'Disponible', color: 'text-success' };
       case 'en_service':
-        return {
-          label: 'En Service',
-          color: 'bg-primary/10 text-primary border-primary/20',
-        };
+        return { label: 'En service', color: 'text-primary' };
       case 'en_transit':
-        return {
-          label: 'En Transit',
-          color: 'bg-warning/10 text-warning border-warning/20',
-        };
+        return { label: 'En transit', color: 'text-warning' };
       case 'en_maintenance':
-        return {
-          label: 'Maintenance',
-          color: 'bg-warning/10 text-warning border-warning/20',
-        };
+        return { label: 'Maintenance', color: 'text-warning' };
       case 'hors_service':
-        return {
-          label: 'HS',
-          color: 'bg-destructive/10 text-destructive border-destructive/20',
-        };
+        return { label: 'Hors service', color: 'text-destructive' };
       default:
-        return { label: status, color: 'bg-muted text-muted-foreground border-border' };
+        return { label: status, color: 'text-muted-foreground' };
     }
   };
 
@@ -103,8 +88,8 @@ export default function EquipementsPage() {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Équipements</h1>
-          <p className="hidden text-size-xs font-medium text-muted-foreground sm:block">
+          <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Équipements</h1>
+          <p className="hidden text-size-sm text-muted-foreground sm:block">
             Gestion du parc matériel et déploiements.
           </p>
         </div>
@@ -159,37 +144,28 @@ export default function EquipementsPage() {
               <Card
                 key={equipment.id}
                 hoverable
-                className="group flex flex-col overflow-hidden border-border p-0"
+                className="flex flex-col overflow-hidden border-border p-0"
                 padding="none"
               >
-                <div className="p-4 sm:p-6">
-                  <div className="mb-4 flex items-start justify-between">
-                    <div className="rounded-md bg-primary/10 p-2 text-primary">
-                      <Truck size={18} />
-                    </div>
-                    <span
-                      className={cn(
-                        'rounded-full border px-2 py-0.5 text-[8px] font-semibold sm:text-[9px]',
-                        status.color
-                      )}
-                    >
+                <div className="p-6">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <h3 className="truncate text-size-lg font-medium text-foreground">
+                      {equipment.nom}
+                    </h3>
+                    <span className={cn('shrink-0 text-xs font-medium', status.color)}>
                       {status.label}
                     </span>
                   </div>
 
-                  <h3 className="truncate text-size-lg font-semibold tracking-tight text-foreground group-hover:text-primary">
-                    {equipment.nom}
-                  </h3>
-
-                  <div className="mt-4 space-y-2 rounded-lg border border-border bg-muted/20 p-3">
-                    <div className="flex items-center gap-2 text-size-xs font-medium text-foreground">
-                      <Tag size={12} className="text-primary" />
+                  <div className="space-y-1.5 border-t border-border pt-3">
+                    <div className="flex items-center gap-2 text-size-sm text-foreground">
+                      <Tag size={12} className="text-muted-foreground" />
                       <span className="truncate">{equipment.categorie}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-[9px] font-semibold text-muted-foreground">
-                      <Hash size={10} />
-                      <span className="truncate font-mono">
-                        {equipment.numero_serie || 'SN NON RENSEIGNÉ'}
+                    <div className="font-tabular flex items-center gap-2 text-xs text-muted-foreground">
+                      <Hash size={11} />
+                      <span className="truncate">
+                        {equipment.numero_serie || 'N° de série non renseigné'}
                       </span>
                     </div>
                   </div>

@@ -12,9 +12,6 @@ import {
   MoreVertical,
   Loader2,
   HardHat,
-  ArrowUpRight,
-  ArrowDownRight,
-  ChevronDown,
   Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -118,7 +115,7 @@ export default function StocksPage() {
     <div className="mx-auto max-w-7xl space-y-fluid-md p-fluid-sm sm:p-fluid-md">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div className="space-y-1">
-          <h1 className="text-size-2xl font-semibold tracking-tight text-foreground sm:text-size-3xl">Stocks</h1>
+          <h1 className="text-size-2xl font-medium text-foreground sm:text-size-3xl">Stocks</h1>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <div className="group relative">
@@ -180,19 +177,16 @@ export default function StocksPage() {
                 className="group flex flex-col overflow-hidden border-border p-0"
                 padding="none"
               >
-                <div className="p-4 sm:p-6">
-                  <div className="mb-4 flex items-start justify-between">
-                    <div className={cn(
-                      "rounded-md p-2",
-                      isOut ? "bg-destructive/10 text-destructive" : isLow ? "bg-warning/10 text-warning" : "bg-primary/10 text-primary"
-                    )}>
-                      <Package size={18} />
-                    </div>
-                    <div className="flex items-center gap-2">
+                <div className="p-6">
+                  <div className="mb-3 flex items-start justify-between gap-2">
+                    <h3 className="truncate text-size-lg font-medium text-foreground">
+                      {mat.nom}
+                    </h3>
+                    <div className="flex shrink-0 items-center gap-1">
                        {isOut ? (
-                         <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[8px] font-semibold text-destructive">Rupture</span>
+                         <span className="text-xs font-medium text-destructive">Rupture</span>
                        ) : isLow ? (
-                         <span className="rounded-full bg-warning/10 px-2 py-0.5 text-[8px] font-semibold text-warning">Critique</span>
+                         <span className="text-xs font-medium text-warning">Critique</span>
                        ) : null}
                        <Popover>
                          <PopoverTrigger asChild>
@@ -213,29 +207,26 @@ export default function StocksPage() {
                     </div>
                   </div>
 
-                  <h3 className="truncate text-size-lg font-semibold tracking-tight text-foreground group-hover:text-primary">
-                    {mat.nom}
-                  </h3>
-                  <p className="mt-1 flex items-center gap-1.5 text-[9px] font-semibold text-muted-foreground">
-                    Seuil: {mat.seuil_alerte} {mat.unite}
+                  <p className="text-xs text-muted-foreground">
+                    Seuil d'alerte : {mat.seuil_alerte} {mat.unite}
                   </p>
 
-                  <div className="my-6 flex items-center justify-between rounded-lg border border-border bg-muted/20 p-4 transition-colors group-hover:bg-muted/30">
-                    <div className="flex flex-col">
+                  <div className="my-6 flex items-center justify-between border-t border-b border-border py-4">
+                    <div>
                       <span className={cn(
-                        "text-size-3xl font-semibold tracking-tight",
+                        "font-display text-size-3xl font-medium",
                         isOut ? "text-destructive" : isLow ? "text-warning" : "text-foreground"
                       )}>
                         {stock}
                       </span>
-                      <span className="text-[9px] font-semibold text-muted-foreground">{mat.unite}</span>
+                      <span className="ml-1.5 text-xs text-muted-foreground">{mat.unite}</span>
                     </div>
                     <div className="flex gap-1.5">
                       <Button
                         variant="outline"
                         size="icon-sm"
                         onClick={() => setMovementModal({ open: true, material: mat, type: 'sortie' })}
-                        className="h-9 w-9 rounded-md border-border bg-background hover:bg-destructive/5 hover:text-destructive"
+                        className="h-9 w-9 border-border hover:bg-destructive/5 hover:text-destructive"
                         title="Consommer"
                       >
                         <MinusCircle size={18} />
@@ -244,7 +235,7 @@ export default function StocksPage() {
                         variant="outline"
                         size="icon-sm"
                         onClick={() => setMovementModal({ open: true, material: mat, type: 'entree' })}
-                        className="h-9 w-9 rounded-md border-border bg-background hover:bg-success/5 hover:text-success"
+                        className="h-9 w-9 border-border hover:bg-success/5 hover:text-success"
                         title="Réapprovisionner"
                       >
                         <PlusCircle size={18} />
@@ -252,14 +243,14 @@ export default function StocksPage() {
                     </div>
                   </div>
 
-                  <div className="mt-auto flex items-center justify-between">
-                     <span className="text-[8px] font-medium text-muted-foreground tracking-wider">
-                       Maj {new Date(mat.created_at).toLocaleDateString()}
+                  <div className="flex items-center justify-between">
+                     <span className="font-tabular text-xs text-muted-foreground">
+                       Mis à jour le {new Date(mat.created_at).toLocaleDateString()}
                      </span>
                      <Button
                        variant="ghost"
                        size="sm"
-                       className="h-7 px-2 text-[9px] font-semibold"
+                       className="h-7 px-2 text-xs"
                        onClick={() => setHistoryModal({ open: true, material: mat })}
                      >
                        Historique
@@ -286,36 +277,28 @@ export default function StocksPage() {
         onOpenChange={(open) => !open && setMovementModal({ ...movementModal, open: false })}
       >
         <DialogContent className="sm:max-w-[450px]">
-          <DialogHeader className={cn(
-            "bg-muted/30 border-b p-6",
-            movementModal.type === 'entree' ? "text-success" : "text-destructive"
-          )}>
-            <div className="flex items-center gap-4">
-              <div className={cn(
-                "rounded-md p-2",
-                movementModal.type === 'entree' ? "bg-success/10" : "bg-destructive/10"
-              )}>
-                {movementModal.type === 'entree' ? <ArrowUpRight size={20} /> : <ArrowDownRight size={20} />}
-              </div>
-              <div className="space-y-1">
-                <DialogTitle>{movementModal.type === 'entree' ? 'Réapprovisionner' : 'Consommer'}</DialogTitle>
-                <DialogDescription>Mise à jour du registre de stock</DialogDescription>
-              </div>
-            </div>
+          <DialogHeader className="border-b border-border p-6">
+            <DialogTitle className={cn(
+              "font-display text-xl font-medium",
+              movementModal.type === 'entree' ? "text-success" : "text-destructive"
+            )}>
+              {movementModal.type === 'entree' ? 'Réapprovisionner' : 'Consommer'}
+            </DialogTitle>
+            <DialogDescription>Mise à jour du registre de stock</DialogDescription>
           </DialogHeader>
 
           {movementModal.material && (
             <form onSubmit={handleMovement} className="flex flex-1 flex-col overflow-hidden">
               <div className="flex-1 overflow-y-auto p-6">
-                <div className="rounded-md border border-border bg-muted/30 p-4 text-center mb-6">
-                  <p className="text-[9px] font-semibold text-muted-foreground mb-1">Matériau</p>
-                  <p className="text-size-lg font-semibold text-foreground">{movementModal.material.nom}</p>
-                  <p className="text-[9px] font-medium text-muted-foreground">{movementModal.material.unite}</p>
+                <div className="border border-border p-4 text-center mb-6">
+                  <p className="text-xs text-muted-foreground mb-1">Matériau</p>
+                  <p className="text-size-lg font-medium text-foreground">{movementModal.material.nom}</p>
+                  <p className="text-xs text-muted-foreground">{movementModal.material.unite}</p>
                 </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-[10px] font-semibold text-muted-foreground">Quantité ({movementModal.material.unite})</Label>
+                    <Label className="text-xs text-muted-foreground">Quantité ({movementModal.material.unite})</Label>
                     <Input
                       name="quantite"
                       type="number"
@@ -323,38 +306,38 @@ export default function StocksPage() {
                       step="0.01"
                       placeholder="0.00"
                       autoFocus
-                      className="h-12 w-full text-center text-size-2xl font-semibold focus:ring-4 focus:ring-primary/10"
+                      className="font-tabular h-12 w-full text-center text-size-2xl font-medium focus:ring-4 focus:ring-primary/10"
                     />
                   </div>
 
                   {movementModal.type === 'entree' ? (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-semibold text-muted-foreground">Prix Unit.</Label>
+                        <Label className="text-xs text-muted-foreground">Prix unitaire</Label>
                         <Input
                           name="cout_unitaire"
                           type="number"
                           step="0.01"
                           placeholder="0.00"
-                          className="h-9 w-full px-3 text-xs font-medium"
+                          className="h-9 w-full px-3 text-xs"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-[10px] font-semibold text-muted-foreground">Fournisseur</Label>
+                        <Label className="text-xs text-muted-foreground">Fournisseur</Label>
                         <Input
                           name="fournisseur"
                           placeholder="Nom..."
-                          className="h-9 w-full px-3 text-xs font-medium"
+                          className="h-9 w-full px-3 text-xs"
                         />
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-semibold text-muted-foreground">Destination</Label>
+                      <Label className="text-xs text-muted-foreground">Destination</Label>
                       <Input
                         name="usage"
                         placeholder="Ex: Dalle 2ème étage..."
-                        className="h-9 w-full px-3 text-xs font-medium"
+                        className="h-9 w-full px-3 text-xs"
                       />
                     </div>
                   )}
@@ -366,7 +349,7 @@ export default function StocksPage() {
                   type="button"
                   variant="outline"
                   onClick={() => setMovementModal({ ...movementModal, open: false })}
-                  className="flex-1 text-[10px] font-semibold"
+                  className="flex-1 text-xs"
                 >
                   Annuler
                 </Button>
@@ -374,8 +357,10 @@ export default function StocksPage() {
                   type="submit"
                   disabled={movementMutation.isPending}
                   className={cn(
-                    "flex-1 text-[10px] font-semibold",
-                    movementModal.type === 'entree' ? "bg-success hover:bg-success" : "bg-destructive hover:bg-destructive/90"
+                    "flex-1 text-xs",
+                    movementModal.type === 'entree'
+                      ? "bg-success text-success-foreground hover:bg-success/90"
+                      : "bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   )}
                 >
                   {movementMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirmer'}

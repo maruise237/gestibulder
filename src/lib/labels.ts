@@ -33,6 +33,12 @@ export const EXPENSE_CATEGORY_LABELS: Record<string, string> = {
   divers: 'Divers',
 };
 
+export const ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrateur',
+  chef_projet: 'Chef de projet',
+  superviseur: 'Superviseur',
+};
+
 export function label(map: Record<string, string>, value: string | null | undefined): string {
   if (!value) return '';
   return map[value] ?? value;

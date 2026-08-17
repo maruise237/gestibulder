@@ -5,8 +5,6 @@ import { deployEquipment } from '@/lib/server/equipment.actions';
 import { getProjects } from '@/lib/server/project.actions';
 import {
   Loader2,
-  Calendar,
-  HardHat,
   ArrowRightLeft,
 } from 'lucide-react';
 import { Equipment } from '@/types/equipment';
@@ -91,53 +89,40 @@ export function DeployEquipmentModal({
         <Button
           variant="outline"
           size="sm"
-          className="group/btn h-10 rounded-xl border-zinc-200 px-4 hover:border-primary"
+          className="h-9 border-border px-4 hover:border-primary"
           disabled={equipment.etat !== 'disponible'}
         >
-          <ArrowRightLeft
-            size={14}
-            className="text-zinc-400 transition-colors group-hover/btn:text-primary"
-          />
-          <span className="ml-2 text-[10px] font-black">
+          <ArrowRightLeft size={14} className="text-muted-foreground" />
+          <span className="ml-2 text-xs font-medium">
             {equipment.etat === 'disponible' ? 'Déployer' : 'Occupé'}
           </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="overflow-hidden border-none p-0 shadow-2xl sm:max-w-[500px]">
-        <DialogHeader className="bg-muted/30 border-b p-6 sm:p-8 pb-6">
-          <div className="flex items-center gap-4">
-            <div className="bg-primary text-primary-foreground rounded-2xl p-3 shadow-lg">
-              <ArrowRightLeft size={24} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-1">
-              <DialogTitle className="text-2xl font-black tracking-tight">
-                Déploiement Matériel
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground/70 text-xs font-black">
-                Affectation sur chantier
-              </DialogDescription>
-            </div>
-          </div>
+        <DialogHeader className="border-b p-6 sm:p-8 pb-6">
+          <DialogTitle className="font-display text-2xl font-medium">
+            Déploiement matériel
+          </DialogTitle>
+          <DialogDescription className="text-xs">
+            Affectation sur chantier
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-8 p-6 sm:p-8">
-          <div className="rounded-3xl border border-primary/10 bg-primary/5 p-6 text-center">
-            <p className="mb-2 text-[10px] font-black text-primary/60">
-              Équipement identifié
-            </p>
-            <p className="text-3xl font-black tracking-tight text-foreground">{equipment.nom}</p>
-            <p className="mt-1 text-[11px] font-black text-muted-foreground">
-              Catégorie: {equipment.categorie}
-            </p>
+          <div className="border border-border p-4 flex items-center justify-between">
+            <div>
+              <p className="text-size-base font-medium text-foreground">{equipment.nom}</p>
+              <p className="text-xs text-muted-foreground">
+                {equipment.categorie}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-6">
-            <div className="space-y-2.5">
-              <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
-                <HardHat size={14} className="text-primary" /> Chantier de destination
-              </Label>
+            <div className="space-y-2">
+              <Label>Chantier de destination</Label>
               <Select value={selectedProject} onValueChange={(val) => val && setSelectedProject(val)}>
-                <SelectTrigger className="bg-muted/20 border-muted h-12 rounded-xl px-4 font-bold">
+                <SelectTrigger className="h-10">
                   <SelectValue placeholder="Choisir un chantier">
                     {(value: string) => projects.find((p) => p.id === value)?.nom || 'Choisir un chantier'}
                   </SelectValue>
@@ -153,36 +138,31 @@ export function DeployEquipmentModal({
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
-                  <Calendar size={14} className="text-primary" /> Date de début
-                </Label>
+              <div className="space-y-2">
+                <Label>Date de début</Label>
                 <Input
                   name="date_debut"
                   type="date"
                   required
                   defaultValue={new Date().toISOString().split('T')[0]}
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                  className="font-tabular"
                 />
               </div>
-              <div className="space-y-2.5">
-                <Label className="text-muted-foreground flex items-center gap-2 text-[10px] font-black">
-                  <Calendar size={14} className="text-primary" /> Fin prévue
-                </Label>
+              <div className="space-y-2">
+                <Label>Fin prévue</Label>
                 <Input
                   name="date_fin"
                   type="date"
                   required
-                  className="bg-muted/20 border-muted focus-visible:ring-primary/20 h-12 rounded-xl px-4 font-bold"
+                  className="font-tabular"
                 />
               </div>
             </div>
           </div>
 
           {error && (
-            <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 rounded-xl border p-4">
-              <div className="bg-destructive h-1.5 w-1.5 animate-pulse rounded-full" />
-              <p className="text-destructive text-xs font-black">{error}</p>
+            <div className="bg-destructive/10 border-destructive/20 flex items-center gap-3 rounded-md border p-4">
+              <p className="text-destructive text-xs font-medium">{error}</p>
             </div>
           )}
 
@@ -191,14 +171,14 @@ export function DeployEquipmentModal({
               type="button"
               variant="outline"
               onClick={() => setIsOpen(false)}
-              className="h-12 flex-1 rounded-xl font-bold"
+              className="flex-1"
             >
               Annuler
             </Button>
             <Button
               type="submit"
               isLoading={isLoading}
-              className="h-12 flex-1 rounded-xl font-bold shadow-lg"
+              className="flex-1"
             >
               Confirmer
             </Button>
