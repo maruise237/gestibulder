@@ -67,6 +67,8 @@ export function OnboardingWizard({ onComplete }: { onComplete: () => void }) {
         <p className="text-secondary-foreground text-xs mt-1 opacity-70">
           Étape {step} sur 3
         </p>
+        {/* Points de progression blancs pleins sur en-tête coloré :
+            exception documentée, cf. scripts/design-lint.sh */}
         <div className="mt-6 flex gap-1.5">
           <div className={cn("h-1 flex-1 bg-white/20 transition-all", step >= 1 && "bg-white")} />
           <div className={cn("h-1 flex-1 bg-white/20 transition-all", step >= 2 && "bg-white")} />
