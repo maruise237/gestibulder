@@ -27,7 +27,7 @@ export function QRGenerator({ workers }: QRGeneratorProps) {
           const url = await QRCode.toDataURL(`gestibulder://worker/${worker.id}`, {
             width: 120,
             margin: 1,
-            color: { dark: '#7a3a1f' }
+            color: { dark: '#315762' }
           });
           previews[worker.id] = url;
         } catch (e) {

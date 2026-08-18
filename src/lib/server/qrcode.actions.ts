@@ -15,7 +15,7 @@ export async function generateQRCodeDataURL(ouvrier_id: string): Promise<string>
       width: 600,
       margin: 1,
       color: {
-        dark: '#1e1b4b', // Indigo-950
+        dark: '#315762', // Dark Slate
         light: '#ffffff',
       },
       errorCorrectionLevel: 'H'

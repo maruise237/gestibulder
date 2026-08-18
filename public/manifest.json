@@ -4,8 +4,8 @@
   "description": "Système de gestion de chantiers BTP",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "background_color": "#EFEFEF",
+  "theme_color": "#E9631A",
   "icons": [
     {
       "src": "/next.svg",

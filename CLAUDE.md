@@ -25,10 +25,16 @@ rompre explicitement avec le look générique produit par les outils IA
   `font-tabular` (IBM Plex Mono, chiffres tabulaires) pour **tout chiffre
   financier ou quantitatif** (montants, %, dates, IDs) — jamais `font-sans`
   pour un montant.
-- **Couleur** : `primary` = terre cuite, utilisé avec parcimonie pour
-  l'action principale uniquement. `secondary` = encre foncée (nav/sidebar).
-  Ne jamais réintroduire d'indigo/violet par défaut. Palette neutre : classe
-  `stone-*` (chaude), **jamais `zinc-*`** (supprimée du thème).
+- **Couleur** : palette de marque imposée par l'utilisateur, à ne jamais
+  modifier sans instruction explicite :
+  - `primary` = **Orange #E9631A** — accent unique, action principale
+    uniquement, jamais de fond de page.
+  - `secondary` / `sidebar` = **Dark Slate #315762** — navigation, texte
+    fort.
+  - `background`/`muted`/`card` dérivés de **Flash White #EFEFEF**.
+  Ne jamais réintroduire d'indigo/violet. Palette neutre : classe
+  `stone-*` (grise neutre, dérivée de Flash White), **jamais `zinc-*`**
+  (supprimée du thème).
 - **Rayon des coins** : contrôlé par le token `--radius` (0.3rem) dans
   `globals.css`. Ne pas coder des rayons en dur (`rounded-2xl`,
   `rounded-3xl` sont déjà restreints par le token — les utiliser normalement
