@@ -127,6 +127,25 @@ export async function addStockMovement(data: NewStockMovement) {
 
   if (error) return { error: error.message };
 
+  // Une entrée de stock avec un coût unitaire renseigné représente un achat
+  // réel : il doit se répercuter dans les dépenses du chantier, sinon le
+  // budget consommé/restant ne reflète jamais le coût des matériaux achetés.
+  if (data.type_mouvement === 'entree' && data.cout_unitaire && data.cout_unitaire > 0) {
+    const montantTotal = data.cout_unitaire * data.quantite;
+    const nomMateriau = materialWithStock?.nom || 'Matériau';
+    await supabase.from('depenses').insert([{
+      entreprise_id,
+      chantier_id: data.chantier_id,
+      libelle: `Achat ${nomMateriau} (${data.quantite} ${materialWithStock?.unite || ''})`,
+      montant: montantTotal,
+      categorie: 'materiaux',
+      date_operation: data.date_operation || new Date().toISOString(),
+      saisi_par: user?.id,
+    }]);
+    revalidatePath('/dashboard/budget');
+    revalidatePath(`/dashboard/chantiers/${data.chantier_id}`);
+  }
+
   // Alerte stock critique : uniquement si une sortie vient de faire passer
   // le stock sous (ou à) son seuil d'alerte alors qu'il était au-dessus
   // avant ce mouvement (pour ne notifier qu'une seule fois au franchissement,

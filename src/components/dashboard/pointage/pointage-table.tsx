@@ -7,8 +7,9 @@ import { Loader2, Check, Clock } from 'lucide-react';
 import { runOrQueue } from '@/lib/offline-sync';
 import { PointageStatut, PointageWithOuvrier } from '@/types/pointage';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
+import { cn, formatCurrency } from '@/lib/utils';
 import { getTauxJournalierEffectif } from '@/lib/payroll';
+import { useApp } from '@/lib/context/app-context';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface PointageTableProps {
@@ -20,6 +21,7 @@ interface PointageTableProps {
 
 export function PointageTable({ workers, existingPointages, chantierId, date }: PointageTableProps) {
   const queryClient = useQueryClient();
+  const { enterprise } = useApp();
   const [localState, setLocalState] = useState<Record<string, { statut: PointageStatut; heure_arrivee: string }>>({});
   const [isSaving, setIsSaving] = useState(false);
 
@@ -136,7 +138,7 @@ export function PointageTable({ workers, existingPointages, chantierId, date }: 
                   <div className="min-w-[90px] text-right">
                     <p className="text-xs text-muted-foreground">Salaire</p>
                     <p className="font-tabular font-medium text-primary text-sm">
-                      {salaire.toLocaleString('fr-FR')} <span className="text-xs">FCFA</span>
+                      {formatCurrency(salaire, enterprise?.devise)}
                     </p>
                   </div>
                 </div>

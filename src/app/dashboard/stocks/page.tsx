@@ -37,7 +37,7 @@ import {
 } from '@/components/ui/dialog';
 
 export default function StocksPage() {
-  const { selectedProjectId } = useApp();
+  const { selectedProjectId, enterprise } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [movementModal, setMovementModal] = useState<{
     open: boolean;
@@ -313,7 +313,7 @@ export default function StocksPage() {
                   {movementModal.type === 'entree' ? (
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label className="text-xs text-muted-foreground">Prix unitaire</Label>
+                        <Label className="text-xs text-muted-foreground">Prix unitaire ({enterprise?.devise || 'DZD'})</Label>
                         <Input
                           name="cout_unitaire"
                           type="number"

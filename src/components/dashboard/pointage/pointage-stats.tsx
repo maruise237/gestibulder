@@ -35,6 +35,7 @@ import * as XLSX from 'xlsx';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { formatCurrency } from '@/lib/utils';
+import { useApp } from '@/lib/context/app-context';
 
 interface PointageStatsProps {
   chantierId: string;
@@ -56,6 +57,7 @@ const MONTHS = [
 ];
 
 export function PointageStats({ chantierId }: PointageStatsProps) {
+  const { enterprise } = useApp();
   const [mois, setMois] = useState<string>(String(new Date().getMonth() + 1));
   const [annee, setAnnee] = useState<string>(String(new Date().getFullYear()));
   const [stats, setStats] = useState<PointageStatsType[]>([]);
@@ -89,7 +91,7 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
       'Jours Présents': s.jours_present,
       'Demi-Journées': s.demi_journees,
       'Jours Absents': s.jours_absent,
-      'Total Salaire (FCFA)': s.total_salaire
+      [`Total Salaire (${enterprise?.devise || 'FCFA'})`]: s.total_salaire
     }));
 
     const ws = XLSX.utils.json_to_sheet(data);
@@ -115,7 +117,7 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
         s.jours_present,
         s.demi_journees,
         s.jours_absent,
-        `${s.total_salaire.toLocaleString()} FCFA`
+        formatCurrency(s.total_salaire, enterprise?.devise)
       ]),
       theme: 'grid',
       headStyles: { fillColor: [79, 70, 229] }
@@ -186,7 +188,7 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
             <TrendingUp size={18} />
           </div>
           <p className="text-xs font-medium text-muted-foreground mb-1">Total salaire mensuel</p>
-          <p className="text-2xl font-semibold text-foreground">{totalMonth.toLocaleString()} <span className="text-xs font-normal text-muted-foreground">FCFA</span></p>
+          <p className="text-2xl font-semibold text-foreground">{formatCurrency(totalMonth, enterprise?.devise)}</p>
         </Card>
 
         <Card className="p-6 rounded-2xl border-border">
@@ -248,8 +250,8 @@ export function PointageStats({ chantierId }: PointageStatsProps) {
                     <TableCell className="text-center">
                       <Badge variant="secondary" className="bg-destructive/10 text-destructive font-semibold h-7 w-7 flex items-center justify-center p-0 rounded-full">{s.jours_absent}</Badge>
                     </TableCell>
-                    <TableCell className="text-right font-black text-primary">
-                      {s.total_salaire.toLocaleString()} <span className="text-[10px]">FCFA</span>
+                    <TableCell className="text-right font-tabular font-medium text-primary">
+                      {formatCurrency(s.total_salaire, enterprise?.devise)}
                     </TableCell>
                   </TableRow>
                 ))

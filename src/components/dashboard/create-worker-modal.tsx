@@ -30,6 +30,7 @@ import {
 import { cn } from '@/lib/utils';
 import { PAYMENT_TYPE_LABELS } from '@/lib/labels';
 import { useApp } from '@/lib/context/app-context';
+import { getCurrencyConfig } from '@/lib/currencies';
 import { Worker } from '@/types/worker';
 
 const METIERS = [
@@ -55,7 +56,7 @@ export function CreateWorkerModal({
   onWorkerCreated: () => void;
   mode?: 'create' | 'edit';
 }) {
-  const { selectedProjectId } = useApp();
+  const { selectedProjectId, enterprise } = useApp();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -261,7 +262,7 @@ export function CreateWorkerModal({
                     className="font-tabular pr-12 pl-12"
                   />
                   <span className="text-muted-foreground absolute top-1/2 right-4 -translate-y-1/2 text-xs">
-                    DA
+                    {getCurrencyConfig(enterprise?.devise).symbol}
                   </span>
                 </div>
               </div>
