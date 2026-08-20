@@ -16,6 +16,7 @@ import { WorkerPaymentModal } from '@/components/dashboard/worker-payment-modal'
 import { EmptyState } from '@/components/dashboard/empty-state';
 import { cn, formatCurrency } from '@/lib/utils';
 import { label, PAYMENT_TYPE_LABELS } from '@/lib/labels';
+import { getTauxJournalierEffectif } from '@/lib/payroll';
 import { Worker } from '@/types/worker';
 
 export default function WorkersPage() {
@@ -45,19 +46,6 @@ export default function WorkersPage() {
 
   const formatMetier = (worker: Worker) => {
     return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
-  };
-
-  const getTaux = (worker: Worker) => {
-    switch (worker.type_paiement) {
-      case 'journalier':
-        return worker.taux_journalier || 0;
-      case 'hebdomadaire':
-        return worker.salaire_hebdo || 0;
-      case 'mensuel':
-        return worker.salaire_mensuel || 0;
-      default:
-        return 0;
-    }
   };
 
 
@@ -188,7 +176,7 @@ export default function WorkersPage() {
                     <TableCell className="px-4 py-3">
                       <div className="flex flex-col">
                         <span className="font-tabular text-size-sm font-medium text-foreground">
-                          {formatCurrency(getTaux(worker) || 0, enterprise?.devise)}
+                          {formatCurrency(getTauxJournalierEffectif(worker) || 0, enterprise?.devise)}
                         </span>
                         <span className="text-xs text-muted-foreground">
                           {label(PAYMENT_TYPE_LABELS, worker.type_paiement)}

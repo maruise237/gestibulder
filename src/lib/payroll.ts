@@ -1,16 +1,13 @@
-/** Jours ouvrés conventionnels utilisés pour convertir un salaire hebdomadaire
- *  ou mensuel en équivalent journalier (utilisé pour le calcul de paie basé
- *  sur le pointage). Convention courante dans le BTP : semaine de 6 jours. */
-const JOURS_OUVRES_SEMAINE = 6;
-const JOURS_OUVRES_MOIS = 26;
-
 /**
- * Calcule le taux journalier effectif d'un ouvrier, quel que soit son cycle
- * de paie (journalier, hebdomadaire ou mensuel). Sans cette conversion, les
- * ouvriers payés à la semaine ou au mois se retrouveraient avec un
- * salaire_jour de 0 sur chaque pointage, et donc un montant dû toujours nul,
- * puisque tout le système de paie (getWorkerSalariesDue, getProjectLaborSummary,
- * la RPC calculer_paiement_ouvrier) est basé sur la somme des salaire_jour.
+ * Retourne le taux journalier d'un ouvrier. Le montant saisi représente
+ * TOUJOURS un taux journalier, quel que soit le cycle de paie choisi
+ * (journalier/hebdomadaire/mensuel) — le cycle détermine uniquement quand
+ * l'ouvrier est payé (chaque jour, chaque fin de semaine, chaque fin de
+ * mois), pas comment le montant journalier est calculé. On ne divise donc
+ * jamais le montant saisi : diviser un salaire hebdomadaire par 6 pour en
+ * déduire un "équivalent journalier" ne correspond pas à la façon dont les
+ * chantiers rémunèrent réellement leurs ouvriers, et le montant défini par
+ * l'utilisateur doit toujours être respecté tel quel.
  */
 export function getTauxJournalierEffectif(worker: {
   type_paiement: string;
@@ -18,13 +15,5 @@ export function getTauxJournalierEffectif(worker: {
   salaire_hebdo?: number | null;
   salaire_mensuel?: number | null;
 }): number {
-  switch (worker.type_paiement) {
-    case 'hebdomadaire':
-      return (worker.salaire_hebdo || 0) / JOURS_OUVRES_SEMAINE;
-    case 'mensuel':
-      return (worker.salaire_mensuel || 0) / JOURS_OUVRES_MOIS;
-    case 'journalier':
-    default:
-      return worker.taux_journalier || 0;
-  }
+  return worker.taux_journalier || worker.salaire_hebdo || worker.salaire_mensuel || 0;
 }

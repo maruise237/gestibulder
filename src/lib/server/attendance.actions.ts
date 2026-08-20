@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { NewAttendance } from '@/types/attendance';
 import { getAuthenticatedEnterpriseId } from './utils';
+import { getTauxJournalierEffectif } from '@/lib/payroll';
 
 export async function getAttendance(chantierId?: string, date?: string) {
   const { entreprise_id, error: authError } = await getAuthenticatedEnterpriseId();
@@ -47,13 +48,7 @@ export async function logAttendance(data: NewAttendance) {
   // 2. Calculate daily salary if present
   let salaire_jour = 0;
   if (data.statut === 'present') {
-    if (worker.type_paiement === 'journalier') {
-      salaire_jour = Number(worker.taux_journalier) || 0;
-    } else if (worker.type_paiement === 'hebdomadaire') {
-      salaire_jour = (Number(worker.salaire_hebdo) || 0) / 6;
-    } else if (worker.type_paiement === 'mensuel') {
-      salaire_jour = (Number(worker.salaire_mensuel) || 0) / 26;
-    }
+    salaire_jour = getTauxJournalierEffectif(worker);
   }
 
   // 3. Upsert with explicit onConflict for Supabase

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 import { label, PAYMENT_TYPE_LABELS, PROJECT_STATUS_LABELS, EXPENSE_CATEGORY_LABELS } from '@/lib/labels';
+import { getTauxJournalierEffectif } from '@/lib/payroll';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/dashboard/empty-state';
@@ -80,19 +81,6 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
 
   const formatMetier = (worker: Worker) => {
     return worker.metier === 'autre' ? worker.metier_custom : worker.metier;
-  };
-
-  const getTaux = (worker: Worker) => {
-    switch (worker.type_paiement) {
-      case 'journalier':
-        return worker.taux_journalier || 0;
-      case 'hebdomadaire':
-        return worker.salaire_hebdo || 0;
-      case 'mensuel':
-        return worker.salaire_mensuel || 0;
-      default:
-        return 0;
-    }
   };
 
   const fetchData = useCallback(async () => {
@@ -444,7 +432,7 @@ export default function ProjectDetailsPage({ params }: { params: Promise<{ id: s
                         <span className="text-size-sm text-foreground">{label(PAYMENT_TYPE_LABELS, worker.type_paiement)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
-                        <span className="font-tabular text-size-sm font-medium text-foreground">{formatCurrency(getTaux(worker), enterprise?.devise)}</span>
+                        <span className="font-tabular text-size-sm font-medium text-foreground">{formatCurrency(getTauxJournalierEffectif(worker), enterprise?.devise)}</span>
                       </TableCell>
                       <TableCell className="px-6 py-4">
                         <div className="flex justify-center">

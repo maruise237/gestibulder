@@ -67,12 +67,7 @@ export function CreateWorkerModal({
     (worker?.type_paiement as any) || 'journalier'
   );
 
-  const currentTaux =
-    paymentType === 'journalier'
-      ? worker?.taux_journalier
-      : paymentType === 'hebdomadaire'
-      ? worker?.salaire_hebdo
-      : worker?.salaire_mensuel;
+  const currentTaux = worker?.taux_journalier ?? worker?.salaire_hebdo ?? worker?.salaire_mensuel;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,9 +85,13 @@ export function CreateWorkerModal({
       actif: true,
     };
 
-    if (paymentType === 'journalier') data.taux_journalier = Number(formData.get('taux'));
-    else if (paymentType === 'hebdomadaire') data.salaire_hebdo = Number(formData.get('taux'));
-    else data.salaire_mensuel = Number(formData.get('taux'));
+    // Le montant saisi est toujours un taux journalier — le cycle de paie
+    // ne détermine que la fréquence de versement, pas comment ce montant
+    // est calculé. On écrit donc toujours dans taux_journalier et on vide
+    // les anciens champs pour ne pas garder de données incohérentes.
+    data.taux_journalier = Number(formData.get('taux'));
+    data.salaire_hebdo = null;
+    data.salaire_mensuel = null;
 
     if (!isEdit) {
       data.chantier_ids = [selectedProjectId];
@@ -227,7 +226,7 @@ export function CreateWorkerModal({
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>
-                  Cycle de paie
+                  Cycle de versement
                 </Label>
                 <div className="bg-muted grid grid-cols-3 gap-1 border p-1">
                   {(['journalier', 'hebdomadaire', 'mensuel'] as const).map((type) => (
@@ -242,10 +241,13 @@ export function CreateWorkerModal({
                     </Button>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Détermine quand l'ouvrier est payé, pas le calcul du taux.
+                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="taux">
-                  Taux ({PAYMENT_TYPE_LABELS[paymentType].toLowerCase()})
+                  Taux journalier
                 </Label>
                 <div className="group relative">
                   <Banknote
@@ -265,6 +267,9 @@ export function CreateWorkerModal({
                     {getCurrencyConfig(enterprise?.devise).symbol}
                   </span>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Montant dû pour une journée complète de présence.
+                </p>
               </div>
             </div>
           </div>
